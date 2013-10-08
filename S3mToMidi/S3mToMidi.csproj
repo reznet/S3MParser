@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BinaryFilePrinter.cs" />
     <Compile Include="CellConverter.cs" />
     <Compile Include="ChannelEventConverter.cs" />
     <Compile Include="ChannelSettings.cs" />

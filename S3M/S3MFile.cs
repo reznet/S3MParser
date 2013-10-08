@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using System.Diagnostics;
 
-namespace S3MParser
+namespace S3M
 {
     public class S3MFile
     {

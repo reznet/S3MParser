@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace S3MParser
+namespace S3M
 {
     public class ChannelEvent
     {

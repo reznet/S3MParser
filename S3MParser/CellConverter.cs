@@ -75,7 +75,7 @@ namespace S3MParser
                             lastNoteEvent = offEvent;
                             yield return offEvent;
                         }
-                        lastNoteEvent = new NoteEvent(tick, NoteEvent.EventType.NoteOn, ce.Instrument, GetNoteOffPitch(lastNoteEvent, ce), GetMissingVelocity(ce));
+                        lastNoteEvent = new NoteEvent(tick, NoteEvent.EventType.NoteOn, ce.Instrument, ChannelNoteToMidiPitch(ce.Note), GetMissingVelocity(ce));
                         this[ce.ChannelNumber].Volume = lastNoteEvent.Velocity;
                         this[ce.ChannelNumber].Pitch = lastNoteEvent.Pitch;
                         yield return lastNoteEvent;

@@ -41,64 +41,14 @@ namespace S3MParser
                     track = tracks[channel.ChannelNumber];
                     converter = converters[channel.ChannelNumber];
 
-                    //var converter = new CellConverter();
                     foreach (var midiEvent in Convert(patternStartTick, converter.Convert(Pattern.ConvertToCells(channel.ChannelEvents, pattern.Rows.Count, channel.ChannelNumber))))
                     {
                         track.Insert(midiEvent.AbsoluteTicks, midiEvent.MidiMessage);
                     }
                 }
-                //patternStartTick += pattern.Rows.Count * this.File.InitialSpeed;
             }
-            /*
-            Track track = new Track();
-            sequence.Add(track);
-            Pattern firstPattern = this.File.Patterns[0];
-
-            var d = from a in this.File.Patterns
-                    from b in a.EventsByChannel
-                    where b.ChannelNumber == 2
-                    select b;
-
-            var e = from a in this.File.Patterns
-                    from b in a.GetCells(2)
-                    select b;
-
-            var converter = new CellConverter();
-            foreach (var midiEvent in Convert(converter.Convert(e)))
-            {
-                track.Insert(midiEvent.AbsoluteTicks, midiEvent.MidiMessage);
-            }
-            */
             sequence.Save(path);
         }
-
-        ///// <summary>
-        ///// Create a contiguous sequence of events from a sparse sequence
-        ///// </summary>
-        ///// <param name="events">The sparse event sequence.</param>
-        ///// <param name="rows">The number of events that should be returned.</param>
-        ///// <returns></returns>
-        //private IEnumerable<ChannelEvent> Fill(IEnumerable<ChannelEvent> events, int eventCount)
-        //{
-        //    var enumerator = events.GetEnumerator();
-        //    int sparseEventCount = 0;
-        //    for (int eventIndex; eventIndex < eventCount; eventIndex++)
-        //    {
-        //        if (!enumerator.MoveNext())
-        //        {
-        //            break;
-        //        }
-        //        sparseEventCount++;
-
-        //    }
-
-        //    while (sparseEventCount < eventCount)
-        //    {
-
-        //    }
-        //}
-
-        
 
         private IEnumerable<MidiEvent> Convert(int startTick, IEnumerable<NoteEvent> notes)
         {

@@ -29,25 +29,5 @@ namespace S3MParser
             writer.Save("out.mid");
 
         }
-
-        private static string ConvertToPdf(string lilyPondFile)
-        {
-            string pdfFile = Path.ChangeExtension(lilyPondFile, ".pdf");
-
-            Process lilypond = Process.Start(@"C:\Program Files (x86)\LilyPond\usr\bin\lilypond.exe", "\"" + lilyPondFile + "\"");
-            lilypond.WaitForExit();
-
-            return pdfFile;
-        }
-
-        private static string ConvertToLilyPond(string path)
-        {
-            string lilyPondFile = Path.ChangeExtension(path, ".ly");
-
-            Process musicxml2ly = Process.Start(@"C:\Program Files (x86)\LilyPond\usr\bin\musicxml2ly.py", "-o \"" + lilyPondFile + "\" \"" + path + "\"");
-            musicxml2ly.WaitForExit();
-
-            return lilyPondFile;
-        }
     }
 }

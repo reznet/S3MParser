@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Xml;
 using System.Diagnostics;
+using S3M;
 
 namespace S3MParser
 {
@@ -25,8 +26,10 @@ namespace S3MParser
             //Console.Out.WriteLine(file.Name);
             Printer.PrintPatterns(from p in file.Patterns where p.PatternNumber == 4 select p);
 
-            MidiWriter writer = new MidiWriter(file);
-            writer.Save("out.mid");
+            //MidiWriter writer = new MidiWriter(file);
+            //writer.Save("out.mid");
+
+            MidiWriter2.Save(NoteEventGenerator.Generate(file).Take(3).ToList(), "out2.mid");
 
         }
     }

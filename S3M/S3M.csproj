@@ -43,6 +43,7 @@
     <Compile Include="Cell.cs" />
     <Compile Include="Channel.cs" />
     <Compile Include="ChannelEvent.cs" />
+    <Compile Include="NoteAction.cs" />
     <Compile Include="Pattern.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Row.cs" />

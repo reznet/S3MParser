@@ -58,6 +58,7 @@
     <Compile Include="ChannelEventConverter.cs" />
     <Compile Include="ChannelSettings.cs" />
     <Compile Include="MidiWriter.cs" />
+    <Compile Include="MidiWriter2.cs" />
     <Compile Include="MusicXmlWriter.cs" />
     <Compile Include="Note.cs" />
     <Compile Include="NoteEventGenerator.cs" />

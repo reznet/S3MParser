@@ -29,6 +29,7 @@ namespace S3M
             {
                 switch (Note)
                 {
+                    case -1:
                     case 0xFF:
                         return S3M.NoteAction.None;
                     case 0xFE:
@@ -42,6 +43,11 @@ namespace S3M
         public bool HasVolume
         {
             get { return Volume > 0; }
+        }
+
+        public bool HasInstrument
+        {
+            get { return Instrument > 0; }
         }
 
         public override string ToString()

@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Xml;
 using System.Diagnostics;
+using S3M;
 
 namespace S3MParser
 {

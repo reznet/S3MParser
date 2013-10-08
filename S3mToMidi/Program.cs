@@ -26,8 +26,10 @@ namespace S3MParser
             //Console.Out.WriteLine(file.Name);
             Printer.PrintPatterns(from p in file.Patterns where p.PatternNumber == 4 select p);
 
-            MidiWriter writer = new MidiWriter(file);
-            writer.Save("out.mid");
+            //MidiWriter writer = new MidiWriter(file);
+            //writer.Save("out.mid");
+
+            MidiWriter2.Save(NoteEventGenerator.Generate(file).Take(3).ToList(), "out2.mid");
 
         }
     }

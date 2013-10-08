@@ -16,7 +16,7 @@ namespace S3MParser
             int speed = file.InitialSpeed;
             int tick = 0;
 
-            foreach (var pattern in file.Patterns.Take(1))
+            foreach (var pattern in file.Patterns)
             {
                 foreach (var row in pattern.Rows)
                 {
@@ -24,7 +24,7 @@ namespace S3MParser
                     {
                         Channel channel = GetChannel(channels, channelEvent.ChannelNumber);
 
-                        bool needNoteOff = channelEvent.NoteAction == NoteAction.Stop || (channelEvent.NoteAction == NoteAction.Start && channel.IsPlayingNote);
+                        bool needNoteOff = channel.IsPlayingNote && channelEvent.NoteAction != NoteAction.None;
 
                         if (needNoteOff)
                         {
@@ -41,6 +41,16 @@ namespace S3MParser
                 }
             }
 
+            // finalize any leftover note on events
+            foreach (var key in channels.Keys)
+            {
+                Channel channel = channels[key];
+                if (channel.CurrentNote != null)
+                {
+                    channel.AddNoteEvent(GenerateNoteOffEvent(channel, tick));
+                }
+            }
+
             List<List<NoteEvent>> allEvents = new List<List<NoteEvent>>();
             foreach (var key in channels.Keys.OrderBy(i => i))
             {
@@ -52,6 +62,7 @@ namespace S3MParser
         private static NoteEvent GenerateNoteOnEvent(Channel channel, ChannelEvent channelEvent,int tick)
         {
             channel.Volume = channelEvent.HasVolume ? channelEvent.Volume : channel.Volume;
+            channel.Instrument = channelEvent.HasInstrument ? channelEvent.Instrument : channel.Instrument;
             NoteEvent noteOnEvent = new NoteEvent(tick, NoteEvent.EventType.NoteOn, channelEvent.Instrument, channelEvent.Note, channel.Volume);
             channel.CurrentNote = noteOnEvent;
             return noteOnEvent;
@@ -79,6 +90,7 @@ namespace S3MParser
         {
             public NoteEvent CurrentNote;
             public int Volume;
+            public int Instrument;
             public List<NoteEvent> NoteEvents = new List<NoteEvent>();
 
             public bool IsPlayingNote { get { return CurrentNote != null; } }

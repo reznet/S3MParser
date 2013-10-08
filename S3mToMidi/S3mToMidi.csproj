@@ -57,7 +57,6 @@
     <Compile Include="CellConverter.cs" />
     <Compile Include="ChannelEventConverter.cs" />
     <Compile Include="ChannelSettings.cs" />
-    <Compile Include="IChannel.cs" />
     <Compile Include="MidiWriter.cs" />
     <Compile Include="MusicXmlWriter.cs" />
     <Compile Include="Note.cs" />

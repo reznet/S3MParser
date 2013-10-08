@@ -68,6 +68,10 @@
     <Compile Include="NoteEvent.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\S3M\S3M.csproj">
+      <Project>{239b2ee3-f259-4a88-8797-5786e0ecb197}</Project>
+      <Name>S3M</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Sanford.Multimedia.Midi\Sanford.Multimedia.Midi.csproj">
       <Project>{4269C72A-8D3A-4737-8F89-72EAA33EA9E1}</Project>
       <Name>Sanford.Multimedia.Midi</Name>

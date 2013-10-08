@@ -1,0 +1,213 @@
+
+Reading at 140
+bytes[0] 18
+bytes[1] 0
+PP: 288
+Reading at 142
+bytes[0] 23
+bytes[1] 0
+PP: 368
+Reading at 144
+bytes[0] 28
+bytes[1] 0
+PP: 448
+Reading at 146
+bytes[0] 33
+bytes[1] 0
+PP: 528
+Reading at 148
+bytes[0] 38
+bytes[1] 0
+PP: 608
+Reading at 150
+bytes[0] 43
+bytes[1] 0
+PP: 688
+Reading at 152
+bytes[0] 48
+bytes[1] 0
+PP: 768
+Reading at 154
+bytes[0] 53
+bytes[1] 0
+PP: 848
+Reading at 156
+bytes[0] 58
+bytes[1] 0
+PP: 928
+Reading at 158
+bytes[0] 63
+bytes[1] 0
+PP: 1008
+Reading at 160
+bytes[0] 68
+bytes[1] 0
+PP: 1088
+Reading at 162
+bytes[0] 129
+bytes[1] 0
+PP: 2064
+Reading at 164
+bytes[0] 190
+bytes[1] 0
+PP: 3040
+Reading at 166
+bytes[0] 4
+bytes[1] 1
+PP: 65
+Reading at 168
+bytes[0] 73
+bytes[1] 1
+PP: 1169
+Reading at 170
+bytes[0] 139
+bytes[1] 1
+PP: 2225
+Reading at 172
+bytes[0] 200
+bytes[1] 1
+PP: 3201
+Reading at 174
+bytes[0] 3
+bytes[1] 2
+PP: 50
+Reading at 176
+bytes[0] 63
+bytes[1] 2
+PP: 1010
+Reading at 178
+bytes[0] 119
+bytes[1] 2
+PP: 1906
+Reading at 180
+bytes[0] 166
+bytes[1] 2
+PP: 2658
+Reading at 182
+bytes[0] 225
+bytes[1] 2
+PP: 3602
+Reading at 184
+bytes[0] 26
+bytes[1] 3
+PP: 419
+Reading at 186
+bytes[0] 84
+bytes[1] 3
+PP: 1347
+Reading at 188
+bytes[0] 129
+bytes[1] 3
+PP: 2067
+Reading at 190
+bytes[0] 163
+bytes[1] 3
+PP: 2611
+Reading at 192
+bytes[0] 201
+bytes[1] 3
+PP: 3219
+Reading at 194
+bytes[0] 254
+bytes[1] 3
+PP: 4067
+Reading at 196
+bytes[0] 51
+bytes[1] 4
+PP: 820
+Reading at 198
+bytes[0] 100
+bytes[1] 4
+PP: 1604
+Reading at 200
+bytes[0] 167
+bytes[1] 4
+PP: 2676
+Reading at 202
+bytes[0] 219
+bytes[1] 4
+PP: 3508
+Reading at 204
+bytes[0] 12
+bytes[1] 5
+PP: 197
+Reading at 206
+bytes[0] 64
+bytes[1] 5
+PP: 1029
+Reading at 208
+bytes[0] 108
+bytes[1] 5
+PP: 1733
+Reading at 210
+bytes[0] 155
+bytes[1] 5
+PP: 2485
+Reading at 212
+bytes[0] 214
+bytes[1] 5
+PP: 3429
+Reading at 214
+bytes[0] 15
+bytes[1] 6
+PP: 246
+Reading at 216
+bytes[0] 73
+bytes[1] 6
+PP: 1174
+Reading at 218
+bytes[0] 117
+bytes[1] 6
+PP: 1878
+Reading at 220
+bytes[0] 158
+bytes[1] 6
+PP: 2534
+Reading at 222
+bytes[0] 200
+bytes[1] 6
+PP: 3206
+Reading at 224
+bytes[0] 242
+bytes[1] 6
+PP: 3878
+Reading at 226
+bytes[0] 23
+bytes[1] 7
+PP: 375
+Reading at 228
+bytes[0] 70
+bytes[1] 7
+PP: 1127
+Reading at 230
+bytes[0] 90
+bytes[1] 7
+PP: 1447
+Reading at 232
+bytes[0] 155
+bytes[1] 7
+PP: 2487
+Reading at 234
+bytes[0] 222
+bytes[1] 7
+PP: 3559
+Reading at 236
+bytes[0] 18
+bytes[1] 8
+PP: 296
+Reading at 238
+bytes[0] 65
+bytes[1] 8
+PP: 1048
+Reading at 240
+bytes[0] 102
+bytes[1] 8
+PP: 1640
+Reading at 242
+bytes[0] 125
+bytes[1] 8
+PP: 2008
+Reading at 244
+bytes[0] 147
+bytes[1] 8
+PP: 2360

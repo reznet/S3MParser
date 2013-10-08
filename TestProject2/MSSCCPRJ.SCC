@@ -1,0 +1,5 @@
+SCC = This is a source code control file
+
+[TestProject2.csproj]
+SCC_Aux_Path = "P4SCC#1666##Jeff##W2"
+SCC_Project_Name = Perforce Project

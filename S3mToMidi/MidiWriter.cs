@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Sanford.Multimedia.Midi;
+using S3M;
 
 namespace S3MParser
 {

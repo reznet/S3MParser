@@ -23,7 +23,7 @@ namespace S3MParser
             Dictionary<int, CellConverter> converters = new Dictionary<int, CellConverter>();
             int patternStartTick = 0;
 
-            foreach (var pattern in this.File.Patterns.Take(2))
+            foreach (var pattern in this.File.Patterns)
             {
                 Console.Out.WriteLine("Writing pattern " + pattern.PatternNumber);
                 foreach (var channel in pattern.Channels)

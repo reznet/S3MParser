@@ -7,11 +7,15 @@ namespace S3MParser
 {
     public class Pattern
     {
-        internal int PatternNumber;
+        public int PatternNumber
+        {
+            get;
+            internal set;
+        }
 
-        internal List<Row> Rows = new List<Row>();
+        public List<Row> Rows = new List<Row>();
 
-        internal IEnumerable<ChannelEvent> EventsByChannel
+        public IEnumerable<ChannelEvent> EventsByChannel
         {
             get
             {
@@ -22,7 +26,7 @@ namespace S3MParser
             }
         }
 
-        internal IEnumerable<Channel> Channels
+        public IEnumerable<Channel> Channels
         {
             get
             {

@@ -8,14 +8,14 @@ namespace S3MParser
 {
     public class ChannelEvent
     {
-        internal int ChannelNumber;
-        internal int Note=-1;
-        internal int Instrument=-1;
-        internal int Volume=-1;
-        internal int Command=-1;
-        internal int Data=-1;
-        internal Row Row;
-        internal Pattern Pattern
+        public int ChannelNumber;
+        public int Note = -1;
+        public int Instrument = -1;
+        public int Volume = -1;
+        public int Command = -1;
+        public int Data = -1;
+        public Row Row;
+        public Pattern Pattern
         {
             get
             {

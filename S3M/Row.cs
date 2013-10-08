@@ -5,12 +5,12 @@ using System.Text;
 
 namespace S3MParser
 {
-    class Row
+    public class Row
     {
         internal int RowNumber;
         internal Pattern Pattern;
 
-        internal List<ChannelEvent> ChannelEvents = new List<ChannelEvent>();
+        public List<ChannelEvent> ChannelEvents = new List<ChannelEvent>();
 
         internal static Row Parse(System.IO.Stream stream, System.IO.BinaryReader reader)
         {

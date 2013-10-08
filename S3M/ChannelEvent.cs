@@ -23,6 +23,27 @@ namespace S3M
             }
         }
 
+        public NoteAction NoteAction
+        {
+            get
+            {
+                switch (Note)
+                {
+                    case 0xFF:
+                        return S3M.NoteAction.None;
+                    case 0xFE:
+                        return S3M.NoteAction.Stop;
+                    default:
+                        return S3M.NoteAction.Start;
+                }
+            }
+        }
+
+        public bool HasVolume
+        {
+            get { return Volume > 0; }
+        }
+
         public override string ToString()
         {
             return String.Format("Pattern:{6:D2} Row:{7:D2} Channel:{0:D2} Note:{1} Instrument:{2} Volume:{3} Command:{4} Data:{5}",
@@ -35,6 +56,8 @@ namespace S3M
                 this.Row.Pattern.PatternNumber,
                 this.Row.RowNumber);
         }
+
+        
 
         internal static readonly byte CHANNEL_MASK = 31;     // 0x00011111;
         internal static readonly byte NOTE_INSTRUMENT_FOLLOWS_MASK = 1 << 5; // 0x00100000;

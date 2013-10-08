@@ -23,7 +23,7 @@ namespace S3MParser
             Dictionary<int, CellConverter> converters = new Dictionary<int, CellConverter>();
             int patternStartTick = 0;
 
-            foreach (var pattern in this.File.Patterns)
+            foreach (var pattern in this.File.Patterns.Take(2))
             {
                 Console.Out.WriteLine("Writing pattern " + pattern.PatternNumber);
                 foreach (var channel in pattern.Channels)
@@ -47,7 +47,7 @@ namespace S3MParser
                         track.Insert(midiEvent.AbsoluteTicks, midiEvent.MidiMessage);
                     }
                 }
-                patternStartTick += pattern.Rows.Count * 3;
+                //patternStartTick += pattern.Rows.Count * this.File.InitialSpeed;
             }
             /*
             Track track = new Track();

@@ -125,7 +125,7 @@ namespace S3MParser
         private int GetMissingVelocity(ChannelEvent ce)
         {
             if (ce.Volume == -1) return this[ce.ChannelNumber].Volume;
-            return ce.Volume;
+            return ce.Volume * 2;
         }
     }
 }

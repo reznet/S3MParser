@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		S3MParser.vsmdi = S3MParser.vsmdi
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S3MParser", "S3MParser\S3MParser.csproj", "{35916D84-5C2D-47FC-876D-C27AC7041BE8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S3mToMidi", "S3mToMidi\S3mToMidi.csproj", "{35916D84-5C2D-47FC-876D-C27AC7041BE8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject2", "TestProject2\TestProject2.csproj", "{39912501-915A-4742-A8F6-885EBC870F98}"
 EndProject

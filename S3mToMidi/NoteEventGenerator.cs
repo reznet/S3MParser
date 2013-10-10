@@ -50,6 +50,11 @@ namespace S3MParser
                             channel.AddNoteEvent(GenerateNoteOnEvent(channel, channelEvent, tick));
                         }
 
+                        if (channelEvent.Data != 0)
+                        {
+                            channel.Data = channelEvent.Data;
+                        }
+
                         if (channelEvent.Command == CommandType.BreakPatternToRow)
                         {
                             breakPatternToRow = true;
@@ -91,9 +96,9 @@ namespace S3MParser
 
         private static NoteEvent GenerateNoteOnEvent(Channel channel, ChannelEvent channelEvent,int tick)
         {
-            channel.Volume = channelEvent.HasVolume ? channelEvent.Volume : channel.Volume;
+            int volume = channelEvent.HasVolume ? channelEvent.Volume : channel.DefaultVolume;
             channel.Instrument = channelEvent.HasInstrument ? channelEvent.Instrument : channel.Instrument;
-            NoteEvent noteOnEvent = new NoteEvent(tick, NoteEvent.EventType.NoteOn, channelEvent.Instrument, channelEvent.Note, channel.Volume);
+            NoteEvent noteOnEvent = new NoteEvent(tick, NoteEvent.EventType.NoteOn, channelEvent.Instrument, channelEvent.Note, volume);
             channel.CurrentNote = noteOnEvent;
             return noteOnEvent;
         }
@@ -112,7 +117,7 @@ namespace S3MParser
             {
                 channels.Add(channelNumber, new Channel()
                     {
-                        Volume = 64,
+                        DefaultVolume = 64,
                     });
             }
             return channels[channelNumber];
@@ -121,8 +126,9 @@ namespace S3MParser
         private class Channel
         {
             public NoteEvent CurrentNote;
-            public int Volume;
+            public int DefaultVolume;
             public int Instrument;
+            public int Data;
             public List<Event> NoteEvents = new List<Event>();
 
             public bool IsPlayingNote { get { return CurrentNote != null; } }

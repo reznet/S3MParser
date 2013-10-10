@@ -52,10 +52,7 @@ namespace S3M
     {
         public static CommandType ToCommandType(this byte value)
         {
-            int a = (int)'A';
-            int v = (int)value;
-            int c = a - v;
-            return (CommandType)c;
+            return (CommandType)value;
         }
     }
 }

@@ -57,7 +57,7 @@ namespace S3M
                 this.Note,
                 this.Instrument,
                 this.Volume,
-                this.Command,
+                this.Command.ToString(),
                 this.Data,
                 this.Row.Pattern.PatternNumber,
                 this.Row.RowNumber);

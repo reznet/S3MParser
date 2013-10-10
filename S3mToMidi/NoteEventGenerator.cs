@@ -110,7 +110,10 @@ namespace S3MParser
         {
             if(!channels.ContainsKey(channelNumber))
             {
-                channels.Add(channelNumber, new Channel());
+                channels.Add(channelNumber, new Channel()
+                    {
+                        Volume = 64,
+                    });
             }
             return channels[channelNumber];
         }

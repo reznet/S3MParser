@@ -131,13 +131,11 @@ namespace S3M
             {
                 int patternPointer = patternPointers[patternIndex];
                 int patternStartIndex = patternPointer * 16;
-                Console.Out.WriteLine("PatternPointer is {0}, start index is {1}.  seeking there", patternPointer, patternStartIndex);
                 stream.Seek(patternStartIndex, SeekOrigin.Begin);
                 Console.Out.WriteLine("Parsing pattern {0} at {1}.", patternIndex + 1, patternStartIndex);
                 Pattern pattern = Pattern.Read(stream, reader);
-                pattern.PatternNumber = patternIndex+1;
+                pattern.PatternNumber = patternIndex;
                 yield return pattern;
-                //break;
             }
         }
 

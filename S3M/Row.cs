@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace S3M
 {
+    [DebuggerDisplay("RowNumber={RowNumber} Pattern={Pattern.PatternNumber}")]
     public class Row
     {
         internal int RowNumber;

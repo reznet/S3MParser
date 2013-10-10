@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace S3MParser
 {
-    class NoteEvent
+    class NoteEvent : Event
     {
         public enum EventType
         {
@@ -15,14 +15,13 @@ namespace S3MParser
         }
 
         public NoteEvent(int tick, EventType eventType, int channel, int pitch, int velocity)
+            :base(tick)
         {
-            this.Tick = tick;
             this.Type = eventType;
             this.Channel = channel;
             this.Pitch = pitch;
             this.Velocity = velocity;
 
-            Debug.Assert(0 <= this.Tick, "negative tick");
             Debug.Assert(0 <= this.Channel, "negative channel");
             Debug.Assert(this.Channel < 16, "channel must be less than 16");
             Debug.Assert(0 <= this.Pitch, "negative pitch");
@@ -30,14 +29,14 @@ namespace S3MParser
         }
 
         public EventType Type { get; set; }
-        public int Tick { get; set; }
+        
         public int Channel { get; set; }
         public int Pitch { get; set; }
         public int Velocity { get; set; }
 
-        public NoteEvent Clone()
+        public NoteEvent Clone(int tick)
         {
-            return new NoteEvent(this.Tick, this.Type, this.Channel, this.Pitch, this.Velocity);
+            return new NoteEvent(tick, this.Type, this.Channel, this.Pitch, this.Velocity);
         }
 
         public override string ToString()

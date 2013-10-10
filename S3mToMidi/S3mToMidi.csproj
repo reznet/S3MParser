@@ -57,6 +57,7 @@
     <Compile Include="CellConverter.cs" />
     <Compile Include="ChannelEventConverter.cs" />
     <Compile Include="ChannelSettings.cs" />
+    <Compile Include="Event.cs" />
     <Compile Include="MidiWriter.cs" />
     <Compile Include="MidiWriter2.cs" />
     <Compile Include="MusicXmlWriter.cs" />
@@ -79,6 +80,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Standard MIDI File Structure.htm" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

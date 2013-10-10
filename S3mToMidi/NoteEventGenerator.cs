@@ -86,9 +86,8 @@ namespace S3MParser
 
         private static NoteEvent GenerateNoteOffEvent(Channel channel, int tick)
         {
-            NoteEvent offEvent = channel.CurrentNote.Clone();
+            NoteEvent offEvent = channel.CurrentNote.Clone(tick);
             offEvent.Type = NoteEvent.EventType.NoteOff;
-            offEvent.Tick = tick;
             channel.CurrentNote = null;
             return offEvent;
         }

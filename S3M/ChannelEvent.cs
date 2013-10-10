@@ -12,7 +12,7 @@ namespace S3M
         public int Note = -1;
         public int Instrument = -1;
         public int Volume = -1;
-        public int Command = -1;
+        public CommandType Command = CommandType.None;
         public int Data = -1;
         public Row Row;
         public Pattern Pattern
@@ -98,11 +98,8 @@ namespace S3M
             }
             if ((first & COMMAND_FOLLOWS_MASK) == COMMAND_FOLLOWS_MASK)
             {
-                channelEvent.Command = reader.ReadByte();
+                channelEvent.Command = reader.ReadByte().ToCommandType();
                 channelEvent.Data = reader.ReadByte();
-
-                //Console.Out.WriteLine("Command: {0:X2}", channelEvent.Command);
-                //Console.Out.WriteLine("Data: {0:X2}", channelEvent.Data);
             }
 
             return channelEvent;

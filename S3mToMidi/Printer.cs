@@ -88,10 +88,10 @@ namespace S3MParser
             return Pitches[step] + (octave + 1).ToString();
         }
 
-        private static string CommandValueToString(int command, int data)
+        private static string CommandValueToString(CommandType command, int data)
         {
-            if (command == -1) { return "   "; }
-            return ((char)(((int)'A') + (command - 1))).ToString() + data.ToString("X2");
+            if (command == CommandType.None) { return "   "; }
+            return ((char)(((int)'A') + ((int)command - 1))).ToString() + data.ToString("X2");
         }
     }
 }

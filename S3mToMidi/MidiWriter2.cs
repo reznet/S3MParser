@@ -78,8 +78,9 @@ namespace S3MParser
 
         private static int ChannelNoteToMidiPitch(int note)
         {
+            // C5 = 64 = octave 5 + step 0
             int step = note & 15;
-            int octave = note >> 4;
+            int octave = 1 + (note >> 4);
 
             return (octave * 12) + step;
         }

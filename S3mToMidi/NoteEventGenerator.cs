@@ -22,8 +22,14 @@ namespace S3MParser
             TempoEvent tempoEvent = new TempoEvent(tick, file.InitialTempo);
             firstChannel.AddNoteEvent(tempoEvent);
 
-            foreach (var pattern in file.Patterns)
+            foreach (var order in file.Orders)
             {
+                if (order == 255)
+                {
+                    break;
+                }
+
+                var pattern = file.Patterns[order];
                 foreach (var row in pattern.Rows.Skip(rowSkip))
                 {
                     rowSkip = 0;

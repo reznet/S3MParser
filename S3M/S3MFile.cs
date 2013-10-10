@@ -27,7 +27,6 @@ namespace S3M
 
         public List<Pattern> Patterns = new List<Pattern>();
 
-
         public static S3MFile Parse(string path)
         {
             FileStream stream = new FileStream(path, FileMode.Open);

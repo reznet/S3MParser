@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace S3M
 {
+    [DebuggerDisplay("PatternNumber={PatternNumber}")]
     public class Pattern
     {
         public int PatternNumber

@@ -50,6 +50,10 @@ namespace S3MParser
                             rowSkip = channelEvent.Data;
                             break;
                         }
+                        else if (channelEvent.Command == CommandType.SetSpeed)
+                        {
+                            speed = channelEvent.Data;
+                        }
                     }
 
                     tick += speed;

@@ -63,12 +63,10 @@ namespace S3M
                 this.Row.RowNumber);
         }
 
-        
-
-        internal static readonly byte CHANNEL_MASK = 31;     // 0x00011111;
-        internal static readonly byte NOTE_INSTRUMENT_FOLLOWS_MASK = 1 << 5; // 0x00100000;
-        internal static readonly byte VOLUME_FOLLOWS_MASK = 1 << 6; // 0x01000000;
-        internal static readonly byte COMMAND_FOLLOWS_MASK = 1 << 7; // 0x10000000;
+        private const byte CHANNEL_MASK = 31;                       // 0x00011111;
+        private const byte NOTE_INSTRUMENT_FOLLOWS_MASK = 1 << 5;   // 0x00100000;
+        private const byte VOLUME_FOLLOWS_MASK = 1 << 6;            // 0x01000000;
+        private const byte COMMAND_FOLLOWS_MASK = 1 << 7;           // 0x10000000;
 
         internal static ChannelEvent Parse(System.IO.Stream stream, System.IO.BinaryReader reader)
         {
@@ -78,23 +76,17 @@ namespace S3M
             {
                 return null;
             }
-            //Console.Out.WriteLine("First byte is {0:X}", first);
             channelEvent.ChannelNumber = 1 + first & CHANNEL_MASK;
             Debug.Assert(channelEvent.ChannelNumber <= 6, "channel number should be less than 6 but is " + channelEvent.ChannelNumber);
-           // Console.Out.WriteLine("Channel is {0}", channelEvent.ChannelNumber);
             if ((first & NOTE_INSTRUMENT_FOLLOWS_MASK) == NOTE_INSTRUMENT_FOLLOWS_MASK)
             {
                 // read note and instrument
                 channelEvent.Note = reader.ReadByte();
                 channelEvent.Instrument = reader.ReadByte();
-                //Debug.Assert(channelEvent.Instrument < 16, "instrument should be less than 16");
-                //Console.Out.WriteLine("Note: {0:X2}", channelEvent.Note);
-                //Console.Out.WriteLine("Instrument: {0:X2}", channelEvent.Instrument);
             }
             if ((first & VOLUME_FOLLOWS_MASK) == VOLUME_FOLLOWS_MASK)
             {
                 channelEvent.Volume = reader.ReadByte();
-                //Console.Out.WriteLine("Volume: {0:D2}", channelEvent.Volume);
             }
             if ((first & COMMAND_FOLLOWS_MASK) == COMMAND_FOLLOWS_MASK)
             {

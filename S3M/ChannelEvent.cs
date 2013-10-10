@@ -77,7 +77,7 @@ namespace S3M
                 return null;
             }
             channelEvent.ChannelNumber = 1 + first & CHANNEL_MASK;
-            Debug.Assert(channelEvent.ChannelNumber <= 6, "channel number should be less than 6 but is " + channelEvent.ChannelNumber);
+            //Debug.Assert(channelEvent.ChannelNumber <= 6, "channel number should be less than 6 but is " + channelEvent.ChannelNumber);
             if ((first & NOTE_INSTRUMENT_FOLLOWS_MASK) == NOTE_INSTRUMENT_FOLLOWS_MASK)
             {
                 // read note and instrument

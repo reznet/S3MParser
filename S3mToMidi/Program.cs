@@ -14,9 +14,9 @@ namespace S3MParser
     {
         static void Main(string[] args)
         {
-            S3MFile file = S3MFile.Parse("02-v-bewm.s3m");
+            S3MFile file = S3MFile.Parse("v-waow.s3m");
 
-            MidiWriter2.Save(NoteEventGenerator.Generate(file).Take(3).ToList(), "out3.mid");
+            MidiWriter2.Save(NoteEventGenerator.Generate(file).Take(3).ToList(), "out4.mid");
         }
     }
 }

@@ -1,1 +1,3 @@
 ﻿Detect and Output Time Signature Changes
+Volume changes
+channel volume memory

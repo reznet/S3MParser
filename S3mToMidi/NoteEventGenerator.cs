@@ -1,6 +1,7 @@
 ﻿using S3M;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,11 +16,14 @@ namespace S3MParser
 
             int speed = file.InitialSpeed;
             int tick = 0;
+            int rowSkip = 0;
 
             foreach (var pattern in file.Patterns)
             {
-                foreach (var row in pattern.Rows)
+                foreach (var row in pattern.Rows.Skip(rowSkip))
                 {
+                    rowSkip = 0;
+                    bool breakPatternToRow = false;
                     foreach (var channelEvent in row.ChannelEvents)
                     {
                         Channel channel = GetChannel(channels, channelEvent.ChannelNumber);
@@ -35,9 +39,21 @@ namespace S3MParser
                         {
                             channel.AddNoteEvent(GenerateNoteOnEvent(channel, channelEvent, tick));
                         }
+
+                        if (channelEvent.Command == CommandType.BreakPatternToRow)
+                        {
+                            breakPatternToRow = true;
+                            rowSkip = channelEvent.Data;
+                            break;
+                        }
                     }
 
                     tick += speed;
+
+                    if (breakPatternToRow)
+                    {
+                        break;
+                    }
                 }
             }
 

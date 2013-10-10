@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace S3MParser
+namespace S3M
 {
     public enum CommandType
     {
+        None,
         SetSpeed,						// Axx		Set speed to xx (the default is 06)
         JumpToOrder,					// Bxx		Jump to order xx (hexadecimal)
         BreakPatternToRow,				// Cxx		Break pattern to row xx (decimal)
@@ -49,12 +50,9 @@ namespace S3MParser
 
     public static class CommandTypeExtensions
     {
-        public static CommandType Parse(byte value)
+        public static CommandType ToCommandType(this byte value)
         {
-            int a = (int)'A';
-            int v = (int)value;
-            int c = a - v;
-            return (CommandType)c;
+            return (CommandType)value;
         }
     }
 }

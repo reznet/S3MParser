@@ -1,6 +1,7 @@
 ﻿using Sanford.Multimedia.Midi;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace S3MParser
 {
     static class MidiWriter2
     {
-        public static void Save(List<List<NoteEvent>> allEvents, string path)
+        public static void Save(List<List<Event>> allEvents, string path)
         {
             Sequence sequence = new Sequence();
 
@@ -19,7 +20,7 @@ namespace S3MParser
             {
                 Track track = new Track();
                 sequence.Add(track);
-                List<NoteEvent> trackEvents = allEvents[trackIndex];
+                List<Event> trackEvents = allEvents[trackIndex];
                 foreach (var midiEvent in trackEvents.Select(trackEvent => Convert(trackEvent, track)))
                 {
                     track.Insert(midiEvent.AbsoluteTicks, midiEvent.MidiMessage);
@@ -29,30 +30,49 @@ namespace S3MParser
             sequence.Save(path);
         }
 
-        private static MidiEvent Convert(NoteEvent note, Track track)
+        private static MidiEvent Convert(Event e, Track track)
         {
-            Console.Out.WriteLine(note.ToString());
-            if (note.Type == NoteEvent.EventType.NoteOff)
+            Console.Out.WriteLine(e.ToString());
+            
+            if (e is NoteEvent)
             {
-                ChannelMessageBuilder b = new ChannelMessageBuilder();
-                b.MidiChannel = note.Channel;
-                b.Command = ChannelCommand.NoteOff;
-                b.Data1 = ChannelNoteToMidiPitch(note.Pitch);
-                b.Data2 = ChannelVelocityToMidiVolume(note.Velocity);
-                b.Build();
-                MidiEvent me = new MidiEvent(track, note.Tick, b.Result);
-                return me;
+                NoteEvent note = (NoteEvent)e;
+                if (note.Type == NoteEvent.EventType.NoteOff)
+                {
+                    ChannelMessageBuilder b = new ChannelMessageBuilder();
+                    b.MidiChannel = note.Channel;
+                    b.Command = ChannelCommand.NoteOff;
+                    b.Data1 = ChannelNoteToMidiPitch(note.Pitch);
+                    b.Data2 = ChannelVelocityToMidiVolume(note.Velocity);
+                    b.Build();
+                    MidiEvent me = new MidiEvent(track, note.Tick, b.Result);
+                    return me;
+                }
+                else
+                {
+                    ChannelMessageBuilder b = new ChannelMessageBuilder();
+                    b.MidiChannel = note.Channel;
+                    b.Command = ChannelCommand.NoteOn;
+                    b.Data1 = ChannelNoteToMidiPitch(note.Pitch);
+                    b.Data2 = ChannelVelocityToMidiVolume(note.Velocity);
+                    b.Build();
+                    MidiEvent me = new MidiEvent(track, note.Tick, b.Result);
+                    return me;
+                }
+            }
+            else if (e is TempoEvent)
+            {
+                TempoEvent tempoEvent = (TempoEvent)e;
+                TempoChangeBuilder builder = new TempoChangeBuilder();
+                // convert BPM to microseconds
+                builder.Tempo = 60000000 / tempoEvent.TempoBpm;
+                builder.Build();
+                return new MidiEvent(track, e.Tick, builder.Result);
             }
             else
             {
-                ChannelMessageBuilder b = new ChannelMessageBuilder();
-                b.MidiChannel = note.Channel;
-                b.Command = ChannelCommand.NoteOn;
-                b.Data1 = ChannelNoteToMidiPitch(note.Pitch);
-                b.Data2 = ChannelVelocityToMidiVolume(note.Velocity);
-                b.Build();
-                MidiEvent me = new MidiEvent(track, note.Tick, b.Result);
-                return me;
+                Debug.Fail("unknown event type " + e.GetType().Name);
+                return null;
             }
         }
 

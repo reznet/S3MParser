@@ -10,13 +10,17 @@ namespace S3MParser
 {
     static class NoteEventGenerator
     {
-        public static List<List<NoteEvent>> Generate(S3MFile file)
+        public static List<List<Event>> Generate(S3MFile file)
         {
             Dictionary<int, Channel> channels = new Dictionary<int, Channel>();
 
             int speed = file.InitialSpeed;
             int tick = 0;
             int rowSkip = 0;
+
+            Channel firstChannel = GetChannel(channels, 1);
+            TempoEvent tempoEvent = new TempoEvent(tick, file.InitialTempo);
+            firstChannel.AddNoteEvent(tempoEvent);
 
             foreach (var pattern in file.Patterns)
             {
@@ -46,6 +50,10 @@ namespace S3MParser
                             rowSkip = channelEvent.Data;
                             break;
                         }
+                        else if (channelEvent.Command == CommandType.SetSpeed)
+                        {
+                            speed = channelEvent.Data;
+                        }
                     }
 
                     tick += speed;
@@ -67,7 +75,7 @@ namespace S3MParser
                 }
             }
 
-            List<List<NoteEvent>> allEvents = new List<List<NoteEvent>>();
+            List<List<Event>> allEvents = new List<List<Event>>();
             foreach (var key in channels.Keys.OrderBy(i => i))
             {
                 allEvents.Add(channels[key].NoteEvents);
@@ -86,9 +94,8 @@ namespace S3MParser
 
         private static NoteEvent GenerateNoteOffEvent(Channel channel, int tick)
         {
-            NoteEvent offEvent = channel.CurrentNote.Clone();
+            NoteEvent offEvent = channel.CurrentNote.Clone(tick);
             offEvent.Type = NoteEvent.EventType.NoteOff;
-            offEvent.Tick = tick;
             channel.CurrentNote = null;
             return offEvent;
         }
@@ -107,11 +114,11 @@ namespace S3MParser
             public NoteEvent CurrentNote;
             public int Volume;
             public int Instrument;
-            public List<NoteEvent> NoteEvents = new List<NoteEvent>();
+            public List<Event> NoteEvents = new List<Event>();
 
             public bool IsPlayingNote { get { return CurrentNote != null; } }
 
-            public void AddNoteEvent(NoteEvent noteEvent)
+            public void AddNoteEvent(Event noteEvent)
             {
                 NoteEvents.Add(noteEvent);
             }

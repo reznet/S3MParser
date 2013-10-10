@@ -47,9 +47,8 @@ namespace S3MParser
                             // then start new note playing on ce.Instrument
                             if (lastNoteEvent != null && lastNoteEvent.Type == NoteEvent.EventType.NoteOn)
                             {
-                                NoteEvent offEvent = lastNoteEvent.Clone();
+                                NoteEvent offEvent = lastNoteEvent.Clone(tick);
                                 offEvent.Type = NoteEvent.EventType.NoteOff;
-                                offEvent.Tick = tick;
                                 lastNoteEvent = offEvent;
                                 yield return offEvent;
                             }
@@ -70,9 +69,8 @@ namespace S3MParser
                     {
                         if (lastNoteEvent != null && lastNoteEvent.Type == NoteEvent.EventType.NoteOn)
                         {
-                            NoteEvent offEvent = lastNoteEvent.Clone();
+                            NoteEvent offEvent = lastNoteEvent.Clone(tick);
                             offEvent.Type = NoteEvent.EventType.NoteOff;
-                            offEvent.Tick = tick;
                             lastNoteEvent = offEvent;
                             yield return offEvent;
                         }
@@ -86,9 +84,8 @@ namespace S3MParser
             }
             if (lastNoteEvent != null && lastNoteEvent.Type == NoteEvent.EventType.NoteOn)
             {
-                NoteEvent offEvent = lastNoteEvent.Clone();
+                NoteEvent offEvent = lastNoteEvent.Clone(tick);
                 offEvent.Type = NoteEvent.EventType.NoteOff;
-                offEvent.Tick = tick;
                 lastNoteEvent = offEvent;
                 yield return offEvent;
             }

@@ -22,6 +22,9 @@ namespace S3MParser
             TempoEvent tempoEvent = new TempoEvent(tick, file.InitialTempo);
             firstChannel.AddNoteEvent(tempoEvent);
 
+            TimeSignatureEvent currentTimeSignatureEvent = new TimeSignatureEvent(tick, 4, 4);
+            firstChannel.AddNoteEvent(currentTimeSignatureEvent);
+
             foreach (var order in file.Orders)
             {
                 if (order == 255)
@@ -30,10 +33,14 @@ namespace S3MParser
                 }
 
                 var pattern = file.Patterns[order];
-                foreach (var row in pattern.Rows.Skip(rowSkip))
+                int patternStartTick = tick;
+                int rowIndex = rowSkip;
+                for (; rowIndex < pattern.Rows.Count; rowIndex++)
                 {
                     rowSkip = 0;
                     bool breakPatternToRow = false;
+                    Row row = pattern.Rows[rowIndex];
+
                     foreach (var channelEvent in row.ChannelEvents)
                     {
                         Channel channel = GetChannel(channels, channelEvent.ChannelNumber);
@@ -45,7 +52,7 @@ namespace S3MParser
                             channel.AddNoteEvent(GenerateNoteOffEvent(channel, tick));
                         }
 
-                        if(channelEvent.NoteAction == NoteAction.Start)
+                        if (channelEvent.NoteAction == NoteAction.Start)
                         {
                             channel.AddNoteEvent(GenerateNoteOnEvent(channel, channelEvent, tick));
                         }
@@ -59,6 +66,7 @@ namespace S3MParser
                         {
                             breakPatternToRow = true;
                             rowSkip = channelEvent.Data;
+
                             break;
                         }
                         else if (channelEvent.Command == CommandType.SetSpeed)
@@ -71,6 +79,22 @@ namespace S3MParser
 
                     if (breakPatternToRow)
                     {
+                        // just finished last row in this pattern
+                        // because we are jumping to a new patter
+                        var modulo = (rowIndex + 1) % 32;
+                        if (modulo != 0)
+                        {
+                            // sad to say, not sure why mod 8 but divide by 16 works
+                            var m8 = (rowIndex + 1) % 8;
+                            if (m8 == 0)
+                            {
+                                firstChannel.AddNoteEvent(new TimeSignatureEvent(patternStartTick, (rowIndex + 1) / 16, 4));
+                                firstChannel.AddNoteEvent(new TimeSignatureEvent(tick, 4, 4));
+                            }
+
+                        }
+
+                        // now go to next pattern
                         break;
                     }
                 }

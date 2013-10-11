@@ -1,0 +1,4 @@
+﻿song specific notes:
+
+= v-waow =
+measures 44 and 45 should be 3/4 time

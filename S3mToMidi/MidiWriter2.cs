@@ -32,8 +32,6 @@ namespace S3MParser
 
         private static MidiEvent Convert(Event e, Track track)
         {
-            Console.Out.WriteLine(e.ToString());
-            
             if (e is NoteEvent)
             {
                 NoteEvent note = (NoteEvent)e;

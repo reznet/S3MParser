@@ -132,6 +132,7 @@ namespace S3M
                 int patternStartIndex = patternPointer * 16;
                 stream.Seek(patternStartIndex, SeekOrigin.Begin);
                 Console.Out.WriteLine("Parsing pattern {0} at {1}.", patternIndex + 1, patternStartIndex);
+                if (patternIndex + 1 == 8) { Debugger.Break(); }
                 Pattern pattern = Pattern.Read(stream, reader);
                 pattern.PatternNumber = patternIndex;
                 yield return pattern;

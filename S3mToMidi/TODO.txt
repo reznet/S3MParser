@@ -1,5 +1,4 @@
-﻿Detect and Output Time Signature Changes
-Volume changes
+﻿Volume changes
 channel volume memory
 detect and remove note echos
 triplets

@@ -1,0 +1,4 @@
+﻿v-shock
+pattern 8, row 17, SD1 isn't read correctly.
+in fact, it looks like there are huge bugs in how effects are read
+i.e. no effect is read for channel on that row

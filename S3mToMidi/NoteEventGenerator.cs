@@ -54,7 +54,22 @@ namespace S3MParser
 
                         if (channelEvent.NoteAction == NoteAction.Start)
                         {
-                            channel.AddNoteEvent(GenerateNoteOnEvent(channel, channelEvent, tick));
+                            var delay = 0;
+
+                            if (pattern.PatternNumber == 8 && channelEvent.Command != CommandType.None)
+                            {
+                                Console.WriteLine("Pattern {0} Row {1} Channel {2} {3}", pattern.PatternNumber, row.RowNumber, channelEvent.ChannelNumber, channelEvent.Command);
+                            }
+
+                            if (channelEvent.Command == CommandType.Notedelay)
+                            {
+                                if (208 <= channelEvent.Data && channelEvent.Data <= 214)  // HACK: 214 is a guess at the top range of SD commands
+                                {
+                                    delay = channelEvent.Data - 208;
+                                    Debug.Assert(delay >= 0);
+                                }
+                            }
+                            channel.AddNoteEvent(GenerateNoteOnEvent(channel, channelEvent, tick + delay));
                         }
 
                         if (channelEvent.Data != 0)

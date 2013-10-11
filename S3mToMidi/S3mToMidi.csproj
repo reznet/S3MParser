@@ -84,6 +84,7 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="bugs.txt" />
     <Content Include="notes.txt" />
     <Content Include="Standard MIDI File Structure.htm" />
     <Content Include="TODO.txt" />

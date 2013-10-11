@@ -90,8 +90,11 @@ namespace S3M
             }
             if ((first & COMMAND_FOLLOWS_MASK) == COMMAND_FOLLOWS_MASK)
             {
-                channelEvent.Command = reader.ReadByte().ToCommandType();
+                byte command = reader.ReadByte();
+                channelEvent.Command = command.ToCommandType();
                 channelEvent.Data = reader.ReadByte();
+
+                Console.WriteLine("Got command byte {0} which is command type {1} and data is {2}", command, channelEvent.Command, channelEvent.Data);
             }
 
             return channelEvent;

@@ -9,7 +9,12 @@ namespace S3M
     [DebuggerDisplay("RowNumber={RowNumber} Pattern={Pattern.PatternNumber}")]
     public class Row
     {
-        internal int RowNumber;
+        public int RowNumber
+        {
+            get;
+            internal set;
+        }
+
         internal Pattern Pattern;
 
         public List<ChannelEvent> ChannelEvents = new List<ChannelEvent>();

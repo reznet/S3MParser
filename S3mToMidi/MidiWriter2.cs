@@ -69,6 +69,17 @@ namespace S3MParser
                 builder.Build();
                 return new MidiEvent(track, e.Tick, builder.Result);
             }
+            else if (e is TimeSignatureEvent)
+            {
+                TimeSignatureEvent timeSignatureEvent = (TimeSignatureEvent)e;
+                TimeSignatureBuilder builder = new TimeSignatureBuilder();
+                builder.Numerator = (byte)timeSignatureEvent.BeatsPerBar;
+                builder.Denominator = (byte)timeSignatureEvent.BeatValue;
+                builder.ClocksPerMetronomeClick = 24;
+                builder.ThirtySecondNotesPerQuarterNote = 8;
+                builder.Build();
+                return new MidiEvent(track, e.Tick, builder.Result);
+            }
             else
             {
                 Debug.Fail("unknown event type " + e.GetType().Name);

@@ -12,6 +12,9 @@ namespace TestProject2
     /// </summary>
     [TestClass]
     [DeploymentItem("01-v-drac.s3m")]
+    [DeploymentItem("sd1.s3m")]
+    [DeploymentItem("sd.s3m")]
+    [DeploymentItem("d04.s3m")]
     public class ParserTests
     {
         private readonly string vDracFilename = "01-v-drac.s3m";
@@ -60,6 +63,27 @@ namespace TestProject2
         {
             S3MFile file = GetTestFile();
             Assert.AreEqual<int>(43, file.PatternCount);
+        }
+
+        [TestMethod]
+        public void TestNoteDelay()
+        {
+            S3MFile file = S3MFile.Parse("sd1.s3m");
+            Assert.AreEqual(CommandType.Notedelay, file.Patterns[0].Rows[0].ChannelEvents[0].Command);
+        }
+
+        [TestMethod]
+        public void TestNoteDelay1()
+        {
+            S3MFile file = S3MFile.Parse("sd.s3m");
+            Assert.AreEqual(CommandType.Notedelay, file.Patterns[0].Rows[0].ChannelEvents[0].Command);
+        }
+
+        [TestMethod]
+        public void TestVolumeSlideDown()
+        {
+            S3MFile file = S3MFile.Parse("d04.s3m");
+            Assert.AreEqual(CommandType.VolumeSlideDown, file.Patterns[0].Rows[0].ChannelEvents[0].Command);
         }
     }
 }

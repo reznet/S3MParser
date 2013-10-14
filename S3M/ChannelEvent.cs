@@ -91,13 +91,82 @@ namespace S3M
             if ((first & COMMAND_FOLLOWS_MASK) == COMMAND_FOLLOWS_MASK)
             {
                 byte command = reader.ReadByte();
+                byte data = reader.ReadByte();
+                char commandChar = (char)((int)'A' + (int)command);
+                bool commandPartInData = false;
+
+                // single argument "simple" commands (xx)
+                // A, B, C, G, T, U, V
+                //
+                // double argument simple commands (xy)
+                // H, I, J, K, L, O, Q, R, U
+                //
+                // two part command names:
+                // D0y, Dx0, DFy, DxF
+                // EFx, EEx,
+                // Fxx, FFx, FEx
+                // S0, S1, S2, S3, S4, S8
+                // SA, SB, SC, SD, SE, SF
+
+                Dictionary<char, Action<char, char, ChannelEvent>> map = new Dictionary<char, Action<char, char, ChannelEvent>>() 
+                {
+                    { 'A', ReadSingleArgumentCommand},
+                    { 'B', ReadSingleArgumentCommand},
+                    { 'C', ReadSingleArgumentCommand},
+                    { 'D', ReadDCommand},
+                    { 'E', ReadECommand},
+                    { 'F', ReadFCommand},
+                    { 'G', ReadSingleArgumentCommand},
+                    { 'H', ReadDoubleArgumentCommand},
+                    { 'I', ReadDoubleArgumentCommand},
+                    { 'J', ReadDoubleArgumentCommand},
+                    { 'K', ReadDoubleArgumentCommand},
+                    { 'L', ReadDoubleArgumentCommand},
+                    { 'M', ReadSingleArgumentCommand},
+                    { 'N', ReadSingleArgumentCommand},
+                    { 'O', ReadDoubleArgumentCommand},
+                    { 'P', ReadSingleArgumentCommand},
+                    { 'Q', ReadDoubleArgumentCommand},
+                    { 'R', ReadDoubleArgumentCommand},
+                    { 'S', ReadSCommand},
+                    { 'T', ReadSingleArgumentCommand},
+                    { 'U', ReadDoubleArgumentCommand},
+                    { 'V', ReadSingleArgumentCommand},
+                    { 'W', ReadSingleArgumentCommand},
+                    { 'X', ReadSingleArgumentCommand},
+                    { 'Y', ReadSingleArgumentCommand},
+                    { 'Z', ReadSingleArgumentCommand},
+                };
+
+                char char1 = (char)((int)'A' - 1 + (int)command);
+                char char2 = (char)((int)'A' + ((data & 0xF0) >> 6));
+                char char3 = (char)(data & 0xF);
                 channelEvent.Command = command.ToCommandType();
-                channelEvent.Data = reader.ReadByte();
 
                 Console.WriteLine("Got command byte {0} which is command type {1} and data is {2}", command, channelEvent.Command, channelEvent.Data);
             }
 
             return channelEvent;
         }
+
+        private static void ReadSingleArgumentCommand(char command, char data, ChannelEvent channelEvent)
+        { }
+
+        private static void ReadDoubleArgumentCommand(char command, char data, ChannelEvent channelEvent)
+        { }
+
+        private static void ReadDCommand(char command, char data, ChannelEvent channelEvent)
+        { }
+
+        private static void ReadECommand(char command, char data, ChannelEvent channelEvent)
+        { }
+
+        private static void ReadFCommand(char command, char data, ChannelEvent channelEvent)
+        { }
+
+        private static void ReadSCommand(char command, char data, ChannelEvent channelEvent)
+        {
+        }
     }
+
 }

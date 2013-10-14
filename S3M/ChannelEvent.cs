@@ -13,6 +13,7 @@ namespace S3M
         public int Instrument = -1;
         public int Volume = -1;
         public CommandType Command = CommandType.None;
+        public char[] CommandAndInfo;
         public int Data = -1;
         public Row Row;
         public Pattern Pattern
@@ -48,6 +49,15 @@ namespace S3M
         public bool HasInstrument
         {
             get { return Instrument > 0; }
+        }
+
+        public ChannelEvent()
+        {
+            // and empty/default command/info part of a cell is .00
+            CommandAndInfo = new char[3];
+            CommandAndInfo[0] = '.';
+            CommandAndInfo[1] = '0';
+            CommandAndInfo[2] = '0';
         }
 
         public override string ToString()
@@ -90,9 +100,28 @@ namespace S3M
             }
             if ((first & COMMAND_FOLLOWS_MASK) == COMMAND_FOLLOWS_MASK)
             {
-                byte command = reader.ReadByte();
-                byte data = reader.ReadByte();
-                char commandChar = (char)((int)'A' + (int)command);
+                byte commandByte = reader.ReadByte();
+                byte dataByte = reader.ReadByte();
+
+                if ((int)commandByte > 0)
+                {
+                    channelEvent.CommandAndInfo[0] = (char)((int)'A' - 1 + (int)commandByte);
+                    if (channelEvent.CommandAndInfo[0] == 'A')
+                    {
+                        Debugger.Break();
+                    }
+                }
+
+                if ((int)dataByte > 0)
+                {
+                    int hi = (dataByte & 0xF0) >> 6;
+                    int low = dataByte & 0xF;
+
+                    channelEvent.CommandAndInfo[1] = (char)((int)'A' + hi);
+                    channelEvent.CommandAndInfo[2] = (char)low;
+                }
+
+                char commandChar = (char)((int)'A' + (int)commandByte);
                 bool commandPartInData = false;
 
                 // single argument "simple" commands (xx)
@@ -138,12 +167,12 @@ namespace S3M
                     { 'Z', ReadSingleArgumentCommand},
                 };
 
-                char char1 = (char)((int)'A' - 1 + (int)command);
-                char char2 = (char)((int)'A' + ((data & 0xF0) >> 6));
-                char char3 = (char)(data & 0xF);
-                channelEvent.Command = command.ToCommandType();
+                char char1 = (char)((int)'A' - 1 + (int)commandByte);
+                char char2 = (char)((int)'A' + ((dataByte & 0xF0) >> 6));
+                char char3 = (char)(dataByte & 0xF);
+                channelEvent.Command = commandByte.ToCommandType();
 
-                Console.WriteLine("Got command byte {0} which is command type {1} and data is {2}", command, channelEvent.Command, channelEvent.Data);
+                Console.WriteLine("Got command byte {0} which is command type {1} and data is {2}", commandByte, channelEvent.Command, channelEvent.Data);
             }
 
             return channelEvent;

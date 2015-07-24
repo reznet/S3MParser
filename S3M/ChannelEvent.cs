@@ -170,7 +170,9 @@ namespace S3M
                 char char1 = (char)((int)'A' - 1 + (int)commandByte);
                 char char2 = (char)((int)'A' + ((dataByte & 0xF0) >> 6));
                 char char3 = (char)(dataByte & 0xF);
-                channelEvent.Command = commandByte.ToCommandType();
+                //channelEvent.Command = commandByte.ToCommandType();
+                //channelEvent.Command = map[char1](char2, char3);
+                map[char1](char2, char3, channelEvent);
 
                 Console.WriteLine("Got command byte {0} which is command type {1} and data is {2}", commandByte, channelEvent.Command, channelEvent.Data);
             }
@@ -195,6 +197,7 @@ namespace S3M
 
         private static void ReadSCommand(char command, char data, ChannelEvent channelEvent)
         {
+            Console.WriteLine("ReadSCommand");
         }
     }
 

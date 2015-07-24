@@ -21,16 +21,16 @@ namespace S3MParser
                 Track track = new Track();
                 sequence.Add(track);
                 List<Event> trackEvents = allEvents[trackIndex];
-                foreach (var midiEvent in trackEvents.Select(trackEvent => Convert(trackEvent, track)))
+                foreach (var midiEvent in trackEvents.Select(trackEvent => new { Tick = trackEvent.Tick, MidiMessage = Convert(trackEvent, track) }))
                 {
-                    track.Insert(midiEvent.AbsoluteTicks, midiEvent.MidiMessage);
+                    track.Insert(midiEvent.Tick, midiEvent.MidiMessage);
                 }
             }
 
             sequence.Save(path);
         }
 
-        private static MidiEvent Convert(Event e, Track track)
+        private static IMidiMessage Convert(Event e, Track track)
         {
             if (e is NoteEvent)
             {
@@ -43,8 +43,7 @@ namespace S3MParser
                     b.Data1 = ChannelNoteToMidiPitch(note.Pitch);
                     b.Data2 = ChannelVelocityToMidiVolume(note.Velocity);
                     b.Build();
-                    MidiEvent me = new MidiEvent(track, note.Tick, b.Result);
-                    return me;
+                    return b.Result;
                 }
                 else
                 {
@@ -54,8 +53,7 @@ namespace S3MParser
                     b.Data1 = ChannelNoteToMidiPitch(note.Pitch);
                     b.Data2 = ChannelVelocityToMidiVolume(note.Velocity);
                     b.Build();
-                    MidiEvent me = new MidiEvent(track, note.Tick, b.Result);
-                    return me;
+                    return b.Result;
                 }
             }
             else if (e is TempoEvent)
@@ -65,7 +63,7 @@ namespace S3MParser
                 // convert BPM to microseconds
                 builder.Tempo = 60000000 / tempoEvent.TempoBpm;
                 builder.Build();
-                return new MidiEvent(track, e.Tick, builder.Result);
+                return builder.Result;
             }
             else if (e is TimeSignatureEvent)
             {
@@ -76,7 +74,7 @@ namespace S3MParser
                 builder.ClocksPerMetronomeClick = 24;
                 builder.ThirtySecondNotesPerQuarterNote = 8;
                 builder.Build();
-                return new MidiEvent(track, e.Tick, builder.Result);
+                return builder.Result;
             }
             else
             {

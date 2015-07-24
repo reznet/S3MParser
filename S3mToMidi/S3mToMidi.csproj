@@ -39,6 +39,26 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Sanford.Collections, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Sanford.MidiToolkit.5.0.2\lib\net40\Sanford.Collections.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Sanford.Multimedia, Version=6.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Sanford.MidiToolkit.5.0.2\lib\net40\Sanford.Multimedia.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Sanford.Multimedia.Midi, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Sanford.MidiToolkit.5.0.2\lib\net40\Sanford.Multimedia.Midi.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Sanford.Multimedia.Timers, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Sanford.MidiToolkit.5.0.2\lib\net40\Sanford.Multimedia.Timers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Sanford.Threading, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Sanford.MidiToolkit.5.0.2\lib\net40\Sanford.Threading.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -58,7 +78,6 @@
     <Compile Include="ChannelEventConverter.cs" />
     <Compile Include="ChannelSettings.cs" />
     <Compile Include="Event.cs" />
-    <Compile Include="MidiWriter.cs" />
     <Compile Include="MidiWriter2.cs" />
     <Compile Include="MusicXmlWriter.cs" />
     <Compile Include="Note.cs" />
@@ -75,13 +94,10 @@
       <Project>{239b2ee3-f259-4a88-8797-5786e0ecb197}</Project>
       <Name>S3M</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Sanford.Multimedia.Midi\Sanford.Multimedia.Midi.csproj">
-      <Project>{4269C72A-8D3A-4737-8F89-72EAA33EA9E1}</Project>
-      <Name>Sanford.Multimedia.Midi</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bugs.txt" />

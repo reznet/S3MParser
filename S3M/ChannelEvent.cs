@@ -198,6 +198,13 @@ namespace S3M
         private static void ReadSCommand(char command, char data, ChannelEvent channelEvent)
         {
             Console.WriteLine("ReadSCommand");
+            switch(command)
+            {
+                case 'D':
+                    channelEvent.Command = CommandType.Notedelay;
+                    channelEvent.Data = data;
+                    break;
+            }
         }
     }
 

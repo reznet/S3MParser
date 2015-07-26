@@ -172,9 +172,17 @@ namespace S3M
                 char char3 = (char)(dataByte & 0xF);
                 //channelEvent.Command = commandByte.ToCommandType();
                 //channelEvent.Command = map[char1](char2, char3);
-                map[char1](char2, char3, channelEvent);
+                if (map.ContainsKey(char1))
+                {
+                    map[char1](char2, char3, channelEvent);
+                    Console.WriteLine("Got command byte {0} which is command type {1} and data is {2}", commandByte, channelEvent.Command, channelEvent.Data);
+                }
+                else
+                {
+                    Debug.Fail(string.Format("Unrecognized command {0}", char1));
+                }
 
-                Console.WriteLine("Got command byte {0} which is command type {1} and data is {2}", commandByte, channelEvent.Command, channelEvent.Data);
+                
             }
 
             return channelEvent;
@@ -198,12 +206,30 @@ namespace S3M
         private static void ReadSCommand(char command, char data, ChannelEvent channelEvent)
         {
             Console.WriteLine("ReadSCommand");
-            switch(command)
+            var map = new Dictionary<char, CommandType>
             {
-                case 'D':
-                    channelEvent.Command = CommandType.Notedelay;
-                    channelEvent.Data = data;
-                    break;
+                { '0', CommandType.SetFilter },
+                { '1', CommandType.SetGlissando },
+                { '2', CommandType.SetFinetune },
+                { '3', CommandType.SetVibratoWaveform },
+                { '4', CommandType.SetTremoloWaveform },
+                { '8', CommandType.SetChannelPan },
+                { 'A', CommandType.StereoControl },
+                { 'B', CommandType.PatternLoop },
+                { 'C', CommandType.Notecut },
+                { 'D', CommandType.Notedelay },
+                { 'E', CommandType.PatternDelay },
+                { 'F', CommandType.FunkRepeat },
+            };
+
+            if( map.ContainsKey(command))
+            {
+                channelEvent.Command = map[command];
+                channelEvent.Data = data;
+            }
+            else
+            {
+                Debug.Fail(String.Format("Unrecognized S command {0}", command));
             }
         }
     }

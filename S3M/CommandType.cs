@@ -8,9 +8,9 @@ namespace S3M
     public enum CommandType
     {
         None,
-        SetSpeed,						// Axx		Set speed to xx (the default is 06)
-        JumpToOrder,					// Bxx		Jump to order xx (hexadecimal)
-        BreakPatternToRow,				// Cxx		Break pattern to row xx (decimal)
+        SetSpeed,						// Axx	   Set speed to xx (the default is 06)
+        JumpToOrder,					// Bxx	   Jump to order xx (hexadecimal)
+        BreakPatternToRow,				// Cxx	   Break pattern to row xx (decimal)
         VolumeSlideDown,				// D0y     Volume slide down by y
         VolumeSlideUp,					// Dx0     Volume slide up by x
         FineVolumeSlideDown,			// DFy     Fine volume down by y
@@ -48,11 +48,37 @@ namespace S3M
         SetGlobalVolume 				// Vxx     Set global volume Accepted values are 0 to 40.
     }
 
-    public static class CommandTypeExtensions
+    public class CommandAndInfo
     {
-        public static CommandType ToCommandType(this byte value)
+        public CommandType Commmand { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+
+        public static CommandAndInfo Create(byte command, byte info)
         {
-            return (CommandType)value;
+            char first = command.ToString("X")[0];
+            int hi = (info & 0xF0) >> 4;
+            int low = info & 0xF;
+            char second = hi.ToString("X")[0];
+            char third = low.ToString("X")[0];
+
+            CommandType type = CommandType.None;
+            int x = 0;
+            int y = 0;
+
+            switch(first)
+            {
+                case 'A':
+                    type = CommandType.SetSpeed;
+                    x = info;
+                    break;
+                case 'B':
+                    type = CommandType.JumpToOrder;
+                    x = info;
+                    break;
+            }
+
+            return new CommandAndInfo() { Commmand = type, X = x, Y = y };
         }
     }
 }

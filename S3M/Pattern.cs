@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -105,12 +106,18 @@ namespace S3M
             int patternLength = reader.ReadBytesAsInt(2);
             Console.Out.WriteLine("pattern is {0} long.", patternLength);
 
-            for (int i = 0; i < 64; i++)
+            byte[] packedPatternBytes = reader.ReadBytes(patternLength);
+
+            using (var packedPatternStream = new MemoryStream(packedPatternBytes))
+            using (var packedPatternReader = new BinaryReader(packedPatternStream))
             {
-                Row row = Row.Parse(stream, reader);
-                row.RowNumber = i+1;
-                row.Pattern = pattern;
-                pattern.Rows.Add(row);
+                for (int i = 0; i < 64; i++)
+                {
+                    Row row = Row.Parse(packedPatternStream, packedPatternReader);
+                    row.RowNumber = i + 1;
+                    row.Pattern = pattern;
+                    pattern.Rows.Add(row);
+                }
             }
 
             

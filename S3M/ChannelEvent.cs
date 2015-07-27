@@ -139,6 +139,7 @@ namespace S3M
 
                 Dictionary<char, Action<char, char, ChannelEvent>> map = new Dictionary<char, Action<char, char, ChannelEvent>>() 
                 {
+                    { '@', IgnoreCommand },
                     { 'A', ReadSingleArgumentCommand},
                     { 'B', ReadSingleArgumentCommand},
                     { 'C', ReadSingleArgumentCommand},
@@ -187,6 +188,9 @@ namespace S3M
 
             return channelEvent;
         }
+
+        private static void IgnoreCommand(char command, char data, ChannelEvent channelEvent)
+        { }
 
         private static void ReadSingleArgumentCommand(char command, char data, ChannelEvent channelEvent)
         { }

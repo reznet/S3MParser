@@ -13,7 +13,6 @@ namespace S3M
         public int Instrument = -1;
         public int Volume = -1;
         public CommandType Command = CommandType.None;
-        public char[] CommandAndInfo;
         public int Data = -1;
         public Row Row;
         public Pattern Pattern
@@ -49,15 +48,6 @@ namespace S3M
         public bool HasInstrument
         {
             get { return Instrument > 0; }
-        }
-
-        public ChannelEvent()
-        {
-            // and empty/default command/info part of a cell is .00
-            CommandAndInfo = new char[3];
-            CommandAndInfo[0] = '.';
-            CommandAndInfo[1] = '0';
-            CommandAndInfo[2] = '0';
         }
 
         public override string ToString()
@@ -100,42 +90,55 @@ namespace S3M
             }
             if ((first & COMMAND_FOLLOWS_MASK) == COMMAND_FOLLOWS_MASK)
             {
+                // given the effect ABC
+                // command byte is the decimal value of the first hex character in the command columns
+                // e.g. A => 10
                 byte commandByte = reader.ReadByte();
+
+                // databyte is the decimal value of the last two hex characters in the command columns
+                // e.g. BC => 118
                 byte dataByte = reader.ReadByte();
 
-                if ((int)commandByte > 0)
-                {
-                    channelEvent.CommandAndInfo[0] = (char)((int)'A' - 1 + (int)commandByte);
-                    if (channelEvent.CommandAndInfo[0] == 'A')
-                    {
-                        Debugger.Break();
-                    }
-                }
+                // hi and low are the decimal values of the last two hex characters
+                // e.g. B => 11, C = 12
+                // low comes before first
+                // e.g. B = low, C = high
+                // TODO are these backwards?
+                int hi = (dataByte & 0xF0) >> 4;
+                int low = dataByte & 0xF;
 
-                if ((int)dataByte > 0)
-                {
-                    int hi = (dataByte & 0xF0) >> 6;
-                    int low = dataByte & 0xF;
-
-                    channelEvent.CommandAndInfo[1] = (char)((int)'A' + hi);
-                    channelEvent.CommandAndInfo[2] = (char)low;
-                }
-
-                char commandChar = (char)((int)'A' + (int)commandByte);
-                bool commandPartInData = false;
+                // commandChar is the first hex character of the command columns
+                // e.g. A in the command ABC
+                // 0 is @, 1 is A, 2 is B, ...
+                char commandChar = (char)((int)'A' - 1 + (int)commandByte);
 
                 // single argument "simple" commands (xx)
+                // use dataByte as the argument to the command
                 // A, B, C, G, T, U, V
                 //
                 // double argument simple commands (xy)
                 // H, I, J, K, L, O, Q, R, U
                 //
                 // two part command names:
+                // look at hi and low to determine which command it is
                 // D0y, Dx0, DFy, DxF
                 // EFx, EEx,
                 // Fxx, FFx, FEx
                 // S0, S1, S2, S3, S4, S8
                 // SA, SB, SC, SD, SE, SF
+
+                // default to channel event data equaling the command data
+                // commands with two part names will update this
+                channelEvent.Data = dataByte;
+
+                switch((char)commandByte)
+                {
+                    case 'A':
+                        channelEvent.Command = CommandType.SetSpeed;
+                        break;
+                    
+
+                }
 
                 Dictionary<char, Action<char, char, ChannelEvent>> map = new Dictionary<char, Action<char, char, ChannelEvent>>() 
                 {
@@ -171,6 +174,15 @@ namespace S3M
                 char char1 = (char)((int)'A' - 1 + (int)commandByte);
                 char char2 = (char)((int)'A' + ((dataByte & 0xF0) >> 6));
                 char char3 = (char)(dataByte & 0xF);
+
+                switch(char1)
+                {
+                    case 'A':
+                        channelEvent.Command = CommandType.SetSpeed;
+                        channelEvent.Data = Convert.ToInt32(new string(new char[] { char2, char3 }), 16);
+                        break;
+                }
+
                 //channelEvent.Command = commandByte.ToCommandType();
                 //channelEvent.Command = map[char1](char2, char3);
                 if (map.ContainsKey(char1))

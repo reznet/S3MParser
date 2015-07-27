@@ -53,6 +53,7 @@
     <Compile Include="ParserTests.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
+    <Compile Include="CommandAndInfoTests.cs" />
     <Compile Include="UnpackTests.cs" />
   </ItemGroup>
   <ItemGroup>

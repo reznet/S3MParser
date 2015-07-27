@@ -14,7 +14,7 @@ namespace S3MParser
     {
         static void Main(string[] args)
         {
-            string filename = "v-shock.S3M";
+            string filename = args[0];
             S3MFile file = S3MFile.Parse(filename);
 
             MidiWriter2.Save(NoteEventGenerator.Generate(file).Take(3).ToList(), Path.ChangeExtension(filename, ".mid"));

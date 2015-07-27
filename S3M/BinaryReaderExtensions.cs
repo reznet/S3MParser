@@ -35,17 +35,17 @@ namespace S3M
             return Convert.ToInt32(value);
         }
 
-        public static int ReadShortAsInt(this BinaryReader reader)
+        private static int ReadShortAsInt(this BinaryReader reader)
         {
             byte[] data = reader.ReadBytes(2);
             int byte0 = Convert.ToInt32(data[0]);
             int byte1 = Convert.ToInt32(data[1]);
 
-            int value = byte0 << 4 | byte1;
+            int value = byte1 << 4 | byte0;
             return value;
         }
 
-        public static int ReadLongAsInt(BinaryReader reader)
+        private static int ReadLongAsInt(BinaryReader reader)
         {
             byte[] data = reader.ReadBytes(4);
             int byte0 = Convert.ToInt32(data[0]);

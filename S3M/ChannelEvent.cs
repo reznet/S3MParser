@@ -131,93 +131,13 @@ namespace S3M
                 // commands with two part names will update this
                 channelEvent.Data = dataByte;
 
-                switch((char)commandByte)
-                {
-                    case 'A':
-                        channelEvent.Command = CommandType.SetSpeed;
-                        break;
-                    
-
-                }
-
-                Dictionary<char, Action<char, char, ChannelEvent>> map = new Dictionary<char, Action<char, char, ChannelEvent>>() 
-                {
-                    { '@', IgnoreCommand },
-                    { 'A', ReadSingleArgumentCommand},
-                    { 'B', ReadSingleArgumentCommand},
-                    { 'C', ReadSingleArgumentCommand},
-                    { 'D', ReadDCommand},
-                    { 'E', ReadECommand},
-                    { 'F', ReadFCommand},
-                    { 'G', ReadSingleArgumentCommand},
-                    { 'H', ReadDoubleArgumentCommand},
-                    { 'I', ReadDoubleArgumentCommand},
-                    { 'J', ReadDoubleArgumentCommand},
-                    { 'K', ReadDoubleArgumentCommand},
-                    { 'L', ReadDoubleArgumentCommand},
-                    { 'M', ReadSingleArgumentCommand},
-                    { 'N', ReadSingleArgumentCommand},
-                    { 'O', ReadDoubleArgumentCommand},
-                    { 'P', ReadSingleArgumentCommand},
-                    { 'Q', ReadDoubleArgumentCommand},
-                    { 'R', ReadDoubleArgumentCommand},
-                    { 'S', ReadSCommand},
-                    { 'T', ReadSingleArgumentCommand},
-                    { 'U', ReadDoubleArgumentCommand},
-                    { 'V', ReadSingleArgumentCommand},
-                    { 'W', ReadSingleArgumentCommand},
-                    { 'X', ReadSingleArgumentCommand},
-                    { 'Y', ReadSingleArgumentCommand},
-                    { 'Z', ReadSingleArgumentCommand},
-                };
-
-                char char1 = (char)((int)'A' - 1 + (int)commandByte);
-                char char2 = (char)((int)'A' + ((dataByte & 0xF0) >> 6));
-                char char3 = (char)(dataByte & 0xF);
-
-                switch(char1)
-                {
-                    case 'A':
-                        channelEvent.Command = CommandType.SetSpeed;
-                        channelEvent.Data = Convert.ToInt32(new string(new char[] { char2, char3 }), 16);
-                        break;
-                }
-
-                //channelEvent.Command = commandByte.ToCommandType();
-                //channelEvent.Command = map[char1](char2, char3);
-                if (map.ContainsKey(char1))
-                {
-                    map[char1](char2, char3, channelEvent);
-                    Console.WriteLine("Got command byte {0} which is command type {1} and data is {2}", commandByte, channelEvent.Command, channelEvent.Data);
-                }
-                else
-                {
-                    Debug.Fail(string.Format("Unrecognized command {0}", char1));
-                }
-
-                
+                var commandAndInfo = CommandAndInfo.Create(commandByte, dataByte);
+                channelEvent.Command = commandAndInfo.Commmand;
+                channelEvent.Data = commandAndInfo.X;
             }
 
             return channelEvent;
         }
-
-        private static void IgnoreCommand(char command, char data, ChannelEvent channelEvent)
-        { }
-
-        private static void ReadSingleArgumentCommand(char command, char data, ChannelEvent channelEvent)
-        { }
-
-        private static void ReadDoubleArgumentCommand(char command, char data, ChannelEvent channelEvent)
-        { }
-
-        private static void ReadDCommand(char command, char data, ChannelEvent channelEvent)
-        { }
-
-        private static void ReadECommand(char command, char data, ChannelEvent channelEvent)
-        { }
-
-        private static void ReadFCommand(char command, char data, ChannelEvent channelEvent)
-        { }
 
         private static void ReadSCommand(char command, char data, ChannelEvent channelEvent)
         {

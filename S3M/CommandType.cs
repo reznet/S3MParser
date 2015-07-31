@@ -58,7 +58,7 @@ namespace S3M
 
         public static CommandAndInfo Create(byte command, byte info)
         {
-            char first = command.ToString("X")[0];
+            char first = (char)('A' - 1 + command);
             int hi = (info & 0xF0) >> 4;
             int low = info & 0xF;
             char second = hi.ToString("X")[0];

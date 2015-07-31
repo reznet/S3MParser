@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -30,7 +31,8 @@ namespace S3M
         SetSampleOffset,				// Oxy     Set sample offset
         RetriggerWithVolumeSlide,		// Qxy     Retrig (+volumeslide) note
         TremoloWithSpeed,				// Rxy     Tremolo with speed x and depth y
-        FineVibratoWithSpeedAndDepth,	// Uxy     Fine Vibrato with speed x and depth y
+        // Note: the ST3 manual lists Uxy as a command, but it clashes with Uxx and Uxy appears to actually be an IT (ImpulseTracker) command
+        //FineVibratoWithSpeedAndDepth,	// Uxy     Fine Vibrato with speed x and depth y
         SetFilter,						// S0x     Set filter
         SetGlissando,					// S1x     Set glissando control
         SetFinetune,					// S2x     Set finetune (=C4Spd)
@@ -75,6 +77,95 @@ namespace S3M
                 case 'B':
                     type = CommandType.JumpToOrder;
                     x = info;
+                    break;
+                case 'C':
+                    type = CommandType.BreakPatternToRow;
+                    x = info;
+                    break;
+                case 'D':
+                    switch (hi)
+                    {
+                        case 0: // F0x
+                            type = CommandType.VolumeSlideDown;
+                            y = low;
+                            break;
+                        case 16: // DFy
+                            type = CommandType.FineVolumeSlideDown;
+                            y = low;
+                            break;
+                        default: // Dx0
+                            type = CommandType.FineVolumeSlideUp;
+                            x = hi;
+                            break;
+                    }
+                    break;
+                case 'E':
+                    Debug.Fail("TODO - handle E commands");
+                    break;
+                case 'F':
+                    Debug.Fail("TODO - handle F commands");
+                    break;
+                case 'G':
+                    type = CommandType.TonePortamento;
+                    x = info;
+                    break;
+                case 'H':
+                    type = CommandType.Vibrato;
+                    x = hi;
+                    y = low;
+                    break;
+                case 'I':
+                    type = CommandType.Tremelo;
+                    x = hi;
+                    y = low;
+                    break;
+                case 'J':
+                    type = CommandType.Arpeggio;
+                    x = hi;
+                    y = low;
+                    break;
+                case 'K':
+                    type = CommandType.VibratoAndVolumeSlide;
+                    x = hi;
+                    y = low;
+                    break;
+                case 'L':
+                    type = CommandType.TonePortamentoAndVolumeSlide;
+                    x = hi;
+                    y = low;
+                    break;
+                case 'O':
+                    type = CommandType.SetSampleOffset;
+                    x = hi;
+                    y = low;
+                    break;
+                case 'Q':
+                    type = CommandType.RetriggerWithVolumeSlide;
+                    x = hi;
+                    y = low;
+                    break;
+                case 'R':
+                    type = CommandType.TremoloWithSpeed;
+                    x = hi;
+                    y = low;
+                    break;
+                case 'S':
+                    Debug.Fail("TODO - handle S commands");
+                    break;
+                case 'T':
+                    type = CommandType.SetTempo;
+                    x = info;
+                    break;
+                case 'U':
+                    type = CommandType.FineVibrato;
+                    x = info;
+                    break;
+                case 'V':
+                    type = CommandType.SetGlobalVolume;
+                    x = info;
+                    break;
+                default:
+                    Debug.Fail(string.Format("Unrecognized command {0}", first));
                     break;
             }
 

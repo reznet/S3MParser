@@ -138,36 +138,6 @@ namespace S3M
 
             return channelEvent;
         }
-
-        private static void ReadSCommand(char command, char data, ChannelEvent channelEvent)
-        {
-            Console.WriteLine("ReadSCommand");
-            var map = new Dictionary<char, CommandType>
-            {
-                { '0', CommandType.SetFilter },
-                { '1', CommandType.SetGlissando },
-                { '2', CommandType.SetFinetune },
-                { '3', CommandType.SetVibratoWaveform },
-                { '4', CommandType.SetTremoloWaveform },
-                { '8', CommandType.SetChannelPan },
-                { 'A', CommandType.StereoControl },
-                { 'B', CommandType.PatternLoop },
-                { 'C', CommandType.Notecut },
-                { 'D', CommandType.Notedelay },
-                { 'E', CommandType.PatternDelay },
-                { 'F', CommandType.FunkRepeat },
-            };
-
-            if( map.ContainsKey(command))
-            {
-                channelEvent.Command = map[command];
-                channelEvent.Data = data;
-            }
-            else
-            {
-                Debug.Fail(String.Format("Unrecognized S command {0}", command));
-            }
-        }
     }
 
 }

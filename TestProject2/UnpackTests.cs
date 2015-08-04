@@ -29,25 +29,25 @@ namespace TestProject2
         [TestMethod]
         public void ReadLongAsIntWithFirstByteSet()
         {
-            ReadBytesAndAssertExpected(new[] { (byte)1, (byte)0, (byte)0, (byte)0 }, 1);
+            ReadBytesAndAssertExpected(new[] { (byte)1, (byte)0, (byte)0, (byte)0 }, 1 << 4);
         }
 
         [TestMethod]
         public void ReadLongAsIntWithSecondByteSet()
         {
-            ReadBytesAndAssertExpected(new[] { (byte)0, (byte)1, (byte)0, (byte)0 }, 1);
+            ReadBytesAndAssertExpected(new[] { (byte)0, (byte)1, (byte)0, (byte)0 }, 1 << 0);
         }
 
         [TestMethod]
         public void ReadLongAsIntWithThirdByteSet()
         {
-            ReadBytesAndAssertExpected(new[] { (byte)0, (byte)0, (byte)1, (byte)0 }, 1);
+            ReadBytesAndAssertExpected(new[] { (byte)0, (byte)0, (byte)1, (byte)0 }, 1 << 12);
         }
 
         [TestMethod]
         public void ReadLongAsIntWithFourthByteSet()
         {
-            ReadBytesAndAssertExpected(new[] { (byte)0, (byte)0, (byte)0, (byte)1 }, 1);
+            ReadBytesAndAssertExpected(new[] { (byte)0, (byte)0, (byte)0, (byte)1 }, 1 << 8);
         }
 
         private void ReadBytesAndAssertExpected(byte[] bytes, int expected)

@@ -117,7 +117,13 @@ namespace S3M
                     }
                     break;
                 case 'F':
-                    Debug.Fail("TODO - handle F commands");
+                    switch(hi)
+                    {
+                        case 0xF: // FFx
+                            type = CommandType.FinePitchSlideUp;
+                            x = low;
+                            break;
+                    }
                     break;
                 case 'G':
                     type = CommandType.TonePortamento;

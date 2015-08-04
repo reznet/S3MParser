@@ -70,6 +70,11 @@ namespace S3M
 
             switch(first)
             {
+                case '@':
+                    type = CommandType.None;
+                    x = hi;
+                    y = low;
+                    break;
                 case 'A':
                     type = CommandType.SetSpeed;
                     x = info;

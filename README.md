@@ -17,6 +17,7 @@ Since the program was originally written to aid in education, it does not suppor
 * Drum channels are treated like pitched instruments, which produces a very distracting noise when the MIDI file is played back.  It turns out that virt typically dedicates a channel to drum parts, and so I hardcoded the exe to skip those channels.
 * Some time changes are not handled correctly
 * The triangle channel can overpower the rest of the channels at playback.  The triangle wave is typically played at full volume, which is normally fine in a chiptune.  But because all instruments are mapped to Piano, the triangle wave's part, which is typically the bass line, can sound way too loud relative to the other parts.
+* Doubled Parts - Virt uses a chiptune technique where a waveform is triggered and then immediately followed by another waveform of a different duty cycle.  This makes the instrument sound richer than a simple sine or pulse wave, but because all instruments are mapped to Piano, causes double attacks for these parts, and causes doubled notes in the visual score, which makes it harder to reason over the parts.  It's hard to know what to do in the general case, but I've had success hardcoding the exe to either ignore or merge these doubled parts into a single part.
 
 [Song Specific Notes](./S3mToMidi/notes.txt)
 

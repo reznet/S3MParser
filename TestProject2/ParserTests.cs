@@ -76,7 +76,21 @@ namespace TestProject2
         public void TestNoteDelay1()
         {
             S3MFile file = S3MFile.Parse("sd.s3m");
-            Assert.AreEqual(CommandType.Notedelay, file.Patterns[0].Rows[0].ChannelEvents[0].Command);
+            Row row = null;
+
+            // .00
+            row = file.Patterns[0].Rows[0];
+            Assert.AreEqual(CommandType.None, row.ChannelEvents[0].Command);
+
+            // SD1
+            row = file.Patterns[0].Rows[1];
+            Assert.AreEqual(CommandType.Notedelay, row.ChannelEvents[0].Command);
+            Assert.AreEqual(1, row.ChannelEvents[0].Data);
+
+            // SD2
+            row = file.Patterns[0].Rows[2];
+            Assert.AreEqual(CommandType.Notedelay, row.ChannelEvents[0].Command);
+            Assert.AreEqual(2, row.ChannelEvents[0].Data);
         }
 
         [TestMethod]

@@ -20,6 +20,24 @@ namespace TestProject2
             CreateAndVerify("BAA", CommandType.JumpToOrder, 170, 0);
         }
 
+        [TestMethod]
+        public void EFx()
+        {
+            CreateAndVerify("EF1", CommandType.FinePitchSlideDown, 1, 0);
+        }
+
+        [TestMethod]
+        public void EEx()
+        {
+            CreateAndVerify("EE1", CommandType.ExtraFinePitchSlideDown, 1, 0);
+        }
+
+        [TestMethod]
+        public void Exx()
+        {
+            CreateAndVerify("EAB", CommandType.PitchSlideDown, 171, 0);
+        }
+
         private static void CreateAndVerify(string commandAndInfo, CommandType expectedCommand, int expectedX, int expectedY)
         {
             var result = CreateCommandAndInfo(commandAndInfo);
@@ -31,7 +49,7 @@ namespace TestProject2
 
         private static CommandAndInfo CreateCommandAndInfo(string commandAndInfo)
         {
-            return CommandAndInfo.Create(byte.Parse(commandAndInfo.Substring(0, 1), NumberStyles.HexNumber), byte.Parse(commandAndInfo.Substring(1), NumberStyles.HexNumber));
+            return CommandAndInfo.Create((byte)(commandAndInfo[0] - 'A' + 1), byte.Parse(commandAndInfo.Substring(1), NumberStyles.HexNumber));
         }
     }
 }

@@ -123,6 +123,10 @@ namespace S3M
                             type = CommandType.FinePitchSlideUp;
                             x = low;
                             break;
+                        case 0xE: // FEx
+                            type = CommandType.ExtraFinePitchSlideUp;
+                            x = low;
+                            break;
                     }
                     break;
                 case 'G':

@@ -100,7 +100,21 @@ namespace S3M
                     }
                     break;
                 case 'E':
-                    Debug.Fail("TODO - handle E commands");
+                    switch(hi)
+                    {
+                        case 0xF: // EFx
+                            type = CommandType.FinePitchSlideDown;
+                            x = low;
+                            break;
+                        case 0xE: // EEx
+                            type = CommandType.ExtraFinePitchSlideDown;
+                            x = low;
+                            break;
+                        default: // Exx
+                            type = CommandType.PitchSlideDown;
+                            x = info;
+                            break;
+                    }
                     break;
                 case 'F':
                     Debug.Fail("TODO - handle F commands");

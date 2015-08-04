@@ -11,13 +11,13 @@ namespace TestProject2
         [TestMethod]
         public void Axx()
         {
-            CreateAndVerify("A10", CommandType.SetSpeed, 16, 0);
+            CreateAndVerify("A10", CommandType.SetSpeed, 0x10, 0);
         }
 
         [TestMethod]
         public void Bxx()
         {
-            CreateAndVerify("BAA", CommandType.JumpToOrder, 170, 0);
+            CreateAndVerify("BAA", CommandType.JumpToOrder, 0xAA, 0);
         }
 
         [TestMethod]
@@ -35,7 +35,7 @@ namespace TestProject2
         [TestMethod]
         public void Exx()
         {
-            CreateAndVerify("EAB", CommandType.PitchSlideDown, 171, 0);
+            CreateAndVerify("EAB", CommandType.PitchSlideDown, 0xAB, 0);
         }
 
         [TestMethod]

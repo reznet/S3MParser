@@ -101,26 +101,18 @@ namespace S3M
         internal static Pattern Read(System.IO.Stream stream, System.IO.BinaryReader reader)
         {
             Pattern pattern = new Pattern();
-            //int patternLength = S3MFile.ReadParapointer(reader);
-            Console.Out.WriteLine("Beginning to read pattern at " + ((System.IO.FileStream)reader.BaseStream).Position);
-            int patternLength = reader.ReadBytesAsInt(2);
-            Console.Out.WriteLine("pattern is {0} long.", patternLength);
 
-            byte[] packedPatternBytes = reader.ReadBytes(patternLength);
+            // ignore the pattern length bytes because some trackers write the wrong value, so it cannot be trusted
+            // instead, read until either EOF or the 64th row is read
+            reader.ReadBytesAsInt(2);
 
-            using (var packedPatternStream = new MemoryStream(packedPatternBytes))
-            using (var packedPatternReader = new BinaryReader(packedPatternStream))
+            for (int i = 0; i < 64; i++)
             {
-                for (int i = 0; i < 64; i++)
-                {
-                    Row row = Row.Parse(packedPatternStream, packedPatternReader);
-                    row.RowNumber = i + 1;
-                    row.Pattern = pattern;
-                    pattern.Rows.Add(row);
-                }
+                Row row = Row.Parse(reader);
+                row.RowNumber = i;
+                row.Pattern = pattern;
+                pattern.Rows.Add(row);
             }
-
-            
 
             return pattern;
         }

@@ -68,7 +68,7 @@ namespace S3M
         private const byte VOLUME_FOLLOWS_MASK = 1 << 6;            // 0x01000000;
         private const byte COMMAND_FOLLOWS_MASK = 1 << 7;           // 0x10000000;
 
-        internal static ChannelEvent Parse(System.IO.Stream stream, System.IO.BinaryReader reader)
+        internal static ChannelEvent Parse(System.IO.BinaryReader reader)
         {
             ChannelEvent channelEvent = new ChannelEvent();
             byte first = reader.ReadByte();

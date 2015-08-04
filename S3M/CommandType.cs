@@ -127,6 +127,10 @@ namespace S3M
                             type = CommandType.ExtraFinePitchSlideUp;
                             x = low;
                             break;
+                        default: // Fxx
+                            type = CommandType.PitchSlideUp;
+                            x = info;
+                            break;
                     }
                     break;
                 case 'G':

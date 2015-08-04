@@ -20,3 +20,5 @@ Some time changes are not handled correctly
 [Song Specific Notes](./S3mToMidi/notes.txt)
 
 [TODO](./S3mToMidi/TODO.txt)
+
+[Bugs](./S3mToMidi/bugs.txt)

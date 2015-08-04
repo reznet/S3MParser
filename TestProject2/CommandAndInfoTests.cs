@@ -38,6 +38,12 @@ namespace TestProject2
             CreateAndVerify("EAB", CommandType.PitchSlideDown, 171, 0);
         }
 
+        [TestMethod]
+        public void FFx()
+        {
+            CreateAndVerify("FF1", CommandType.FinePitchSlideUp, 1, 0);
+        }
+
         private static void CreateAndVerify(string commandAndInfo, CommandType expectedCommand, int expectedX, int expectedY)
         {
             var result = CreateCommandAndInfo(commandAndInfo);

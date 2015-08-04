@@ -9,6 +9,12 @@ namespace TestProject2
     public class CommandAndInfoTests
     {
         [TestMethod]
+        public void EmptyEffectLetter()
+        {
+            CreateAndVerify("@AB", CommandType.None, 0xA, 0xB);
+        }
+
+        [TestMethod]
         public void Axx()
         {
             CreateAndVerify("A10", CommandType.SetSpeed, 0x10, 0);

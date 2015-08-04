@@ -44,6 +44,12 @@ namespace TestProject2
             CreateAndVerify("FF1", CommandType.FinePitchSlideUp, 1, 0);
         }
 
+        [TestMethod]
+        public void FEx()
+        {
+            CreateAndVerify("FE1", CommandType.ExtraFinePitchSlideUp, 1, 0);
+        }
+
         private static void CreateAndVerify(string commandAndInfo, CommandType expectedCommand, int expectedX, int expectedY)
         {
             var result = CreateCommandAndInfo(commandAndInfo);

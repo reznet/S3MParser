@@ -150,7 +150,15 @@ namespace S3M
                     y = low;
                     break;
                 case 'S':
-                    Debug.Fail("TODO - handle S commands");
+                    if(s_SEffects.ContainsKey(second))
+                    {
+                        type = s_SEffects[second];
+                        x = low;
+                    }
+                    else
+                    {
+                        Debug.Fail(string.Format("Unrecognized S effect {0}", second));
+                    }
                     break;
                 case 'T':
                     type = CommandType.SetTempo;
@@ -170,6 +178,27 @@ namespace S3M
             }
 
             return new CommandAndInfo() { Commmand = type, X = x, Y = y };
+        }
+
+        private static Dictionary<char, CommandType> s_SEffects;
+
+        static CommandAndInfo()
+        {
+            s_SEffects = new Dictionary<char, CommandType>
+            {
+                { '0', CommandType.SetFilter },
+                { '1', CommandType.SetGlissando },
+                { '2', CommandType.SetFinetune },
+                { '3', CommandType.SetVibratoWaveform },
+                { '4', CommandType.SetTremoloWaveform },
+                { '8', CommandType.SetChannelPan },
+                { 'A', CommandType.StereoControl },
+                { 'B', CommandType.PatternLoop },
+                { 'C', CommandType.Notecut },
+                { 'D', CommandType.Notedelay },
+                { 'E', CommandType.PatternDelay },
+                { 'F', CommandType.FunkRepeat },
+            };
         }
     }
 }

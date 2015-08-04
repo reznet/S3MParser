@@ -17,7 +17,7 @@ namespace S3MParser
             string filename = args[0];
             S3MFile file = S3MFile.Parse(filename);
 
-            MidiWriter2.Save(NoteEventGenerator.Generate(file).Take(3).ToList(), Path.ChangeExtension(filename, ".mid"));
+            MidiWriter2.Save(NoteEventGenerator.Generate(file).Take(3).ToList(), Path.GetFileName(Path.ChangeExtension(filename, ".mid")));
         }
     }
 }

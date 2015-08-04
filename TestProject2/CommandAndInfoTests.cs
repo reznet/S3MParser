@@ -50,6 +50,12 @@ namespace TestProject2
             CreateAndVerify("FE1", CommandType.ExtraFinePitchSlideUp, 1, 0);
         }
 
+        [TestMethod]
+        public void Fxx()
+        {
+            CreateAndVerify("FBA", CommandType.PitchSlideUp, 0xBA, 0);
+        }
+
         private static void CreateAndVerify(string commandAndInfo, CommandType expectedCommand, int expectedX, int expectedY)
         {
             var result = CreateCommandAndInfo(commandAndInfo);

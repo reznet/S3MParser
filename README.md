@@ -16,5 +16,7 @@ Since the program was originally written to aid in education, it does not suppor
 # Known issues
 Drum channels are treated like pitched instruments, which produces a very distracting noise when the MIDI file is played back.  It turns out that virt typically dedicates a channel to drum parts, and so I hardcoded the exe to skip those channels.
 Some time changes are not handled correctly
- [Song Specific Notes](./S3mToMidi/notes.txt)
- [TODO](./S3mToMidi/TODO.txt)
+
+[Song Specific Notes](./S3mToMidi/notes.txt)
+
+[TODO](./S3mToMidi/TODO.txt)

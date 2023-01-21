@@ -10,6 +10,7 @@ namespace S3MParser
 {
     static class MidiWriter2
     {
+        private const int MAX_MIDI_CHANNEL = 16;
         public static void Save(List<List<Event>> allEvents, string path)
         {
             Sequence sequence = new Sequence();
@@ -21,7 +22,7 @@ namespace S3MParser
                 Track track = new Track();
                 sequence.Add(track);
                 List<Event> trackEvents = allEvents[trackIndex];
-                foreach (var midiEvent in trackEvents.Select(trackEvent => new { Tick = trackEvent.Tick, MidiMessage = Convert(trackEvent, track) }))
+                foreach (var midiEvent in trackEvents.Select(trackEvent => new { Tick = trackEvent.Tick, MidiMessage = Convert(trackEvent, track) }).Where(midiEvent => midiEvent.MidiMessage != null))
                 {
                     track.Insert(midiEvent.Tick, midiEvent.MidiMessage);
                 }
@@ -35,6 +36,14 @@ namespace S3MParser
             if (e is NoteEvent)
             {
                 NoteEvent note = (NoteEvent)e;
+
+                // ignore channels beyond what MIDI supports
+                if(MAX_MIDI_CHANNEL <= note.Channel) 
+                {
+                    Console.WriteLine("Ignoring note event {0} because its MIDI channel is greater than the maximum allowed 16.", note);
+                    return null; 
+                }
+
                 if (note.Type == NoteEvent.EventType.NoteOff)
                 {
                     ChannelMessageBuilder b = new ChannelMessageBuilder();

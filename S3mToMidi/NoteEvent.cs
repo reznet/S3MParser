@@ -23,7 +23,6 @@ namespace S3MParser
             this.Velocity = velocity;
 
             Debug.Assert(0 <= this.Channel, "negative channel");
-            Debug.Assert(this.Channel < 16, "channel must be less than 16");
             Debug.Assert(0 <= this.Pitch, "negative pitch");
             Debug.Assert(0 <= this.Velocity, "negative velocity");
         }

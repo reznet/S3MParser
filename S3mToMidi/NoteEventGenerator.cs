@@ -10,7 +10,7 @@ namespace S3MParser
 {
     static class NoteEventGenerator
     {
-        public static List<List<Event>> Generate(S3MFile file)
+        public static List<List<Event>> Generate(S3MFile file, NoteEventGeneratorOptions options)
         {
             Dictionary<int, Channel> channels = new Dictionary<int, Channel>();
 
@@ -69,7 +69,7 @@ namespace S3MParser
                                     Debug.Assert(delay >= 0);
                                 }
                             }
-                            channel.AddNoteEvent(GenerateNoteOnEvent(channel, channelEvent, tick + delay));
+                            channel.AddNoteEvent(GenerateNoteOnEvent(channel, channelEvent, tick + delay, options));
                         }
 
                         if (channelEvent.Data != 0)
@@ -133,11 +133,12 @@ namespace S3MParser
             return allEvents;
         }
 
-        private static NoteEvent GenerateNoteOnEvent(Channel channel, ChannelEvent channelEvent,int tick)
+        private static NoteEvent GenerateNoteOnEvent(Channel channel, ChannelEvent channelEvent, int tick, NoteEventGeneratorOptions options)
         {
             int volume = channelEvent.HasVolume ? channelEvent.Volume : channel.DefaultVolume;
             channel.Instrument = channelEvent.HasInstrument ? channelEvent.Instrument : channel.Instrument;
-            NoteEvent noteOnEvent = new NoteEvent(tick, NoteEvent.EventType.NoteOn, channelEvent.Instrument, channelEvent.Note, volume);
+            int noteChannel = options.ChannelsFromPatterns ? channelEvent.ChannelNumber : channel.Instrument - 1;
+            NoteEvent noteOnEvent = new NoteEvent(tick, NoteEvent.EventType.NoteOn, noteChannel, channelEvent.Note, volume);
             channel.CurrentNote = noteOnEvent;
             return noteOnEvent;
         }
@@ -154,6 +155,7 @@ namespace S3MParser
         {
             if(!channels.ContainsKey(channelNumber))
             {
+                Console.WriteLine("Initializing channel {0}", channelNumber);
                 channels.Add(channelNumber, new Channel()
                     {
                         DefaultVolume = 64,

@@ -38,7 +38,7 @@ namespace S3MParser
                 NoteEvent note = (NoteEvent)e;
 
                 // ignore channels beyond what MIDI supports
-                if(MAX_MIDI_CHANNEL <= note.Channel) 
+                if(MAX_MIDI_CHANNEL < note.Channel) 
                 {
                     Console.WriteLine("Ignoring note event {0} because its MIDI channel is greater than the maximum allowed 16.", note);
                     return null; 

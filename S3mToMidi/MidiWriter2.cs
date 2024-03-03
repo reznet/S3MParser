@@ -1,4 +1,6 @@
-﻿using Sanford.Multimedia.Midi;
+﻿using Melanchall.DryWetMidi.Common;
+using Melanchall.DryWetMidi.Core;
+using Melanchall.DryWetMidi.Interaction;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,25 +15,31 @@ namespace S3MParser
         private const int MAX_MIDI_CHANNEL = 16;
         public static void Save(List<List<Event>> allEvents, string path)
         {
-            Sequence sequence = new Sequence();
+            //File file = new File();
+            //Sequence sequence = new Sequence();
 
-            Dictionary<int, Track> tracks = new Dictionary<int, Track>();
-
+            List<TrackChunk> tracks = new List<TrackChunk>();
             for (int trackIndex = 0; trackIndex < allEvents.Count; trackIndex++)
             {
-                Track track = new Track();
-                sequence.Add(track);
+
                 List<Event> trackEvents = allEvents[trackIndex];
-                foreach (var midiEvent in trackEvents.Select(trackEvent => new { Tick = trackEvent.Tick, MidiMessage = Convert(trackEvent, track) }).Where(midiEvent => midiEvent.MidiMessage != null))
-                {
-                    track.Insert(midiEvent.Tick, midiEvent.MidiMessage);
-                }
+                var midiEvents = trackEvents
+                    .Select(trackEvent => new { Tick = trackEvent.Tick, MidiMessage = Convert(trackEvent) })
+                    .Where(midiEvent => midiEvent.MidiMessage != null)
+                    .Select(midiEvent => midiEvent.MidiMessage);
+                
+                TrackChunk track = new TrackChunk(midiEvents);
+                //sequence.Add(track);
+                tracks.Add(track);
             }
 
-            sequence.Save(path);
+            MidiFile file = new MidiFile(tracks);
+
+            //sequence.Save(path);
+            file.Write(path);
         }
 
-        private static IMidiMessage Convert(Event e, Track track)
+        private static MidiEvent Convert(Event e)
         {
             if (e is NoteEvent)
             {
@@ -46,44 +54,40 @@ namespace S3MParser
 
                 if (note.Type == NoteEvent.EventType.NoteOff)
                 {
-                    ChannelMessageBuilder b = new ChannelMessageBuilder();
-                    b.MidiChannel = note.Channel;
-                    b.Command = ChannelCommand.NoteOff;
-                    b.Data1 = ChannelNoteToMidiPitch(note.Pitch);
-                    b.Data2 = ChannelVelocityToMidiVolume(note.Velocity);
-                    b.Build();
-                    return b.Result;
+                    return new NoteOffEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity))
+                    {
+                        Channel = (FourBitNumber)note.Channel,
+                        DeltaTime = note.Tick
+                    };
                 }
                 else
                 {
-                    ChannelMessageBuilder b = new ChannelMessageBuilder();
-                    b.MidiChannel = note.Channel;
-                    b.Command = ChannelCommand.NoteOn;
-                    b.Data1 = ChannelNoteToMidiPitch(note.Pitch);
-                    b.Data2 = ChannelVelocityToMidiVolume(note.Velocity);
-                    b.Build();
-                    return b.Result;
+                    NoteOnEvent noteOnEvent = new NoteOnEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity));
+                    noteOnEvent.Channel = (FourBitNumber)note.Channel;
+                    noteOnEvent.DeltaTime = note.Tick;
+                    return noteOnEvent;
                 }
             }
             else if (e is TempoEvent)
             {
-                TempoEvent tempoEvent = (TempoEvent)e;
-                TempoChangeBuilder builder = new TempoChangeBuilder();
-                // convert BPM to microseconds
-                builder.Tempo = 60000000 / tempoEvent.TempoBpm;
-                builder.Build();
-                return builder.Result;
+                var tempoEvent = (TempoEvent)e;
+                return new SetTempoEvent(60000000 / tempoEvent.TempoBpm)
+                {
+                    DeltaTime = tempoEvent.Tick
+                };
             }
             else if (e is TimeSignatureEvent)
             {
-                TimeSignatureEvent timeSignatureEvent = (TimeSignatureEvent)e;
-                TimeSignatureBuilder builder = new TimeSignatureBuilder();
-                builder.Numerator = (byte)timeSignatureEvent.BeatsPerBar;
-                builder.Denominator = (byte)timeSignatureEvent.BeatValue;
-                builder.ClocksPerMetronomeClick = 24;
-                builder.ThirtySecondNotesPerQuarterNote = 8;
-                builder.Build();
-                return builder.Result;
+                var timeSignatureEvent = (TimeSignatureEvent)e;
+                const byte ClocksPerMetronomeClick = 24;
+                const byte ThirtySecondNotesPerQuarterNote = 8;
+                return new Melanchall.DryWetMidi.Core.TimeSignatureEvent((byte)timeSignatureEvent.BeatsPerBar,
+                                              (byte)timeSignatureEvent.BeatValue,
+                                              ClocksPerMetronomeClick,
+                                              ThirtySecondNotesPerQuarterNote)
+                                              {
+                                                DeltaTime = timeSignatureEvent.Tick
+                                              };
             }
             else
             {

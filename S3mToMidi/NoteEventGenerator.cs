@@ -14,6 +14,7 @@ namespace S3MParser
         {
             Dictionary<int, Channel> channels = new Dictionary<int, Channel>();
 
+            Console.WriteLine("initial speed {0}", file.InitialSpeed);
             int speed = file.InitialSpeed;
             int tick = 0;
             int rowSkip = 0;

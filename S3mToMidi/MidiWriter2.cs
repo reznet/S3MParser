@@ -15,9 +15,6 @@ namespace S3MParser
         private const int MAX_MIDI_CHANNEL = 16;
         public static void Save(List<List<Event>> allEvents, string path)
         {
-            //File file = new File();
-            //Sequence sequence = new Sequence();
-
             var channelLastTicks = new Dictionary<int, int>();
             for(int i = 0; i < MAX_MIDI_CHANNEL; i++){
                 channelLastTicks[i] = 0;
@@ -29,18 +26,17 @@ namespace S3MParser
 
                 List<Event> trackEvents = allEvents[trackIndex];
                 var midiEvents = trackEvents
+                    .OrderBy(trackEvent => trackEvent.Tick)
                     .Select(trackEvent => new { Tick = trackEvent.Tick, MidiMessage = Convert(trackEvent, channelLastTicks) })
                     .Where(midiEvent => midiEvent.MidiMessage != null)
                     .Select(midiEvent => midiEvent.MidiMessage);
                 
                 TrackChunk track = new TrackChunk(midiEvents);
-                //sequence.Add(track);
                 tracks.Add(track);
             }
 
             MidiFile file = new MidiFile(tracks);
 
-            //sequence.Save(path);
             file.Write(path);
         }
 
@@ -59,6 +55,7 @@ namespace S3MParser
 
                 if (note.Type == NoteEvent.EventType.NoteOff)
                 {
+                    Console.Out.WriteLine("Channel {0} NoteOff Pitch {1}", note.Channel, note.Pitch);
                     return new NoteOffEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity))
                     {
                         Channel = (FourBitNumber)note.Channel,
@@ -67,6 +64,7 @@ namespace S3MParser
                 }
                 else
                 {
+                    Console.Out.WriteLine("Channel {0} NoteOn Pitch {1}", note.Channel, note.Pitch);
                     return new NoteOnEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity))
                     {
                         Channel = (FourBitNumber)note.Channel,
@@ -76,16 +74,27 @@ namespace S3MParser
             }
             else if (e is TempoEvent)
             {
+                
+                
                 var tempoEvent = (TempoEvent)e;
+                Console.Out.WriteLine("TempoEvent Tick {0} Tempo {1} {2}", tempoEvent.Tick, tempoEvent.TempoBpm, 60000000 / tempoEvent.TempoBpm);
+                
                 return new SetTempoEvent(60000000 / tempoEvent.TempoBpm)
                 {
                     // todo how to compute delta for tempo events - which channel?
                     // maybe a pseudo-channel for tempo?
-                    DeltaTime = tempoEvent.Tick
+                    DeltaTime = GetDeltaTimeForChannelTick(1, tempoEvent.Tick, channelLastTicks),
+                    
                 };
+                
             }
             else if (e is TimeSignatureEvent)
             {
+                /*
+                Console.Out.WriteLine("Skipping TimeSignature event");
+                return null;
+                */
+                
                 var timeSignatureEvent = (TimeSignatureEvent)e;
                 const byte ClocksPerMetronomeClick = 24;
                 const byte ThirtySecondNotesPerQuarterNote = 8;
@@ -95,8 +104,9 @@ namespace S3MParser
                                               ThirtySecondNotesPerQuarterNote)
                                               {
                                                 // todo: how to compute delta for events that don't have a channel
-                                                DeltaTime = timeSignatureEvent.Tick
+                                                DeltaTime = GetDeltaTimeForChannelTick(1, timeSignatureEvent.Tick, channelLastTicks)
                                               };
+                                              
             }
             else
             {
@@ -111,10 +121,8 @@ namespace S3MParser
             var delta = tick - lastTick;
             channelLastTicks[channel] = tick;
 
-            int adjustedDelta = delta;
-            if(delta < 0){
-                adjustedDelta = 0;
-            }
+            int adjustedDelta = delta * 4;
+            adjustedDelta = delta * 4;// todo: why does multiplying by 4 work?
             Console.Out.WriteLine("Channel {0} Tick {1} Delta {2} Adj {3}", channel, tick, delta, adjustedDelta);
             return adjustedDelta;
         }

@@ -11,4 +11,8 @@
     <PackageReference Include="Melanchall.DryWetMidi.Nativeless" Version="7.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\S3M\S3M.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -216,3 +216,4 @@ FakesAssemblies/
 _Pvt_Extensions
 
 .DS_Store
+*.mid

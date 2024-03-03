@@ -18,13 +18,18 @@ namespace S3MParser
             //File file = new File();
             //Sequence sequence = new Sequence();
 
+            var channelLastTicks = new Dictionary<int, int>();
+            for(int i = 0; i < MAX_MIDI_CHANNEL; i++){
+                channelLastTicks[i] = 0;
+            }
+
             List<TrackChunk> tracks = new List<TrackChunk>();
             for (int trackIndex = 0; trackIndex < allEvents.Count; trackIndex++)
             {
 
                 List<Event> trackEvents = allEvents[trackIndex];
                 var midiEvents = trackEvents
-                    .Select(trackEvent => new { Tick = trackEvent.Tick, MidiMessage = Convert(trackEvent) })
+                    .Select(trackEvent => new { Tick = trackEvent.Tick, MidiMessage = Convert(trackEvent, channelLastTicks) })
                     .Where(midiEvent => midiEvent.MidiMessage != null)
                     .Select(midiEvent => midiEvent.MidiMessage);
                 
@@ -39,7 +44,7 @@ namespace S3MParser
             file.Write(path);
         }
 
-        private static MidiEvent Convert(Event e)
+        private static MidiEvent Convert(Event e, Dictionary<int, int> channelLastTicks)
         {
             if (e is NoteEvent)
             {
@@ -57,15 +62,16 @@ namespace S3MParser
                     return new NoteOffEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity))
                     {
                         Channel = (FourBitNumber)note.Channel,
-                        DeltaTime = note.Tick
+                        DeltaTime = GetDeltaTimeForChannelTick(note.Channel, note.Tick, channelLastTicks)
                     };
                 }
                 else
                 {
-                    NoteOnEvent noteOnEvent = new NoteOnEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity));
-                    noteOnEvent.Channel = (FourBitNumber)note.Channel;
-                    noteOnEvent.DeltaTime = note.Tick;
-                    return noteOnEvent;
+                    return new NoteOnEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity))
+                    {
+                        Channel = (FourBitNumber)note.Channel,
+                        DeltaTime = GetDeltaTimeForChannelTick(note.Channel, note.Tick, channelLastTicks)
+                    };
                 }
             }
             else if (e is TempoEvent)
@@ -73,6 +79,8 @@ namespace S3MParser
                 var tempoEvent = (TempoEvent)e;
                 return new SetTempoEvent(60000000 / tempoEvent.TempoBpm)
                 {
+                    // todo how to compute delta for tempo events - which channel?
+                    // maybe a pseudo-channel for tempo?
                     DeltaTime = tempoEvent.Tick
                 };
             }
@@ -86,6 +94,7 @@ namespace S3MParser
                                               ClocksPerMetronomeClick,
                                               ThirtySecondNotesPerQuarterNote)
                                               {
+                                                // todo: how to compute delta for events that don't have a channel
                                                 DeltaTime = timeSignatureEvent.Tick
                                               };
             }
@@ -94,6 +103,20 @@ namespace S3MParser
                 Debug.Fail("unknown event type " + e.GetType().Name);
                 return null;
             }
+        }
+
+        private static int GetDeltaTimeForChannelTick(int channel, int tick, Dictionary<int, int> channelLastTicks)
+        {
+            var lastTick = channelLastTicks[channel];
+            var delta = tick - lastTick;
+            channelLastTicks[channel] = tick;
+
+            int adjustedDelta = delta;
+            if(delta < 0){
+                adjustedDelta = 0;
+            }
+            Console.Out.WriteLine("Channel {0} Tick {1} Delta {2} Adj {3}", channel, tick, delta, adjustedDelta);
+            return adjustedDelta;
         }
 
         private static int ChannelNoteToMidiPitch(int note)

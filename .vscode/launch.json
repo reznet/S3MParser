@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug S3mToMidi",
+            "name": "Debug 01-v-drac.s3m",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "dotnet: build",

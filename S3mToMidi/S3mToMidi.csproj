@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="Melanchall.DryWetMidi.Nativeless" Version="7.0.2" />
   </ItemGroup>
 

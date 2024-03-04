@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "dotnet: build",
             "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
-            "args": ["${workspaceFolder}/songs/01-v-drac.s3m"],
+            "args": ["--file", "${workspaceFolder}/songs/01-v-drac.s3m", "--channels-from-patterns"],
             "cwd": "${workspaceFolder}/S3mToMidi",
             "stopAtEntry": false,
             "console": "internalConsole"

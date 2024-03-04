@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 using S3M;
 
-namespace TestProject2
+namespace S3M.Tests
 {
     [TestClass]
     public class UnpackTests

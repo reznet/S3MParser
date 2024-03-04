@@ -5,7 +5,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using S3M;
 
-namespace TestProject2
+namespace S3M.Tests
 {
     /// <summary>
     /// Summary description for UnitTest1

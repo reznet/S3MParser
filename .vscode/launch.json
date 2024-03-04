@@ -1,0 +1,19 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug S3mToMidi",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": ["${workspaceFolder}/songs/01-v-drac.s3m"],
+            "cwd": "${workspaceFolder}/S3mToMidi",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        }
+    ]
+}

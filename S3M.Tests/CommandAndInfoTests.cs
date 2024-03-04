@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using S3M;
 using System.Globalization;
 
-namespace TestProject2
+namespace S3M.Tests
 {
     [TestClass]
     public class CommandAndInfoTests

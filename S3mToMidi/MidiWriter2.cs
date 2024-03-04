@@ -47,7 +47,7 @@ namespace S3MParser
                 NoteEvent note = (NoteEvent)e;
 
                 // ignore channels beyond what MIDI supports
-                if(MAX_MIDI_CHANNEL <= note.Channel) 
+                if(MAX_MIDI_CHANNEL < note.Channel) 
                 {
                     Console.WriteLine("Ignoring note event {0} because its MIDI channel is greater than the maximum allowed 16.", note);
                     return null; 
@@ -121,8 +121,12 @@ namespace S3MParser
             var delta = tick - lastTick;
             channelLastTicks[channel] = tick;
 
+            // HACK: why does multiplying by 4 work?
+            // this hack became needed when switching from Sanford.MidiToolkit to drywetmidi library.
+            // the S3M file specifies the row speed and the tempo
+            // and even though we generate a tempo message
+            // the notes are waay too short.  multiplying by 4 fixes it for some reason
             int adjustedDelta = delta * 4;
-            adjustedDelta = delta * 4;// todo: why does multiplying by 4 work?
             Console.Out.WriteLine("Channel {0} Tick {1} Delta {2} Adj {3}", channel, tick, delta, adjustedDelta);
             return adjustedDelta;
         }

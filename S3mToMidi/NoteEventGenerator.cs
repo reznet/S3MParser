@@ -96,15 +96,22 @@ namespace S3MParser
                     if (breakPatternToRow)
                     {
                         // just finished last row in this pattern
-                        // because we are jumping to a new patter
+                        // because we are jumping to a new pattern
                         var modulo = (rowIndex + 1) % 32;
                         if (modulo != 0)
                         {
-                            // sad to say, not sure why mod 8 but divide by 16 works
+                            // TODO: rework time signature changes
+                            // we need to figure out what the initial time signature is
+                            // and return to it and not just assume 4/4
+                            // alternatively, for each pattern, figure out the key signature
+                            // and insert it at the start tick if it's different from the previous pattern
+
+                            // 8 only happens to work because we've been assuming the song was in 4/4
+                            // a counter example is v-option which is in a compound meter
                             var m8 = (rowIndex + 1) % 8;
                             if (m8 == 0)
                             {
-                                firstChannel.AddNoteEvent(new TimeSignatureEvent(patternStartTick, (rowIndex + 1) / 16, 4));
+                                firstChannel.AddNoteEvent(new TimeSignatureEvent(patternStartTick, (rowIndex + 1) / 8, 4));
                                 firstChannel.AddNoteEvent(new TimeSignatureEvent(tick, 4, 4));
                             }
 

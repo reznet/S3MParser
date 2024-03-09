@@ -20,6 +20,9 @@ namespace S3MParser
             public string InputFile { get; set; }
             [Option("channels-from-patterns", Required = false, Default = false, HelpText = "ScreamTracker pattern channels to MIDI channels.  Otherwise, instruments or samples map to MIDI channels.")]
             public bool ChannelsFromPatterns { get; set; }
+
+            [Option("pattern", Required = false, HelpText = "The single pattern to export.")]
+            public int? Pattern { get; set; }
         }
 
         static void Main(string[] args)
@@ -29,7 +32,16 @@ namespace S3MParser
                    {
                        S3MFile file = S3MFile.Parse(o.InputFile);
 
-                       MidiWriter2.Save(NoteEventGenerator.Generate(file, new NoteEventGeneratorOptions() { ChannelsFromPatterns = o.ChannelsFromPatterns }).ToList(), Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")));
+                       MidiWriter2.Save(
+                            NoteEventGenerator.Generate(
+                                file, 
+                                new NoteEventGeneratorOptions() 
+                                    { 
+                                        ChannelsFromPatterns = o.ChannelsFromPatterns,
+                                        Pattern = o.Pattern
+                                    })
+                            .ToList(),
+                            Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")));
                    });
         }
     }

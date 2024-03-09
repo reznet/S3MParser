@@ -37,7 +37,7 @@ namespace S3MParser
 
             MidiFile file = new MidiFile(tracks);
 
-            file.Write(path);
+            file.Write(path, overwriteFile: true);
         }
 
         private static MidiEvent Convert(Event e, Dictionary<int, int> channelLastTicks)

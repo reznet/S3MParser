@@ -55,7 +55,7 @@ namespace S3MParser
 
                 if (note.Type == NoteEvent.EventType.NoteOff)
                 {
-                    Console.Out.WriteLine("Channel {0} NoteOff Pitch {1}", note.Channel, note.Pitch);
+                    //Console.Out.WriteLine("Channel {0} NoteOff Pitch {1}", note.Channel, note.Pitch);
                     return new NoteOffEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity))
                     {
                         Channel = (FourBitNumber)note.Channel,
@@ -64,7 +64,7 @@ namespace S3MParser
                 }
                 else
                 {
-                    Console.Out.WriteLine("Channel {0} NoteOn Pitch {1}", note.Channel, note.Pitch);
+                    //Console.Out.WriteLine("Channel {0} NoteOn Pitch {1}", note.Channel, note.Pitch);
                     return new NoteOnEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity))
                     {
                         Channel = (FourBitNumber)note.Channel,
@@ -94,8 +94,10 @@ namespace S3MParser
                 Console.Out.WriteLine("Skipping TimeSignature event");
                 return null;
                 */
+
                 
                 var timeSignatureEvent = (TimeSignatureEvent)e;
+                Console.WriteLine("TimeSignatureEvent {0}/{1}", timeSignatureEvent.BeatValue, timeSignatureEvent.BeatValue);
                 const byte ClocksPerMetronomeClick = 24;
                 const byte ThirtySecondNotesPerQuarterNote = 8;
                 return new Melanchall.DryWetMidi.Core.TimeSignatureEvent((byte)timeSignatureEvent.BeatsPerBar,
@@ -127,7 +129,7 @@ namespace S3MParser
             // and even though we generate a tempo message
             // the notes are waay too short.  multiplying by 4 fixes it for some reason
             int adjustedDelta = delta * 4;
-            Console.Out.WriteLine("Channel {0} Tick {1} Delta {2} Adj {3}", channel, tick, delta, adjustedDelta);
+            //Console.Out.WriteLine("Channel {0} Tick {1} Delta {2} Adj {3}", channel, tick, delta, adjustedDelta);
             return adjustedDelta;
         }
 

@@ -119,6 +119,11 @@ namespace S3MParser
                     denominator = denominator / 2;
                     numerator = numerator / 2;
                 }
+                if (1 == numerator && numerator == denominator)
+                {
+                    numerator = 4;
+                    denominator = 4;
+                }
                 Console.WriteLine("Pattern {0} is time signature {1}/{2}", pattern.PatternNumber, numerator, denominator);
                 firstChannel.AddNoteEvent(new TimeSignatureEvent(patternStartTick, numerator, denominator));
             }

@@ -18,6 +18,7 @@ namespace S3MParser
             int speed = file.InitialSpeed;
             int tick = 0;
             int rowSkip = 0;
+            int finalRow = 0;
 
             Channel firstChannel = GetChannel(channels, 1);
             TempoEvent tempoEvent = new TempoEvent(tick, file.InitialTempo);
@@ -34,10 +35,18 @@ namespace S3MParser
                 }
 
                 var pattern = file.Patterns[order];
+
+                if (options.Pattern.HasValue && options.Pattern.Value != pattern.PatternNumber)
+                {
+                    Console.WriteLine("Skipping pattern {0} because pattern filter \"{1}\" was specified.", pattern.PatternNumber, options.Pattern.Value);
+                    continue;
+                }
+
                 int patternStartTick = tick;
                 int rowIndex = rowSkip;
                 for (; rowIndex < pattern.Rows.Count; rowIndex++)
                 {
+                    finalRow = rowIndex;
                     rowSkip = 0;
                     bool breakPatternToRow = false;
                     Row row = pattern.Rows[rowIndex];
@@ -95,32 +104,23 @@ namespace S3MParser
 
                     if (breakPatternToRow)
                     {
-                        // just finished last row in this pattern
-                        // because we are jumping to a new pattern
-                        var modulo = (rowIndex + 1) % 32;
-                        if (modulo != 0)
-                        {
-                            // TODO: rework time signature changes
-                            // we need to figure out what the initial time signature is
-                            // and return to it and not just assume 4/4
-                            // alternatively, for each pattern, figure out the key signature
-                            // and insert it at the start tick if it's different from the previous pattern
-
-                            // 8 only happens to work because we've been assuming the song was in 4/4
-                            // a counter example is v-option which is in a compound meter
-                            var m8 = (rowIndex + 1) % 8;
-                            if (m8 == 0)
-                            {
-                                firstChannel.AddNoteEvent(new TimeSignatureEvent(patternStartTick, (rowIndex + 1) / 8, 4));
-                                firstChannel.AddNoteEvent(new TimeSignatureEvent(tick, 4, 4));
-                            }
-
-                        }
-
+                        // finished processing channels on this row
                         // now go to next pattern
                         break;
                     }
                 }
+
+                // add 1 because our row index is 0 based, so the last row is 63
+                int numerator = 1 + finalRow;
+                int denominator = pattern.Rows.Count;
+                // TODO: figure out how to avoid wacky time signatures like 1/1
+                while (numerator % 2 == 0 && denominator % 2 == 0)
+                {
+                    denominator = denominator / 2;
+                    numerator = numerator / 2;
+                }
+                Console.WriteLine("Pattern {0} is time signature {1}/{2}", pattern.PatternNumber, numerator, denominator);
+                firstChannel.AddNoteEvent(new TimeSignatureEvent(patternStartTick, numerator, denominator));
             }
 
             // finalize any leftover note on events
@@ -161,13 +161,13 @@ namespace S3MParser
 
         private static Channel GetChannel(Dictionary<int, Channel> channels, int channelNumber)
         {
-            if(!channels.ContainsKey(channelNumber))
+            if (!channels.ContainsKey(channelNumber))
             {
                 Console.WriteLine("Initializing channel {0}", channelNumber);
                 channels.Add(channelNumber, new Channel()
-                    {
-                        DefaultVolume = 64,
-                    });
+                {
+                    DefaultVolume = 64,
+                });
             }
             return channels[channelNumber];
         }

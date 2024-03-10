@@ -1,4 +1,4 @@
-﻿using S3M;
+using S3M;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,8 +21,9 @@ namespace S3MParser
             int finalRow = 0;
 
             Channel firstChannel = GetChannel(channels, 1);
-            TempoEvent tempoEvent = new TempoEvent(tick, file.InitialTempo);
-            firstChannel.AddNoteEvent(tempoEvent);
+            TempoEvent initialTempoEvent = new TempoEvent(tick, file.InitialTempo);
+            bool hasAddedInitialTempo = false;
+
 
             TimeSignatureEvent currentTimeSignatureEvent = new TimeSignatureEvent(tick, 4, 4);
             firstChannel.AddNoteEvent(currentTimeSignatureEvent);
@@ -98,6 +99,24 @@ namespace S3MParser
                         {
                             speed = channelEvent.Data;
                         }
+                        else if (channelEvent.Command == CommandType.SetTempo)
+                        {
+                            TempoEvent setTempoEvent = new TempoEvent(tick, channelEvent.Data);
+                            if(!hasAddedInitialTempo)
+                            {
+                                initialTempoEvent = setTempoEvent;
+                            }
+                            else 
+                            {
+                                firstChannel.AddNoteEvent(setTempoEvent);
+                            }
+                        }
+                    }
+
+                    if(rowIndex == 0 && !hasAddedInitialTempo)
+                    {
+                        firstChannel.AddNoteEvent(initialTempoEvent);
+                        hasAddedInitialTempo = true;
                     }
 
                     tick += speed;

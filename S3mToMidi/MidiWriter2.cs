@@ -97,7 +97,7 @@ namespace S3MParser
 
                 
                 var timeSignatureEvent = (TimeSignatureEvent)e;
-                Console.WriteLine("TimeSignatureEvent {0}/{1}", timeSignatureEvent.BeatValue, timeSignatureEvent.BeatValue);
+                Console.WriteLine("TimeSignatureEvent Tick {0} {1}/{2}", timeSignatureEvent.Tick, timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
                 const byte ClocksPerMetronomeClick = 24;
                 const byte ThirtySecondNotesPerQuarterNote = 8;
                 return new Melanchall.DryWetMidi.Core.TimeSignatureEvent((byte)timeSignatureEvent.BeatsPerBar,

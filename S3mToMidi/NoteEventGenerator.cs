@@ -27,9 +27,9 @@ namespace S3MParser
             // speed = 4, 1 row = ?? th note (TICKS_PER_QUARTERNOTE / (24 / 4))
             // speed = 3, 1 row = 32nd note (TICKS_PER_QUARTERNOTE / 8)
             // speed = 2, 1 row = ??nd note (TICKS_PER_QUARTERNOTE / (24 / 2))
-            // speed = 1, 1 row = ?? nd note (TICKS_PER_QUARTERNOTE / 24)
+            // speed = 1, 1 row = ?? nd note (TICKS_PER_QUARTERNOTE / 24) [4 midi ticks]
 
-            int rowSpeedToTicks(int speed){
+            static int rowSpeedToTicks(int speed){
                 if (speed == 0){ return speed; }
                 return TICKS_PER_QUARTERNOTE * speed / 24;
             }
@@ -67,6 +67,7 @@ namespace S3MParser
 
                 int patternStartTick = tick;
                 int rowIndex = rowSkip;
+                int patternTrackerTicks = 0;
                 for (; rowIndex < pattern.Rows.Count; rowIndex++)
                 {
                     finalRow = rowIndex;
@@ -142,6 +143,7 @@ namespace S3MParser
                     }
 
                     tick += rowSpeedToTicks(speed);
+                    patternTrackerTicks += speed;
 
                     if (breakPatternToRow)
                     {
@@ -151,20 +153,36 @@ namespace S3MParser
                     }
                 }
 
-                // add 1 because our row index is 0 based, so the last row is 63
-                int numerator = 1 + finalRow;
-                int denominator = pattern.Rows.Count;
-                // TODO: figure out how to avoid wacky time signatures like 1/1
-                while (numerator % 2 == 0 && denominator % 2 == 0)
-                {
-                    denominator = denominator / 2;
-                    numerator = numerator / 2;
+                Console.WriteLine("Pattern {0} is {1} tracker ticks long", pattern.PatternNumber, (float)patternTrackerTicks);
+                Console.WriteLine("Pattern {0} is {1} quarter notes long", pattern.PatternNumber, (float)patternTrackerTicks / 24.0);
+                Console.WriteLine("Pattern {0} is {1} eighth notes long", pattern.PatternNumber, (float)patternTrackerTicks / 12.0);
+                Console.WriteLine("Pattern {0} is {1} 16th notes long", pattern.PatternNumber, (float)patternTrackerTicks / 6.0);
+                Console.WriteLine("Pattern {0} is {1} 32nd notes long", pattern.PatternNumber, (float)patternTrackerTicks / 3.0);
+                // 32nd  - / 3.0
+                // 96th - / 1.0
+                // half notes / 48
+                // whole notes / 96
+                // every pattern tick is 24th of a quarter note
+                // (1 quarter note / 24) * 64 = 
+
+                int denominator = 0;
+                int numerator = 0;
+                int remainder = 0;
+                for(int i = 2; remainder == 0 && i < 7; i++){
+                    int nextDenominator = (int)Math.Pow(2, i);
+                    int nextNumerator = patternTrackerTicks / (24 / (int)Math.Pow(2, i - 2));
+                    int nextRemainder = patternTrackerTicks % (24 / (int)Math.Pow(2, i - 2));
+
+                    Console.WriteLine("Pattern {0} could be {1}/{2} with remainder {3}", pattern.PatternNumber, nextNumerator, nextDenominator, nextRemainder);
+
+                    if (nextRemainder == 0)
+                    {
+                        denominator = nextDenominator;
+                        numerator = nextNumerator;
+                        break;
+                    }
                 }
-                if (1 == numerator && numerator == denominator)
-                {
-                    numerator = 4;
-                    denominator = 4;
-                }
+
                 Console.WriteLine("Pattern {0} is time signature {1}/{2}", pattern.PatternNumber, numerator, denominator);
                 firstChannel.AddNoteEvent(new TimeSignatureEvent(patternStartTick, numerator, denominator));
             }

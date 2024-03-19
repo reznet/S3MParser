@@ -12,6 +12,28 @@ namespace S3MParser
     {
         public static List<List<Event>> Generate(S3MFile file, NoteEventGeneratorOptions options)
         {
+            const int TICKS_PER_QUARTERNOTE = 96;
+            // a pattern has max 64 rows
+            // tracker tempo is ALWAYS based on 6 ticks per row, 4 rows per beat = 24 ticks per beat
+            // when speed = 6 and tempo = 60, 4 rows = 1 quarter note
+            // speed = 3, 4 rows = 8th note
+            // speed = 12, 1 row = 8th note
+            // speed = 24, 1 row = quarter note
+            // real lookup table:
+            // speed = 24,1 row = quarter note (TICKS_PER_QUARTERNOTE / 1)
+            // speed = 12,1 row = 8th note (TICKS_PER_QUARTERNOTE / 2)
+            // speed = 6, 1 row = 16th note (TICKS_PER_QUARTERNOTE / 4)
+            // speed = 5, 1 row = ??th note (TICKS_PER_QUARTERNOTE / (24 / 5))
+            // speed = 4, 1 row = ?? th note (TICKS_PER_QUARTERNOTE / (24 / 4))
+            // speed = 3, 1 row = 32nd note (TICKS_PER_QUARTERNOTE / 8)
+            // speed = 2, 1 row = ??nd note (TICKS_PER_QUARTERNOTE / (24 / 2))
+            // speed = 1, 1 row = ?? nd note (TICKS_PER_QUARTERNOTE / 24)
+
+            int rowSpeedToTicks(int speed){
+                if (speed == 0){ return speed; }
+                return TICKS_PER_QUARTERNOTE * speed / 24;
+            }
+            
             Dictionary<int, Channel> channels = new Dictionary<int, Channel>();
 
             Console.WriteLine("initial speed {0}", file.InitialSpeed);
@@ -80,7 +102,7 @@ namespace S3MParser
                                     Debug.Assert(delay >= 0);
                                 }
                             }
-                            channel.AddNoteEvent(GenerateNoteOnEvent(channel, channelEvent, tick + delay, options));
+                            channel.AddNoteEvent(GenerateNoteOnEvent(channel, channelEvent, tick + rowSpeedToTicks(delay), options));
                         }
 
                         if (channelEvent.Data != 0)
@@ -119,7 +141,7 @@ namespace S3MParser
                         hasAddedInitialTempo = true;
                     }
 
-                    tick += speed;
+                    tick += rowSpeedToTicks(speed);
 
                     if (breakPatternToRow)
                     {

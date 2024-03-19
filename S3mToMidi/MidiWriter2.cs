@@ -123,14 +123,7 @@ namespace S3MParser
             var delta = tick - lastTick;
             channelLastTicks[channel] = tick;
 
-            // HACK: why does multiplying by 4 work?
-            // this hack became needed when switching from Sanford.MidiToolkit to drywetmidi library.
-            // the S3M file specifies the row speed and the tempo
-            // and even though we generate a tempo message
-            // the notes are waay too short.  multiplying by 4 fixes it for some reason
-            int adjustedDelta = delta * 4;
-            //Console.Out.WriteLine("Channel {0} Tick {1} Delta {2} Adj {3}", channel, tick, delta, adjustedDelta);
-            return adjustedDelta;
+            return delta ;
         }
 
         private static int ChannelNoteToMidiPitch(int note)

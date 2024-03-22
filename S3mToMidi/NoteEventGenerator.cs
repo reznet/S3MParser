@@ -50,7 +50,11 @@ namespace S3MParser
             TimeSignatureEvent currentTimeSignatureEvent = new TimeSignatureEvent(tick, 4, 4);
             firstChannel.AddNoteEvent(currentTimeSignatureEvent);
 
-            foreach (var order in file.Orders)
+            int skipPatterns = 4;
+            int takePatterns = int.MaxValue;
+            int patternCount = 0;
+
+            foreach (var order in file.Orders.Skip(skipPatterns).Take(takePatterns))
             {
                 if (order == 255)
                 {
@@ -70,6 +74,7 @@ namespace S3MParser
                 int patternTrackerTicks = 0;
                 for (; rowIndex < pattern.Rows.Count; rowIndex++)
                 {
+                    Console.WriteLine("Pattern {0} Row {1}", pattern.PatternNumber, rowIndex);
                     finalRow = rowIndex;
                     rowSkip = 0;
                     bool breakPatternToRow = false;
@@ -83,6 +88,7 @@ namespace S3MParser
 
                         if (needNoteOff)
                         {
+                            Console.WriteLine("Pattern {0} Channel {1} ending previous note at tick {2}", pattern.PatternNumber, channelEvent.ChannelNumber, tick);
                             channel.AddNoteEvent(GenerateNoteOffEvent(channel, tick));
                         }
 
@@ -121,6 +127,7 @@ namespace S3MParser
                         else if (channelEvent.Command == CommandType.SetSpeed)
                         {
                             speed = channelEvent.Data;
+                            Console.WriteLine("Pattern {0} speed is now {1}", pattern.PatternNumber, speed);
                         }
                         else if (channelEvent.Command == CommandType.SetTempo)
                         {
@@ -145,13 +152,17 @@ namespace S3MParser
                     tick += rowSpeedToTicks(speed);
                     patternTrackerTicks += speed;
 
+
                     if (breakPatternToRow)
                     {
                         // finished processing channels on this row
                         // now go to next pattern
                         break;
                     }
+
+
                 }
+                    Console.WriteLine("Pattern {0} ending tracker ticks is {1} and midi ticks is {2}", pattern.PatternNumber, patternTrackerTicks, tick);
 
                 Console.WriteLine("Pattern {0} is {1} tracker ticks long", pattern.PatternNumber, (float)patternTrackerTicks);
                 Console.WriteLine("Pattern {0} is {1} quarter notes long", pattern.PatternNumber, (float)patternTrackerTicks / 24.0);
@@ -170,12 +181,15 @@ namespace S3MParser
                 int remainder = 0;
                 int lastNumerator = 0;
                 int lastDenominator = 0;
-                for(int i = 2; i < 8; i++){
-                    lastDenominator = (int)Math.Pow(2, i);
-                    // int nextNumerator = patternTrackerTicks / (24 / (int)Math.Pow(2, i - 2));
-                    // int nextRemainder = patternTrackerTicks % (24 / (int)Math.Pow(2, i - 2));
-                    lastNumerator = patternTrackerTicks * (int)Math.Pow(2, i - 2) / 24;
-                    remainder = patternTrackerTicks * (int)Math.Pow(2, i - 2) % 24;
+                int lastPower = 0;
+                    int ticksPerDenominator = 0;
+                for (int i = 0; i < 5; i++)
+                {
+                    ticksPerDenominator = 24 / (int)Math.Pow(2, i);
+                    lastDenominator = (int)Math.Pow(2, i + 2);
+                    int pow = (int)Math.Pow(2, i);
+                    lastNumerator = patternTrackerTicks / ticksPerDenominator;
+                    remainder = patternTrackerTicks % ticksPerDenominator;
 
                     Console.WriteLine("Pattern {0} could be {1}/{2} with remainder {3}", pattern.PatternNumber, lastNumerator, lastDenominator, remainder);
 
@@ -189,16 +203,13 @@ namespace S3MParser
 
                 if (0 < remainder)
                 {
-                    // HACK - round up the measure
-                    // TODO: use math to figure out how much time to add to any open notes
-                    // maybe we use use a tempo change to make it sound the same but fit in a measure
-                    numerator = lastNumerator + remainder;
+                    numerator = lastNumerator + (ticksPerDenominator - remainder);
                     denominator = lastDenominator;
                 }
 
                 // if there is a remainder, we need to split the measure or else use a fractional numerator
 
-                Console.WriteLine("Pattern {0} is time signature {1}/{2}", pattern.PatternNumber, numerator, denominator);
+                Console.WriteLine("Pattern {0} at {3} is time signature {1}/{2}", pattern.PatternNumber, numerator, denominator, patternStartTick);
                 firstChannel.AddNoteEvent(new TimeSignatureEvent(patternStartTick, numerator, denominator));
             }
 

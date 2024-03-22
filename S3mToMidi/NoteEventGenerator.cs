@@ -168,20 +168,35 @@ namespace S3MParser
                 int denominator = 0;
                 int numerator = 0;
                 int remainder = 0;
-                for(int i = 2; remainder == 0 && i < 7; i++){
-                    int nextDenominator = (int)Math.Pow(2, i);
-                    int nextNumerator = patternTrackerTicks / (24 / (int)Math.Pow(2, i - 2));
-                    int nextRemainder = patternTrackerTicks % (24 / (int)Math.Pow(2, i - 2));
+                int lastNumerator = 0;
+                int lastDenominator = 0;
+                for(int i = 2; i < 8; i++){
+                    lastDenominator = (int)Math.Pow(2, i);
+                    // int nextNumerator = patternTrackerTicks / (24 / (int)Math.Pow(2, i - 2));
+                    // int nextRemainder = patternTrackerTicks % (24 / (int)Math.Pow(2, i - 2));
+                    lastNumerator = patternTrackerTicks * (int)Math.Pow(2, i - 2) / 24;
+                    remainder = patternTrackerTicks * (int)Math.Pow(2, i - 2) % 24;
 
-                    Console.WriteLine("Pattern {0} could be {1}/{2} with remainder {3}", pattern.PatternNumber, nextNumerator, nextDenominator, nextRemainder);
+                    Console.WriteLine("Pattern {0} could be {1}/{2} with remainder {3}", pattern.PatternNumber, lastNumerator, lastDenominator, remainder);
 
-                    if (nextRemainder == 0)
+                    if (remainder == 0)
                     {
-                        denominator = nextDenominator;
-                        numerator = nextNumerator;
+                        denominator = lastDenominator;
+                        numerator = lastNumerator;
                         break;
                     }
                 }
+
+                if (0 < remainder)
+                {
+                    // HACK - round up the measure
+                    // TODO: use math to figure out how much time to add to any open notes
+                    // maybe we use use a tempo change to make it sound the same but fit in a measure
+                    numerator = lastNumerator + remainder;
+                    denominator = lastDenominator;
+                }
+
+                // if there is a remainder, we need to split the measure or else use a fractional numerator
 
                 Console.WriteLine("Pattern {0} is time signature {1}/{2}", pattern.PatternNumber, numerator, denominator);
                 firstChannel.AddNoteEvent(new TimeSignatureEvent(patternStartTick, numerator, denominator));

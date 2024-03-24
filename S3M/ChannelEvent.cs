@@ -12,6 +12,7 @@ namespace S3M
         public int Note = -1;
         public int Instrument = -1;
         public int Volume = -1;
+        private bool hasVolume = false;
         public CommandType Command = CommandType.None;
         public int Data = -1;
         public Row Row;
@@ -42,7 +43,8 @@ namespace S3M
 
         public bool HasVolume
         {
-            get { return Volume > 0; }
+            get { return hasVolume; }
+            private set { hasVolume = value; }
         }
 
         public bool HasInstrument
@@ -86,6 +88,7 @@ namespace S3M
             }
             if ((first & VOLUME_FOLLOWS_MASK) == VOLUME_FOLLOWS_MASK)
             {
+                channelEvent.HasVolume = true;
                 channelEvent.Volume = reader.ReadByte();
             }
             if ((first & COMMAND_FOLLOWS_MASK) == COMMAND_FOLLOWS_MASK)

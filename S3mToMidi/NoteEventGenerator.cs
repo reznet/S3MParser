@@ -45,7 +45,7 @@ namespace S3MParser
             TimeSignatureEvent currentTimeSignatureEvent = new TimeSignatureEvent(tick, 4, 4);
             firstChannel.AddNoteEvent(currentTimeSignatureEvent);
 
-            int takePatterns = 2;
+            int takePatterns = int.MaxValue;
 
             foreach (var order in file.Orders.Skip(options.StartOrder ?? 0).Take(takePatterns))
             {

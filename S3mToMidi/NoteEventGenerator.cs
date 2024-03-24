@@ -202,6 +202,15 @@ namespace S3MParser
                     {
                         denominator = lastDenominator;
                         numerator = lastNumerator;
+
+                        // if numerator is a multiple of denominator
+                        if (numerator % denominator == 0)
+                        {
+                            // assign the denominator to the numerator to simplify measures
+                            // since measures don't exist in MIDI, there's no difference between
+                            // 8/4 and 4/4, so let's go with the simplest time signature
+                            numerator = denominator;
+                        }
                         break;
                     }
                 }

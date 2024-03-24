@@ -18,5 +18,7 @@ namespace S3MParser
         /// Gets or sets the single pattern to export.
         /// </summary>
         public int? Pattern { get; set; }
+
+        public int? StartOrder { get; set; }
     }
 }

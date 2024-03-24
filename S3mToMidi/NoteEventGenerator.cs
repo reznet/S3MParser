@@ -1,10 +1,5 @@
 using S3M;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace S3MParser
 {
@@ -50,11 +45,9 @@ namespace S3MParser
             TimeSignatureEvent currentTimeSignatureEvent = new TimeSignatureEvent(tick, 4, 4);
             firstChannel.AddNoteEvent(currentTimeSignatureEvent);
 
-            int skipPatterns = 4;
-            int takePatterns = int.MaxValue;
-            int patternCount = 0;
+            int takePatterns = 2;
 
-            foreach (var order in file.Orders.Skip(skipPatterns).Take(takePatterns))
+            foreach (var order in file.Orders.Skip(options.StartOrder ?? 0).Take(takePatterns))
             {
                 if (order == 255)
                 {
@@ -74,7 +67,7 @@ namespace S3MParser
                 int patternTrackerTicks = 0;
                 for (; rowIndex < pattern.Rows.Count; rowIndex++)
                 {
-                    Console.WriteLine("Pattern {0} Row {1}", pattern.PatternNumber, rowIndex);
+                    Console.WriteLine("Pattern {0} Row {1} patternTrackerTicks {2}", pattern.PatternNumber, rowIndex, patternTrackerTicks);
                     finalRow = rowIndex;
                     rowSkip = 0;
                     bool breakPatternToRow = false;
@@ -84,7 +77,20 @@ namespace S3MParser
                     {
                         Channel channel = GetChannel(channels, channelEvent.ChannelNumber);
 
-                        bool needNoteOff = channel.IsPlayingNote && channelEvent.NoteAction != NoteAction.None;
+                        bool needNoteOff = false;
+                        if (channel.IsPlayingNote)
+                        {
+                            if(channelEvent.NoteAction != NoteAction.None)
+                            {
+                                Console.WriteLine("Pattern {0} Chanel {1} need to end previous note because new note action", pattern.PatternNumber, channelEvent.ChannelNumber);
+                                needNoteOff = true;
+                            }
+                            else if (channelEvent.HasVolume && channelEvent.Volume == 0)
+                            {
+                                Console.WriteLine("Pattern {0} Channel {1} need to end previous note because volume is now zero", pattern.PatternNumber, channelEvent.ChannelNumber);
+                                needNoteOff = true;
+                            }
+                        }
 
                         if (needNoteOff)
                         {
@@ -162,7 +168,7 @@ namespace S3MParser
 
 
                 }
-                    Console.WriteLine("Pattern {0} ending tracker ticks is {1} and midi ticks is {2}", pattern.PatternNumber, patternTrackerTicks, tick);
+                Console.WriteLine("Pattern {0} ending tracker ticks is {1} and midi ticks is {2}", pattern.PatternNumber, patternTrackerTicks, tick);
 
                 Console.WriteLine("Pattern {0} is {1} tracker ticks long", pattern.PatternNumber, (float)patternTrackerTicks);
                 Console.WriteLine("Pattern {0} is {1} quarter notes long", pattern.PatternNumber, (float)patternTrackerTicks / 24.0);
@@ -181,8 +187,7 @@ namespace S3MParser
                 int remainder = 0;
                 int lastNumerator = 0;
                 int lastDenominator = 0;
-                int lastPower = 0;
-                    int ticksPerDenominator = 0;
+                int ticksPerDenominator = 0;
                 for (int i = 0; i < 5; i++)
                 {
                     ticksPerDenominator = 24 / (int)Math.Pow(2, i);
@@ -203,13 +208,10 @@ namespace S3MParser
 
                 if (0 < remainder)
                 {
-                    numerator = lastNumerator + (ticksPerDenominator - remainder);
-                    denominator = lastDenominator;
+                    throw new Exception("The time signature in pattern {0} cannot be expressed with MIDI.");
                 }
 
-                // if there is a remainder, we need to split the measure or else use a fractional numerator
-
-                Console.WriteLine("Pattern {0} at {3} is time signature {1}/{2}", pattern.PatternNumber, numerator, denominator, patternStartTick);
+                Console.WriteLine("Pattern {0} at {3} is time signature {1}/{2} and should end at {4}", pattern.PatternNumber, numerator, denominator, patternStartTick, tick);
                 firstChannel.AddNoteEvent(new TimeSignatureEvent(patternStartTick, numerator, denominator));
             }
 

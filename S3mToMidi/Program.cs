@@ -18,11 +18,15 @@ namespace S3MParser
         {
             [Option('f', "file", Required = true, HelpText = "Path to the file to convert.")]
             public string InputFile { get; set; }
+
             [Option("channels-from-patterns", Required = false, Default = false, HelpText = "ScreamTracker pattern channels to MIDI channels.  Otherwise, instruments or samples map to MIDI channels.")]
             public bool ChannelsFromPatterns { get; set; }
 
             [Option("pattern", Required = false, HelpText = "The single pattern to export.")]
             public int? Pattern { get; set; }
+
+            [Option("start-order", Required = false, HelpText = "The order in the song to start at.  Use this to skip patterns in the beginning of the song with time signatures that do not render well in MIDI programs.")]
+            public int? StartOrder { get; set; }
         }
 
         static void Main(string[] args)
@@ -38,7 +42,8 @@ namespace S3MParser
                                 new NoteEventGeneratorOptions() 
                                     { 
                                         ChannelsFromPatterns = o.ChannelsFromPatterns,
-                                        Pattern = o.Pattern
+                                        Pattern = o.Pattern,
+                                        StartOrder = o.StartOrder,
                                     })
                             .ToList(),
                             Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")));

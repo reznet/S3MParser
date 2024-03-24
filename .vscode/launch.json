@@ -13,7 +13,8 @@
             "args": [
                 "--file", "${workspaceFolder}/songs/v-bogey.s3m",
                 //"--pattern", "59",
-                 "--channels-from-patterns"
+                 "--channels-from-patterns",
+                 "--start-order", "4"
             ],
             "cwd": "${workspaceFolder}/S3mToMidi",
             "stopAtEntry": false,

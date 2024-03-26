@@ -77,22 +77,7 @@ namespace S3MParser
                     {
                         Channel channel = GetChannel(channels, channelEvent.ChannelNumber);
 
-                        bool needNoteOff = false;
-                        if (channel.IsPlayingNote)
-                        {
-                            if(channelEvent.NoteAction != NoteAction.None)
-                            {
-                                Console.WriteLine("Pattern {0} Chanel {1} need to end previous note because new note action", pattern.PatternNumber, channelEvent.ChannelNumber);
-                                needNoteOff = true;
-                            }
-                            else if (channelEvent.HasVolume && channelEvent.Volume == 0)
-                            {
-                                Console.WriteLine("Pattern {0} Channel {1} need to end previous note because volume is now zero", pattern.PatternNumber, channelEvent.ChannelNumber);
-                                needNoteOff = true;
-                            }
-                        }
-
-                        if (needNoteOff)
+                        if (channel.IsPlayingNote && channelEvent.HasVolume && channelEvent.Volume == 0)
                         {
                             Console.WriteLine("Pattern {0} Channel {1} ending previous note at tick {2}", pattern.PatternNumber, channelEvent.ChannelNumber, tick);
                             channel.AddNoteEvent(GenerateNoteOffEvent(channel, tick));
@@ -102,18 +87,13 @@ namespace S3MParser
                         {
                             var delay = 0;
 
-                            if (pattern.PatternNumber == 8 && channelEvent.Command != CommandType.None)
-                            {
-                                Console.WriteLine("Pattern {0} Row {1} Channel {2} {3}", pattern.PatternNumber, row.RowNumber, channelEvent.ChannelNumber, channelEvent.Command);
-                            }
-
                             if (channelEvent.Command == CommandType.Notedelay)
                             {
-                                if (208 <= channelEvent.Data && channelEvent.Data <= 214)  // HACK: 214 is a guess at the top range of SD commands
-                                {
-                                    delay = channelEvent.Data - 208;
-                                    Debug.Assert(delay >= 0);
-                                }
+                                delay = channelEvent.Data;
+                            }
+                            if (channel.IsPlayingNote)
+                            {
+                                channel.AddNoteEvent(GenerateNoteOffEvent(channel, tick + rowSpeedToTicks(delay)));
                             }
                             channel.AddNoteEvent(GenerateNoteOnEvent(channel, channelEvent, tick + rowSpeedToTicks(delay), options));
                         }

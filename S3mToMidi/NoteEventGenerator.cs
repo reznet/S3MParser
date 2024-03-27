@@ -5,7 +5,7 @@ namespace S3MParser
 {
     static class NoteEventGenerator
     {
-        public static List<List<Event>> Generate(S3MFile file, NoteEventGeneratorOptions options)
+        public static Dictionary<int, List<Event>> Generate(S3MFile file, NoteEventGeneratorOptions options)
         {
             const int TICKS_PER_QUARTERNOTE = 96;
             // a pattern has max 64 rows
@@ -29,7 +29,7 @@ namespace S3MParser
                 return TICKS_PER_QUARTERNOTE * speed / 24;
             }
             
-            Dictionary<int, Channel> channels = new Dictionary<int, Channel>();
+            SortedDictionary<int, Channel> channels = new SortedDictionary<int, Channel>();
 
             Console.WriteLine("initial speed {0}", file.InitialSpeed);
             int speed = file.InitialSpeed;
@@ -214,12 +214,14 @@ namespace S3MParser
                 }
             }
 
-            List<List<Event>> allEvents = new List<List<Event>>();
+            Dictionary<int, List<Event>> channelEvents = new Dictionary<int, List<Event>>();
+
             foreach (var key in channels.Keys.OrderBy(i => i))
             {
-                allEvents.Add(channels[key].NoteEvents);
+                channelEvents[key] = channels[key].NoteEvents;
             }
-            return allEvents;
+
+            return channelEvents;
         }
 
         private static NoteEvent GenerateNoteOnEvent(Channel channel, ChannelEvent channelEvent, int tick, NoteEventGeneratorOptions options)
@@ -240,7 +242,7 @@ namespace S3MParser
             return offEvent;
         }
 
-        private static Channel GetChannel(Dictionary<int, Channel> channels, int channelNumber)
+        private static Channel GetChannel(SortedDictionary<int, Channel> channels, int channelNumber)
         {
             if (!channels.ContainsKey(channelNumber))
             {

@@ -27,16 +27,23 @@ namespace S3MParser
 
             [Option("start-order", Required = false, HelpText = "The order in the song to start at.  Use this to skip patterns in the beginning of the song with time signatures that do not render well in MIDI programs.")]
             public int? StartOrder { get; set; }
+
+            [Option("exclude-channel", Required = false, HelpText = "ScreamTracker channels to exclude from the output file.  Use this to exclude drum channels.")]
+            public IEnumerable<int> ExcludeChannels { get; set; }
         }
 
         static void Main(string[] args)
         {
-            Parser.Default.ParseArguments<Options>(args)
+
+            var parser = new Parser(with => {
+                with.AllowMultiInstance = true;
+            });
+            parser.ParseArguments<Options>(args)
                    .WithParsed<Options>(o =>
                    {
                        S3MFile file = S3MFile.Parse(o.InputFile);
 
-                       MidiWriter2.Save(
+                       var noteEvents = 
                             NoteEventGenerator.Generate(
                                 file, 
                                 new NoteEventGeneratorOptions() 
@@ -44,9 +51,11 @@ namespace S3MParser
                                         ChannelsFromPatterns = o.ChannelsFromPatterns,
                                         Pattern = o.Pattern,
                                         StartOrder = o.StartOrder,
-                                    })
-                            .ToList(),
-                            Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")));
+                                    });
+
+                       MidiWriter2.Save(noteEvents, 
+                            Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")), 
+                            new MidiExportOptions(){ ExcludedChannels = o.ExcludeChannels.ToHashSet() });
                    });
         }
     }

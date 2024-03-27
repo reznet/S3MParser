@@ -14,7 +14,9 @@
                 "--file", "${workspaceFolder}/songs/v-bogey.s3m",
                 //"--pattern", "59",
                  "--channels-from-patterns",
-                 "--start-order", "4"
+                 "--start-order", "4",
+                 "--exclude-channel", "4",
+                 "--exclude-channel", "5"
             ],
             "cwd": "${workspaceFolder}/S3mToMidi",
             "stopAtEntry": false,

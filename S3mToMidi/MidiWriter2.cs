@@ -1,19 +1,13 @@
 ﻿using Melanchall.DryWetMidi.Common;
 using Melanchall.DryWetMidi.Core;
-using Melanchall.DryWetMidi.Interaction;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace S3MParser
 {
     static class MidiWriter2
     {
         private const int MAX_MIDI_CHANNEL = 16;
-        public static void Save(List<List<Event>> allEvents, string path)
+        public static void Save(Dictionary<int, List<Event>> allEvents, string path, MidiExportOptions exportOptions)
         {
             var channelLastTicks = new Dictionary<int, int>();
             for(int i = 0; i < MAX_MIDI_CHANNEL; i++){
@@ -21,11 +15,11 @@ namespace S3MParser
             }
 
             List<TrackChunk> tracks = new List<TrackChunk>();
-            for (int trackIndex = 0; trackIndex < allEvents.Count; trackIndex++)
+            foreach(var channelNumber in allEvents.Keys)
             {
-
-                List<Event> trackEvents = allEvents[trackIndex];
+                List<Event> trackEvents = allEvents[channelNumber];
                 var midiEvents = trackEvents
+                    .Where(trackEvent => !exportOptions.ExcludedChannels.Contains(channelNumber))
                     .OrderBy(trackEvent => trackEvent.Tick)
                     .Select(trackEvent => new { Tick = trackEvent.Tick, MidiMessage = Convert(trackEvent, channelLastTicks) })
                     .Where(midiEvent => midiEvent.MidiMessage != null)

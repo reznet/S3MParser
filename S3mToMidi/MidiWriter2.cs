@@ -17,6 +17,11 @@ namespace S3MParser
             List<TrackChunk> tracks = new List<TrackChunk>();
             foreach(var channelNumber in allEvents.Keys)
             {
+                if (exportOptions.ExcludedChannels.Contains(channelNumber))
+                {
+                    Console.WriteLine("Excluding channel {0} from output midi file.", channelNumber);
+                    continue;
+                }
                 List<Event> trackEvents = allEvents[channelNumber];
                 var midiEvents = trackEvents
                     .Where(trackEvent => !exportOptions.ExcludedChannels.Contains(channelNumber))

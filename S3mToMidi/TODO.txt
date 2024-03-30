@@ -1,5 +1,4 @@
 ﻿Volume changes
 channel volume memory
 detect and remove note echos
-triplets
 drum tracks

@@ -1,9 +1,4 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
-using S3M;
-
-namespace S3M.Tests
+﻿namespace S3M.Tests
 {
     [TestClass]
     public class UnpackTests

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using S3M;
-
-namespace S3M.Tests
+﻿namespace S3M.Tests
 {
     /// <summary>
     /// Summary description for UnitTest1

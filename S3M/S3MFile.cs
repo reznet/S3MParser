@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
+﻿using System.Text;
 using System.Diagnostics;
 
 namespace S3M
@@ -42,7 +38,6 @@ namespace S3M
                 // skip to next row
                 stream.Seek(2, SeekOrigin.Current);
                 CheckStreamPosition(stream, 0x20);
-                //file.OrderCount = ReadByteAsInt(reader);
                 file.OrderCount = reader.ReadInt16();
                 file.InstrumentCount = reader.ReadInt16();
                 file.PatternCount = reader.ReadInt16();
@@ -68,7 +63,6 @@ namespace S3M
 
                 file.Patterns.AddRange(ReadPatterns(file.PatternPointers, stream, reader));
 
-
                 return file;
             }
         }
@@ -86,43 +80,8 @@ namespace S3M
 
         internal static int ReadParapointer(BinaryReader reader)
         {
-            //Console.Out.WriteLine("Reading at " + ((FileStream)reader.BaseStream).Position);
             return reader.ReadUInt16();
-            /*
-            short s = reader.ReadInt16();
-            Console.Out.WriteLine("PP: " + s);
-            return s;
-            */
-            /*
-            byte[] bytes = reader.ReadBytes(2);
-            Console.Out.WriteLine("bytes[0] {0}", bytes[0]);
-            Console.Out.WriteLine("bytes[1] {0}", bytes[1]);
-            //int value1 = Convert.ToInt32(bytes[0]) + (Convert.ToInt32(bytes[1]) * 255);
-
-            //int value1 = bytes[1] << 4 | bytes[0];
-            int value1 = bytes[1] << 8 | bytes[0];
-
-            Console.Out.WriteLine("PP: " + value1);
-
-            return value1;
-            */
-            //int byte0 = Convert.ToInt32(bytes[0]);
-            //int byte1 = Convert.ToInt32(bytes[1]);
-
-            //int value2 = byte0 << 4 | byte1;
-
-            //return s;
         }
-        /*
-        internal static int ReadParapointer(BinaryReader reader)
-        {
-            byte[] bytes = reader.ReadBytes(2);
-            int value = Convert.ToInt32(bytes[0]) + (Convert.ToInt32(bytes[1]) * 255);
-
-            Console.Out.WriteLine("ParaPointer: [{0}|{1}] = {2}", bytes[0], bytes[1], value);
-
-            return value;
-        }*/
 
         private static IEnumerable<Pattern> ReadPatterns(int[] patternPointers, Stream stream, BinaryReader reader)
         {
@@ -149,50 +108,12 @@ namespace S3M
             return values;
         }
 
-        private static int[] ReadShortArrayAsIntArray(int byteCount, BinaryReader reader)
-        {
-            int[] values = new int[byteCount];
-            for (int i = 0; i < values.Length; i++)
-            {
-                values[i] = reader.ReadInt16();
-            }
-            return values;
-        }
-
         private static void ReadSCRM(BinaryReader reader)
         {
             byte[] scrm = reader.ReadBytes(4);
             string scrmString = Encoding.ASCII.GetString(scrm);
             Debug.Assert(scrmString == "SCRM", "Parse Assert", String.Format("Did not find SCRM token.  Instead, found {0}.", scrmString));
         }
-        /*
-        public static int ReadByteAsInt(BinaryReader reader)
-        {
-            byte value = reader.ReadByte();
-            return Convert.ToInt32(value);
-        }
-
-        public static int Read2BytesAsInt(BinaryReader reader)
-        {
-            byte[] data = reader.ReadBytes(2);
-            int byte0 = Convert.ToInt32(data[0]);
-            int byte1 = Convert.ToInt32(data[1]);
-
-            int value = byte0 << 4 | byte1;
-            return value;
-        }
-
-        public static int Read4BytesAsInt(BinaryReader reader)
-        {
-            byte[] data = reader.ReadBytes(4);
-            int byte0 = Convert.ToInt32(data[0]);
-            int byte1 = Convert.ToInt32(data[1]);
-            int byte2 = Convert.ToInt32(data[2]);
-            int byte3 = Convert.ToInt32(data[3]);
-
-            int value = (byte2 << 12) | (byte3) << 8 | (byte0 << 4) | (byte1);
-            return value;
-        }*/
 
         private static void CheckStreamPosition(FileStream stream, int targetPosition)
         {

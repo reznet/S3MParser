@@ -73,8 +73,6 @@ namespace S3MParser
             }
             else if (e is TempoEvent)
             {
-                
-                
                 var tempoEvent = (TempoEvent)e;
                 Console.Out.WriteLine("TempoEvent Tick {0} Tempo {1} {2}", tempoEvent.Tick, tempoEvent.TempoBpm, 60000000 / tempoEvent.TempoBpm);
                 
@@ -89,12 +87,6 @@ namespace S3MParser
             }
             else if (e is TimeSignatureEvent)
             {
-                /*
-                Console.Out.WriteLine("Skipping TimeSignature event");
-                return null;
-                */
-
-                
                 var timeSignatureEvent = (TimeSignatureEvent)e;
                 Console.WriteLine("TimeSignatureEvent Tick {0} {1}/{2}", timeSignatureEvent.Tick, timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
                 const byte ClocksPerMetronomeClick = 24;

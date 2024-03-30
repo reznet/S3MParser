@@ -1,5 +1,4 @@
 using S3M;
-using System.Diagnostics;
 
 namespace S3MParser
 {

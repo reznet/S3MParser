@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Reflection;
-using System.Xml;
-using System.Diagnostics;
-using S3M;
+﻿using S3M;
 using CommandLine;
 
 namespace S3MParser

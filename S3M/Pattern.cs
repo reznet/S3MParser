@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Diagnostics;
 
 namespace S3M
 {
@@ -86,17 +81,6 @@ namespace S3M
                 row++;
             }
         }
-
-        //internal IEnumerable<IChannel> Channels
-        //{
-        //    get
-        //    {
-        //        var c = from row in this.Rows
-        //                from channel in row.Channels
-        //                group channel by channel.ChannelNumber into g
-        //                select g.Key
-        //    }
-        //}
 
         internal static Pattern Read(System.IO.Stream stream, System.IO.BinaryReader reader)
         {

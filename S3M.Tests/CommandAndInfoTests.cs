@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using S3M;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace S3M.Tests
 {

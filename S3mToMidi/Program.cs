@@ -31,6 +31,7 @@ namespace S3MParser
                 with.AllowMultiInstance = true;
                 with.AutoHelp = true;
                 with.AutoVersion = true;
+                with.HelpWriter = Console.Error;
             }); 
             parser.ParseArguments<Options>(args)
                    .WithParsed<Options>(o =>
@@ -50,6 +51,10 @@ namespace S3MParser
                        MidiWriter2.Save(noteEvents, 
                             Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")), 
                             new MidiExportOptions(){ ExcludedChannels = o.ExcludeChannels.ToHashSet() });
+                   })
+                   .WithNotParsed((errors) => 
+                   {
+                       System.Environment.Exit(1);
                    });
         }
     }

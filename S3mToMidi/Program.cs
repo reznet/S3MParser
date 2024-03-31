@@ -29,7 +29,9 @@ namespace S3MParser
 
             var parser = new Parser(with => {
                 with.AllowMultiInstance = true;
-            });
+                with.AutoHelp = true;
+                with.AutoVersion = true;
+            }); 
             parser.ParseArguments<Options>(args)
                    .WithParsed<Options>(o =>
                    {

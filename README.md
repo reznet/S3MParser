@@ -18,16 +18,22 @@ This program maps samples/instruments to MIDI channels because in many of virt's
 
 ### Exclude Channel
 
-Because the "drum" tracks in the module are currently mapped to the default piano midi sound, they can be very distracting.  Use the `--exclude-channel` command line argument to exclude a channel from the output file.  For virt's songs, this means using `--exclude-channel 4 --exclude-channel 5`.
+Because the "drum" tracks in the module are currently mapped to the default piano midi sound, they can be very distracting.  Use the `--exclude-channel <channel number>` command line argument to exclude a channel from the output file.  For virt's songs, this means using `--exclude-channel 4 --exclude-channel 5`.
 
 ### Start Order
 
-Some songs have intros that use tempo and speed for special effects and cannot be easily understood with notation.  Use the `--start-order` command line switch to specify which pattern in the song's pattern order to start from.  You can get this information by opening the song in a tracker and going to the `Orders` page.  Note that the order is not the same as the pattern number.
+Some songs have intros that use tempo and speed for special effects and cannot be easily understood with notation.  Use the `--start-order <order number>` command line switch to specify which pattern in the song's pattern order to start from.  You can get this information by opening the song in a tracker and going to the `Orders` page.  Note that the order is not the same as the pattern number.
 
+### Pattern
+
+Use the `--pattern <patter number>` command line parameter to export a single pattern.  This is mostly useful when debugging changes to this program.
 
 ## Examples
 ```
 S3mToMidi --file mysong.s3m
+
+# export pattern 20 from v-blast
+S3mToMidi --file v-blast.s3m --pattern 20
 
 # start v-bogey after the Top Gun intro and exclude the drum channels
 S3mToMidi --file v-bogey.s3m --channels-from-patterns --start-order 4 --exclude-channel 4 --exclude-channel 5

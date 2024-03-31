@@ -1,32 +1,27 @@
 ﻿using S3M;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
-namespace S3MParser
+namespace S3mToMidi
 {
-    class MusicXmlWriter
+    internal class MusicXmlWriter
     {
-        static int[] Alter = { 0, -1, 0, -1, 0, 0, -1, 0, -1, 0, -1, 0 };
-        static char[] Notes = { 'C', 'D', 'D', 'E', 'E', 'F', 'G', 'G', 'A', 'A', 'B', 'B' };
+        private static readonly int[] Alter = [0, -1, 0, -1, 0, 0, -1, 0, -1, 0, -1, 0];
+        private static readonly char[] Notes = ['C', 'D', 'D', 'E', 'E', 'F', 'G', 'G', 'A', 'A', 'B', 'B'];
 
         public static void SaveXml(S3MFile file, string path)
         {
-            XmlDocument doc = new XmlDocument();
+            XmlDocument doc = new();
             doc.LoadXml("<score-partwise version=\"1.1\"><part-list/></score-partwise>");
             // add part for each instrument
             for (int instrumentIndex = 0; instrumentIndex < file.InstrumentCount; instrumentIndex++)
             {
                 XmlElement part = doc.CreateElement("score-part");
                 XmlElement partList = (XmlElement)doc.DocumentElement.SelectSingleNode("part-list");
-                partList.AppendChild(part);
+                _ = partList.AppendChild(part);
                 part.SetAttribute("id", instrumentIndex.ToString());
                 XmlElement partName = doc.CreateElement("part-name");
-                partName.InnerText = String.Format("Part {0}", instrumentIndex);
-                part.AppendChild(partName);
+                partName.InnerText = string.Format("Part {0}", instrumentIndex);
+                _ = part.AppendChild(partName);
             }
 
             foreach (Pattern pattern in file.Patterns)
@@ -44,9 +39,9 @@ namespace S3MParser
                     select evt;
             XmlElement part1 = doc.CreateElement("part");
             part1.SetAttribute("id", "1");
-            doc.DocumentElement.AppendChild(part1);
+            _ = doc.DocumentElement.AppendChild(part1);
             XmlElement measure = doc.CreateElement("measure");
-            part1.AppendChild(measure);
+            _ = part1.AppendChild(measure);
             measure.SetAttribute("number", "1");
             measure.SetAttribute("width", "800");
             measure.InnerXml = "      <attributes>        <divisions>32</divisions>        <key>          <fifths>0</fifths>          <mode>major</mode>        </key>        <time>          <beats>4</beats>          <beat-type>4</beat-type>        </time>        <clef>          <sign>G</sign>          <line>2</line>        </clef>        <staff-details print-object=\"no\"/>      </attributes>";
@@ -57,37 +52,34 @@ namespace S3MParser
             {
                 Console.Out.WriteLine(evt);
                 XmlElement note = doc.CreateElement("note");
-                measure.AppendChild(note);
+                _ = measure.AppendChild(note);
                 lastNote = note;
-                if (firstNote == null)
-                {
-                    firstNote = note;
-                }
+                firstNote ??= note;
                 XmlElement pitch = doc.CreateElement("pitch");
-                note.AppendChild(pitch);
+                _ = note.AppendChild(pitch);
                 int step = evt.Note & 15;
                 int octave = evt.Note >> 4;
 
                 bool alter = Alter[step] != 0;
 
 
-                pitch.InnerXml = String.Format("<step>{0}</step><alter>{2}</alter><octave>{1}</octave>", Notes[step], octave, Alter[step]);
+                pitch.InnerXml = string.Format("<step>{0}</step><alter>{2}</alter><octave>{1}</octave>", Notes[step], octave, Alter[step]);
                 Console.Out.WriteLine(pitch.InnerXml);
                 XmlElement duration = doc.CreateElement("duration");
-                note.AppendChild(duration);
+                _ = note.AppendChild(duration);
                 duration.InnerText = "1";
                 XmlElement type = doc.CreateElement("type");
-                note.AppendChild(type);
+                _ = note.AppendChild(type);
                 type.InnerText = "eighth";
                 XmlElement stem = doc.CreateElement("stem");
-                note.AppendChild(stem);
+                _ = note.AppendChild(stem);
                 stem.InnerText = "up";
                 if (beam == null)
                 {
                     beam = doc.CreateElement("beam");
                     beam.SetAttribute("number", "1");
                     beam.InnerText = "begin";
-                    note.AppendChild(beam);
+                    _ = note.AppendChild(beam);
                 }
                 else
                 {
@@ -100,7 +92,7 @@ namespace S3MParser
             }
             if (lastNote != firstNote)
             {
-                lastNote.AppendChild(beam);
+                _ = lastNote.AppendChild(beam);
             }
 
             //Console.Out.WriteLine(doc.OuterXml);

@@ -1,8 +1,8 @@
 using S3M;
 
-namespace S3MParser
+namespace S3mToMidi
 {
-    static class NoteEventGenerator
+    internal static class NoteEventGenerator
     {
         public static Dictionary<int, List<Event>> Generate(S3MFile file, NoteEventGeneratorOptions options)
         {
@@ -23,12 +23,12 @@ namespace S3MParser
             // speed = 2, 1 row = ??nd note (TICKS_PER_QUARTERNOTE / (24 / 2))
             // speed = 1, 1 row = ?? nd note (TICKS_PER_QUARTERNOTE / 24) [4 midi ticks]
 
-            static int rowSpeedToTicks(int speed){
-                if (speed == 0){ return speed; }
-                return TICKS_PER_QUARTERNOTE * speed / 24;
+            static int rowSpeedToTicks(int speed)
+            {
+                return speed == 0 ? speed : TICKS_PER_QUARTERNOTE * speed / 24;
             }
-            
-            SortedDictionary<int, Channel> channels = new SortedDictionary<int, Channel>();
+
+            SortedDictionary<int, Channel> channels = [];
 
             Console.WriteLine("initial speed {0}", file.InitialSpeed);
             int speed = file.InitialSpeed;
@@ -37,11 +37,11 @@ namespace S3MParser
             int finalRow = 0;
 
             Channel firstChannel = GetChannel(channels, 1);
-            TempoEvent initialTempoEvent = new TempoEvent(tick, file.InitialTempo);
+            TempoEvent initialTempoEvent = new(tick, file.InitialTempo);
             bool hasAddedInitialTempo = false;
 
 
-            TimeSignatureEvent currentTimeSignatureEvent = new TimeSignatureEvent(tick, 4, 4);
+            TimeSignatureEvent currentTimeSignatureEvent = new(tick, 4, 4);
             firstChannel.AddNoteEvent(currentTimeSignatureEvent);
 
             int takePatterns = int.MaxValue;
@@ -116,19 +116,19 @@ namespace S3MParser
                         }
                         else if (channelEvent.Command == CommandType.SetTempo)
                         {
-                            TempoEvent setTempoEvent = new TempoEvent(tick, channelEvent.Data);
-                            if(!hasAddedInitialTempo)
+                            TempoEvent setTempoEvent = new(tick, channelEvent.Data);
+                            if (!hasAddedInitialTempo)
                             {
                                 initialTempoEvent = setTempoEvent;
                             }
-                            else 
+                            else
                             {
                                 firstChannel.AddNoteEvent(setTempoEvent);
                             }
                         }
                     }
 
-                    if(rowIndex == 0 && !hasAddedInitialTempo)
+                    if (rowIndex == 0 && !hasAddedInitialTempo)
                     {
                         firstChannel.AddNoteEvent(initialTempoEvent);
                         hasAddedInitialTempo = true;
@@ -150,10 +150,10 @@ namespace S3MParser
                 Console.WriteLine("Pattern {0} ending tracker ticks is {1} and midi ticks is {2}", pattern.PatternNumber, patternTrackerTicks, tick);
 
                 Console.WriteLine("Pattern {0} is {1} tracker ticks long", pattern.PatternNumber, (float)patternTrackerTicks);
-                Console.WriteLine("Pattern {0} is {1} quarter notes long", pattern.PatternNumber, (float)patternTrackerTicks / 24.0);
-                Console.WriteLine("Pattern {0} is {1} eighth notes long", pattern.PatternNumber, (float)patternTrackerTicks / 12.0);
-                Console.WriteLine("Pattern {0} is {1} 16th notes long", pattern.PatternNumber, (float)patternTrackerTicks / 6.0);
-                Console.WriteLine("Pattern {0} is {1} 32nd notes long", pattern.PatternNumber, (float)patternTrackerTicks / 3.0);
+                Console.WriteLine("Pattern {0} is {1} quarter notes long", pattern.PatternNumber, patternTrackerTicks / 24.0);
+                Console.WriteLine("Pattern {0} is {1} eighth notes long", pattern.PatternNumber, patternTrackerTicks / 12.0);
+                Console.WriteLine("Pattern {0} is {1} 16th notes long", pattern.PatternNumber, patternTrackerTicks / 6.0);
+                Console.WriteLine("Pattern {0} is {1} 32nd notes long", pattern.PatternNumber, patternTrackerTicks / 3.0);
                 // 32nd  - / 3.0
                 // 96th - / 1.0
                 // half notes / 48
@@ -213,7 +213,7 @@ namespace S3MParser
                 }
             }
 
-            Dictionary<int, List<Event>> channelEvents = new Dictionary<int, List<Event>>();
+            Dictionary<int, List<Event>> channelEvents = [];
 
             foreach (var key in channels.Keys.OrderBy(i => i))
             {
@@ -228,7 +228,7 @@ namespace S3MParser
             int volume = channelEvent.HasVolume ? channelEvent.Volume : channel.DefaultVolume;
             channel.Instrument = channelEvent.HasInstrument ? channelEvent.Instrument : channel.Instrument;
             int noteChannel = options.ChannelsFromPatterns ? channelEvent.ChannelNumber : channel.Instrument - 1;
-            NoteEvent noteOnEvent = new NoteEvent(tick, NoteEvent.EventType.NoteOn, noteChannel, channelEvent.Note, volume);
+            NoteEvent noteOnEvent = new(tick, NoteEvent.EventType.NoteOn, noteChannel, channelEvent.Note, volume);
             channel.CurrentNote = noteOnEvent;
             return noteOnEvent;
         }
@@ -243,26 +243,27 @@ namespace S3MParser
 
         private static Channel GetChannel(SortedDictionary<int, Channel> channels, int channelNumber)
         {
-            if (!channels.ContainsKey(channelNumber))
+            if (!channels.TryGetValue(channelNumber, out Channel? value))
             {
                 Console.WriteLine("Initializing channel {0}", channelNumber);
-                channels.Add(channelNumber, new Channel()
+                value = new Channel()
                 {
                     DefaultVolume = 64,
-                });
+                };
+                channels.Add(channelNumber, value);
             }
-            return channels[channelNumber];
+            return value;
         }
 
         private class Channel
         {
-            public NoteEvent CurrentNote;
+            public NoteEvent? CurrentNote;
             public int DefaultVolume;
             public int Instrument;
             public int Data;
-            public List<Event> NoteEvents = new List<Event>();
+            public List<Event> NoteEvents = [];
 
-            public bool IsPlayingNote { get { return CurrentNote != null; } }
+            public bool IsPlayingNote => CurrentNote != null;
 
             public void AddNoteEvent(Event noteEvent)
             {

@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 
-namespace S3MParser
+namespace S3mToMidi
 {
-    class NoteEvent : Event
+    internal class NoteEvent : Event
     {
         public enum EventType
         {
@@ -11,28 +11,28 @@ namespace S3MParser
         }
 
         public NoteEvent(int tick, EventType eventType, int channel, int pitch, int velocity)
-            :base(tick)
+            : base(tick)
         {
-            this.Type = eventType;
-            this.Channel = channel;
-            this.Pitch = pitch;
-            this.Velocity = velocity;
+            Type = eventType;
+            Channel = channel;
+            Pitch = pitch;
+            Velocity = velocity;
 
-            Debug.Assert(0 <= this.Channel, "negative channel");
-            Debug.Assert(0 <= this.Pitch, "negative pitch");
-            Debug.Assert(this.Channel < 16, "channel must be less than 16");
-            Debug.Assert(0 <= this.Velocity, "negative velocity");
+            Debug.Assert(0 <= Channel, "negative channel");
+            Debug.Assert(0 <= Pitch, "negative pitch");
+            Debug.Assert(Channel < 16, "channel must be less than 16");
+            Debug.Assert(0 <= Velocity, "negative velocity");
         }
 
         public EventType Type { get; set; }
-        
+
         public int Channel { get; set; }
         public int Pitch { get; set; }
         public int Velocity { get; set; }
 
         public NoteEvent Clone(int tick)
         {
-            return new NoteEvent(tick, this.Type, this.Channel, this.Pitch, this.Velocity);
+            return new NoteEvent(tick, Type, Channel, Pitch, Velocity);
         }
 
         public override string ToString()

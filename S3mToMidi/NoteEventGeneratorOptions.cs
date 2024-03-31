@@ -1,4 +1,4 @@
-﻿namespace S3MParser
+﻿namespace S3mToMidi
 {
     public class NoteEventGeneratorOptions
     {

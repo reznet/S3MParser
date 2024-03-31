@@ -1,18 +1,16 @@
 ﻿using System.Diagnostics;
 
-namespace S3MParser
+namespace S3mToMidi
 {
-    class TempoEvent : Event
+    internal class TempoEvent : Event
     {
-        private readonly int _tempoBpm;
-
         public TempoEvent(int tick, int tempoBpm)
             : base(tick)
         {
             Debug.Assert(tempoBpm > 0, "tempo must be a positive integer: " + tempoBpm);
-            _tempoBpm = tempoBpm;
+            TempoBpm = tempoBpm;
         }
 
-        public int TempoBpm { get { return _tempoBpm; } }
+        public int TempoBpm { get; }
     }
 }

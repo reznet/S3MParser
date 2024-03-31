@@ -2,20 +2,21 @@
 using Melanchall.DryWetMidi.Core;
 using System.Diagnostics;
 
-namespace S3MParser
+namespace S3mToMidi
 {
-    static class MidiWriter2
+    internal static class MidiWriter2
     {
         private const int MAX_MIDI_CHANNEL = 16;
         public static void Save(Dictionary<int, List<Event>> allEvents, string path, MidiExportOptions exportOptions)
         {
             var channelLastTicks = new Dictionary<int, int>();
-            for(int i = 0; i < MAX_MIDI_CHANNEL; i++){
+            for (int i = 0; i < MAX_MIDI_CHANNEL; i++)
+            {
                 channelLastTicks[i] = 0;
             }
 
-            List<TrackChunk> tracks = new List<TrackChunk>();
-            foreach(var channelNumber in allEvents.Keys)
+            List<TrackChunk> tracks = [];
+            foreach (var channelNumber in allEvents.Keys)
             {
                 if (exportOptions.ExcludedChannels.Contains(channelNumber))
                 {
@@ -26,30 +27,29 @@ namespace S3MParser
                 var midiEvents = trackEvents
                     .Where(trackEvent => !exportOptions.ExcludedChannels.Contains(channelNumber))
                     .OrderBy(trackEvent => trackEvent.Tick)
-                    .Select(trackEvent => new { Tick = trackEvent.Tick, MidiMessage = Convert(trackEvent, channelLastTicks) })
+                    .Select(trackEvent => new { trackEvent.Tick, MidiMessage = Convert(trackEvent, channelLastTicks) })
                     .Where(midiEvent => midiEvent.MidiMessage != null)
                     .Select(midiEvent => midiEvent.MidiMessage);
-                
-                TrackChunk track = new TrackChunk(midiEvents);
+
+                TrackChunk track = new(midiEvents);
                 tracks.Add(track);
             }
 
-            MidiFile file = new MidiFile(tracks);
+            MidiFile file = new(tracks);
 
             file.Write(path, overwriteFile: true);
         }
 
-        private static MidiEvent Convert(Event e, Dictionary<int, int> channelLastTicks)
+        private static MidiEvent? Convert(Event e, Dictionary<int, int> channelLastTicks)
         {
-            if (e is NoteEvent)
+            if (e is NoteEvent note)
             {
-                NoteEvent note = (NoteEvent)e;
 
                 // ignore channels beyond what MIDI supports
-                if(MAX_MIDI_CHANNEL < note.Channel) 
+                if (MAX_MIDI_CHANNEL < note.Channel)
                 {
                     Console.WriteLine("Ignoring note event {0} because its MIDI channel is greater than the maximum allowed 16.", note);
-                    return null; 
+                    return null;
                 }
 
                 if (note.Type == NoteEvent.EventType.NoteOff)
@@ -71,23 +71,21 @@ namespace S3MParser
                     };
                 }
             }
-            else if (e is TempoEvent)
+            else if (e is TempoEvent tempoEvent)
             {
-                var tempoEvent = (TempoEvent)e;
                 Console.Out.WriteLine("TempoEvent Tick {0} Tempo {1} {2}", tempoEvent.Tick, tempoEvent.TempoBpm, 60000000 / tempoEvent.TempoBpm);
-                
+
                 return new SetTempoEvent(60000000 / tempoEvent.TempoBpm)
                 {
                     // todo how to compute delta for tempo events - which channel?
                     // maybe a pseudo-channel for tempo?
                     DeltaTime = GetDeltaTimeForChannelTick(1, tempoEvent.Tick, channelLastTicks),
-                    
+
                 };
-                
+
             }
-            else if (e is TimeSignatureEvent)
+            else if (e is TimeSignatureEvent timeSignatureEvent)
             {
-                var timeSignatureEvent = (TimeSignatureEvent)e;
                 Console.WriteLine("TimeSignatureEvent Tick {0} {1}/{2}", timeSignatureEvent.Tick, timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
                 const byte ClocksPerMetronomeClick = 24;
                 const byte ThirtySecondNotesPerQuarterNote = 8;
@@ -95,11 +93,11 @@ namespace S3MParser
                                               (byte)timeSignatureEvent.BeatValue,
                                               ClocksPerMetronomeClick,
                                               ThirtySecondNotesPerQuarterNote)
-                                              {
-                                                // todo: how to compute delta for events that don't have a channel
-                                                DeltaTime = GetDeltaTimeForChannelTick(1, timeSignatureEvent.Tick, channelLastTicks)
-                                              };
-                                              
+                {
+                    // todo: how to compute delta for events that don't have a channel
+                    DeltaTime = GetDeltaTimeForChannelTick(1, timeSignatureEvent.Tick, channelLastTicks)
+                };
+
             }
             else
             {
@@ -114,7 +112,7 @@ namespace S3MParser
             var delta = tick - lastTick;
             channelLastTicks[channel] = tick;
 
-            return delta ;
+            return delta;
         }
 
         private static int ChannelNoteToMidiPitch(int note)

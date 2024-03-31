@@ -1,19 +1,9 @@
-﻿namespace S3MParser
+﻿namespace S3mToMidi
 {
-    class TimeSignatureEvent : Event
+    internal class TimeSignatureEvent(int tick, int beatsPerBar, int beatValue) : Event(tick)
     {
-        private readonly int _beatsPerBar;
-        private readonly int _beatValue;
+        public int BeatsPerBar { get; } = beatsPerBar;
 
-        public TimeSignatureEvent(int tick, int beatsPerBar, int beatValue)
-            : base(tick)
-        {
-            _beatsPerBar = beatsPerBar;
-            _beatValue = beatValue;
-        }
-
-        public int BeatsPerBar { get { return _beatsPerBar; } }
-
-        public int BeatValue { get { return _beatValue; } }
+        public int BeatValue { get; } = beatValue;
     }
 }

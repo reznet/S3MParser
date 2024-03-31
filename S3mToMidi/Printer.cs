@@ -1,33 +1,28 @@
 ﻿using S3M;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace S3MParser
+namespace S3mToMidi
 {
-    class Printer
+    internal class Printer
     {
-        static string[] Pitches = { "C-", "C#", "D-", "D#", "E-", "F-", "F#", "G-", "G#", "A-", "A#", "B-" };
+        private static readonly string[] Pitches = ["C-", "C#", "D-", "D#", "E-", "F-", "F#", "G-", "G#", "A-", "A#", "B-"];
 
         public static void PrintPatterns(IEnumerable<Pattern> patterns)
         {
             foreach (Pattern pattern in patterns)
             {
                 Console.Out.WriteLine("Pattern " + pattern.PatternNumber);
-                HashSet<int> channels = new HashSet<int>();
+                HashSet<int> channels = [];
                 foreach (Row row in pattern.Rows)
                 {
                     foreach (ChannelEvent channelEvent in row.ChannelEvents)
                     {
                         if (!channels.Contains(channelEvent.ChannelNumber))
                         {
-                            channels.Add(channelEvent.ChannelNumber);
+                            _ = channels.Add(channelEvent.ChannelNumber);
                         }
                     }
                 }
-                List<int> channelHeaders = new List<int>(channels.ToList());
+                List<int> channelHeaders = new(channels.ToList());
                 channelHeaders.Sort();
 
                 foreach (int channelHeader in channelHeaders)
@@ -67,14 +62,12 @@ namespace S3MParser
 
         private static object VolumeToString(int volume)
         {
-            if (volume == -1) { return "  "; }
-            return volume.ToString("00");
+            return volume == -1 ? "  " : (object)volume.ToString("00");
         }
 
         private static object InstrumentToString(int instrument)
         {
-            if (instrument == -1) { return "  "; }
-            return instrument.ToString("X2");
+            return instrument == -1 ? "  " : (object)instrument.ToString("X2");
         }
 
         private static string NoteValueToString(int note)
@@ -90,8 +83,7 @@ namespace S3MParser
 
         private static string CommandValueToString(CommandType command, int data)
         {
-            if (command == CommandType.None) { return "   "; }
-            return ((char)(((int)'A') + ((int)command - 1))).ToString() + data.ToString("X2");
+            return command == CommandType.None ? "   " : ((char)('A' + ((int)command - 1))).ToString() + data.ToString("X2");
         }
     }
 }

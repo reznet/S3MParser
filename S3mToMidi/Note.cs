@@ -1,6 +1,6 @@
-﻿namespace S3MParser
+﻿namespace S3mToMidi
 {
-    class Note
+    internal class Note
     {
         public enum NoteType
         {
@@ -13,26 +13,20 @@
         public string Pitch { get; private set; }
         public NoteType Type { get; private set; }
 
-        private static string[] pitches = { "C-", "C#", "D-", "D#", "E-", "F-", "F#", "G-", "G#", "A-", "A#", "B-" };
+        private static readonly string[] pitches = ["C-", "C#", "D-", "D#", "E-", "F-", "F#", "G-", "G#", "A-", "A#", "B-"];
 
         public Note(int value)
         {
-            switch (value)
+            Type = value switch
             {
-                case 255:
-                    this.Type = NoteType.Empty;
-                    break;
-                case 254:
-                    this.Type = NoteType.NoteOff;
-                    break;
-                default:
-                    this.Type = NoteType.Pitched;
-                    break;
-            }
-            if (this.Type == NoteType.Pitched)
+                255 => NoteType.Empty,
+                254 => NoteType.NoteOff,
+                _ => NoteType.Pitched,
+            };
+            if (Type == NoteType.Pitched)
             {
-                this.Octave = 1 + (value >> 4);
-                this.Pitch = pitches[value & 15];
+                Octave = 1 + (value >> 4);
+                Pitch = pitches[value & 15];
             }
         }
 

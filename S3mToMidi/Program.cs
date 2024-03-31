@@ -22,6 +22,9 @@ namespace S3mToMidi
 
             [Option("exclude-channel", Required = false, HelpText = "ScreamTracker channels to exclude from the output file.  Use this to exclude drum channels.")]
             public IEnumerable<int>? ExcludeChannels { get; set; }
+
+            [Option("minimum-volume", Required = false, HelpText = "The minimum volume a note must have to be written to the output file.  Use this to remove echos and simplify a part.")]
+            public int? MinimumVolume { get; set; }
         }
 
         private static void Main(string[] args)
@@ -34,10 +37,14 @@ namespace S3mToMidi
                 with.AutoVersion = true;
                 with.HelpWriter = Console.Error;
             });
-            _ = parser.ParseArguments<Options>(args)
-                   .WithParsed(o =>
+            _ = parser.ParseArguments<Options>(args) .WithParsed(o =>
                    {
                        S3MFile file = S3MFile.Parse(o.InputFile);
+
+                       if (o.MinimumVolume.HasValue)
+                       {
+                           new VolumeFilter() { VolumeThreshold = o.MinimumVolume.Value }.Apply(file);
+                       }
 
                        Dictionary<int, List<Event>> noteEvents =
                             NoteEventGenerator.Generate(
@@ -50,8 +57,7 @@ namespace S3mToMidi
                                 });
 
                        MidiWriter2.Save(noteEvents,
-                            Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")),
-                            new MidiExportOptions() { ExcludedChannels = o.ExcludeChannels.ToHashSet() });
+                            Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")), new MidiExportOptions() { ExcludedChannels = o.ExcludeChannels.ToHashSet() });
                    })
                    .WithNotParsed((errors) =>
                    {

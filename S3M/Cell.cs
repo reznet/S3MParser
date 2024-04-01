@@ -4,9 +4,9 @@
     {
         public Cell(int row, int channel, ChannelEvent evt)
         {
-            this.Row = row;
-            this.Channel = channel;
-            this.Event = evt;
+            Row = row;
+            Channel = channel;
+            Event = evt;
         }
 
         public int Row { get; set; }

@@ -6,7 +6,7 @@
         {
             if (length <= 0)
             {
-                throw new ArgumentOutOfRangeException("length", "length must be greater than zero");
+                throw new ArgumentOutOfRangeException(nameof(length), "length must be greater than zero");
             }
             if (length == 1)
             {
@@ -20,7 +20,7 @@
             {
                 return ReadLongAsInt(reader);
             }
-            throw new ArgumentOutOfRangeException("length", "length must be 1, 2, or 4");
+            throw new ArgumentOutOfRangeException(nameof(length), "length must be 1, 2, or 4");
         }
 
         private static int ReadByteAsInt(this BinaryReader reader)
@@ -35,7 +35,7 @@
             int byte0 = Convert.ToInt32(data[0]);
             int byte1 = Convert.ToInt32(data[1]);
 
-            int value = byte1 << 4 | byte0;
+            int value = (byte1 << 4) | byte0;
             return value;
         }
 
@@ -47,7 +47,7 @@
             int byte2 = Convert.ToInt32(data[2]);
             int byte3 = Convert.ToInt32(data[3]);
 
-            int value = (byte2 << 12) | (byte3) << 8 | (byte0 << 4) | (byte1);
+            int value = (byte2 << 12) | ((byte3) << 8) | (byte0 << 4) | (byte1);
             return value;
         }
     }

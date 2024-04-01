@@ -82,7 +82,7 @@ namespace S3M
             }
         }
 
-        internal static Pattern Read(System.IO.Stream stream, System.IO.BinaryReader reader)
+        internal static Pattern Read(Stream stream, BinaryReader reader)
         {
             Pattern pattern = new Pattern();
 

@@ -15,7 +15,7 @@ namespace S3M
 
         public List<ChannelEvent> ChannelEvents = new List<ChannelEvent>();
 
-        internal static Row Parse(System.IO.BinaryReader reader)
+        internal static Row Parse(BinaryReader reader)
         {
             Row row = new Row();
 

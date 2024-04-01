@@ -6,57 +6,32 @@
         public int Note = -1;
         public int Instrument = -1;
         public int Volume = -1;
-        private bool hasVolume = false;
         public CommandType Command = CommandType.None;
         public int Data = -1;
-        public Row Row;
-        public Pattern Pattern
-        {
-            get
-            {
-                return this.Row.Pattern;
-            }
-        }
+        public Row? Row;
+        public Pattern Pattern => Row.Pattern;
 
-        public NoteAction NoteAction
+        public NoteAction NoteAction => Note switch
         {
-            get
-            {
-                switch (Note)
-                {
-                    case -1:
-                    case 0xFF:
-                        return S3M.NoteAction.None;
-                    case 0xFE:
-                        return S3M.NoteAction.Stop;
-                    default:
-                        return S3M.NoteAction.Start;
-                }
-            }
-        }
+            -1 or 0xFF => NoteAction.None,
+            0xFE => NoteAction.Stop,
+            _ => NoteAction.Start,
+        };
 
-        public bool HasVolume
-        {
-            get { return hasVolume; }
-            private set { hasVolume = value; }
-        }
+        public bool HasVolume { get; private set; }
 
-        public bool HasInstrument
-        {
-            get { return Instrument > 0; }
-        }
-
+        public bool HasInstrument => Instrument > 0;
         public override string ToString()
         {
             return String.Format("Pattern:{6:D2} Row:{7:D2} Channel:{0:D2} Note:{1} Instrument:{2} Volume:{3} Command:{4} Data:{5}",
-                this.ChannelNumber,
-                this.Note,
-                this.Instrument,
-                this.Volume,
-                this.Command.ToString(),
-                this.Data,
-                this.Row.Pattern.PatternNumber,
-                this.Row.RowNumber);
+                ChannelNumber,
+                Note,
+                Instrument,
+                Volume,
+                Command.ToString(),
+                Data,
+                Row.Pattern.PatternNumber,
+                Row.RowNumber);
         }
 
         private const byte CHANNEL_MASK = 31;                       // 0x00011111;
@@ -64,15 +39,15 @@
         private const byte VOLUME_FOLLOWS_MASK = 1 << 6;            // 0x01000000;
         private const byte COMMAND_FOLLOWS_MASK = 1 << 7;           // 0x10000000;
 
-        internal static ChannelEvent Parse(System.IO.BinaryReader reader)
+        internal static ChannelEvent? Parse(BinaryReader reader)
         {
-            ChannelEvent channelEvent = new ChannelEvent();
+            ChannelEvent channelEvent = new();
             byte first = reader.ReadByte();
             if (first == 0)
             {
                 return null;
             }
-            channelEvent.ChannelNumber = 1 + first & CHANNEL_MASK;
+            channelEvent.ChannelNumber = (1 + first) & CHANNEL_MASK;
             if ((first & NOTE_INSTRUMENT_FOLLOWS_MASK) == NOTE_INSTRUMENT_FOLLOWS_MASK)
             {
                 // read note and instrument
@@ -100,13 +75,13 @@
                 // low comes before first
                 // e.g. B = low, C = high
                 // TODO are these backwards?
-                int hi = (dataByte & 0xF0) >> 4;
-                int low = dataByte & 0xF;
+                _ = (dataByte & 0xF0) >> 4;
+                _ = dataByte & 0xF;
 
                 // commandChar is the first hex character of the command columns
                 // e.g. A in the command ABC
                 // 0 is @, 1 is A, 2 is B, ...
-                char commandChar = (char)((int)'A' - 1 + (int)commandByte);
+                _ = (char)('A' - 1 + commandByte);
 
                 // single argument "simple" commands (xx)
                 // use dataByte as the argument to the command

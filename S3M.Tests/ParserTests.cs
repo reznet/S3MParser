@@ -4,65 +4,60 @@
     /// Summary description for UnitTest1
     /// </summary>
     [TestClass]
-    [DeploymentItem("01-v-drac.s3m")]
+    [DeploymentItem("test.s3m")]
+    [DeploymentItem("abc.s3m")]
     [DeploymentItem("sd1.s3m")]
     [DeploymentItem("sd.s3m")]
     [DeploymentItem("d04.s3m")]
+    [DeploymentItem("longname.s3m")]
     public class ParserTests
     {
-        private readonly string vDracFilename = "01-v-drac.s3m";
-
-        private S3MFile GetTestFile()
-        {
-            return S3MFile.Parse(vDracFilename);
-        }
-
         [TestMethod]
         public void TestParse()
         {
-            S3MFile.Parse(vDracFilename);
+            var _ = S3MFile.Parse("test.s3m");
         }
 
         [TestMethod]
-        public void TestFileName()
+        public void TestSongName()
         {
-            S3MFile file = GetTestFile();
-            Assert.AreEqual<string>("good morning, dracula -jk", file.Name);
+            Assert.AreEqual<string>("test", S3MFile.Parse("test.s3m").Name);
+        }
+
+        [TestMethod]
+        public void TestMaxSongName()
+        {
+            Assert.AreEqual("ABCDEFGHIJKLMNOPQRSTUVWXY", S3MFile.Parse("longname.s3m").Name);
         }
 
         [TestMethod]
         public void TestFileType()
         {
-            S3MFile file = GetTestFile();
-            Assert.AreEqual<int>(16, file.Type);
+            Assert.AreEqual<int>(16, S3MFile.Parse("test.s3m").Type);
         }
 
         [TestMethod]
         public void TestOrderCount()
         {
-            S3MFile file = GetTestFile();
-            Assert.AreEqual<int>(44, file.OrderCount);
+            Assert.AreEqual<int>(4, S3MFile.Parse("test.s3m").OrderCount);
         }
 
         [TestMethod]
         public void TestInstrumentCount()
         {
-            S3MFile file = GetTestFile();
-            Assert.AreEqual<int>(10, file.InstrumentCount);
+            Assert.AreEqual(3, S3MFile.Parse("test.s3m").InstrumentCount);
         }
 
         [TestMethod]
         public void TestPatternCount()
         {
-            S3MFile file = GetTestFile();
-            Assert.AreEqual<int>(43, file.PatternCount);
+            Assert.AreEqual<int>(2, S3MFile.Parse("test.s3m").PatternCount);
         }
 
         [TestMethod]
         public void TestNoteDelay()
         {
-            S3MFile file = S3MFile.Parse("sd1.s3m");
-            Assert.AreEqual(CommandType.Notedelay, file.Patterns[0].Rows[0].ChannelEvents[0].Command);
+            Assert.AreEqual(CommandType.Notedelay, S3MFile.Parse("sd1.s3m").Patterns[0].Rows[0].ChannelEvents[0].Command);
         }
 
         [TestMethod]

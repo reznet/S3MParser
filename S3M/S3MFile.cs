@@ -70,7 +70,7 @@ namespace S3M
         private static int[] ReadParapointers(int pointerCount, BinaryReader reader)
         {
             int[] values = new int[pointerCount];
-            
+
             for (int i = 0; i < values.Length; i++)
             {
                 values[i] = ReadParapointer(reader);
@@ -85,7 +85,7 @@ namespace S3M
 
         private static IEnumerable<Pattern> ReadPatterns(int[] patternPointers, Stream stream, BinaryReader reader)
         {
-            for(int patternIndex = 0; patternIndex < patternPointers.Length; patternIndex++)
+            for (int patternIndex = 0; patternIndex < patternPointers.Length; patternIndex++)
             {
                 int patternPointer = patternPointers[patternIndex];
                 int patternStartIndex = patternPointer * 16;
@@ -123,7 +123,15 @@ namespace S3M
         private static string ReadFileName(BinaryReader reader)
         {
             byte[] buffer = reader.ReadBytes(28);
-            return Encoding.ASCII.GetString(buffer).TrimEnd('\0');
+            int nullIndex = Array.IndexOf(buffer, (byte)'\0');
+            if (-1 == nullIndex)
+            {
+                return Encoding.ASCII.GetString(buffer);
+            }
+            else
+            {
+                return Encoding.ASCII.GetString(buffer, 0, nullIndex);
+            }
         }
     }
 }

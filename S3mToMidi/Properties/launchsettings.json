@@ -15,6 +15,10 @@
     "v-option": {
       "commandName": "Project",
       "commandLineArgs": "--file songs/v-option.s3m --channels-from-patterns --minimum-volume 32  --exclude-channel 4 --exclude-channel 5"
+    },
+    "v-shock": {
+      "commandName": "Project",
+      "commandLineArgs": "--file songs/v-shock.s3m --channels-from-patterns --minimum-volume 32  --exclude-channel 4 --exclude-channel 5"
     }
   }
 }

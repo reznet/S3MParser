@@ -28,6 +28,10 @@ Some songs have intros that use tempo and speed for special effects and cannot b
 
 Use the `--pattern <patter number>` command line parameter to export a single pattern.  This is mostly useful when debugging changes to this program.
 
+### Minimum volume
+
+Use the `--minimum-volume <volume level 0-64>` command line parameter to filter out quiet notes.  Any note with a volume lower than `<volume level>` will be treated as volume `0`.  Use this to simplify the output file and also to remove most note echos. Note that this may introduce gaps in the output midi file.
+
 ## Examples
 ```
 S3mToMidi --file mysong.s3m
@@ -36,7 +40,7 @@ S3mToMidi --file mysong.s3m
 S3mToMidi --file v-blast.s3m --pattern 20
 
 # start v-bogey after the Top Gun intro and exclude the drum channels
-S3mToMidi --file v-bogey.s3m --channels-from-patterns --start-order 4 --exclude-channel 4 --exclude-channel 5
+S3mToMidi --file v-bogey.s3m --minimum-volume 32 --channels-from-patterns --start-order 4 --exclude-channel 4 --exclude-channel 5
 ```
 
 # Notes

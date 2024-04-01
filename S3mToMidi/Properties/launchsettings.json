@@ -7,6 +7,10 @@
     "v-bogey": {
       "commandName": "Project",
       "commandLineArgs": "--file songs/v-bogey.s3m --channels-from-patterns --minimum-volume 32 --start-order 4 --exclude-channel 4 --exclude-channel 5"
+    },
+    "v-falcon": {
+      "commandName": "Project",
+      "commandLineArgs": "--file songs/v-falcon.s3m --channels-from-patterns --minimum-volume 32  --exclude-channel 4 --exclude-channel 5"
     }
   }
 }

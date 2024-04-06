@@ -37,7 +37,7 @@ namespace S3mToMidi
                 with.AutoVersion = true;
                 with.HelpWriter = Console.Error;
             });
-            _ = parser.ParseArguments<Options>(args) .WithParsed(o =>
+            _ = parser.ParseArguments<Options>(args).WithParsed(o =>
                    {
                        S3MFile file = S3MFile.Parse(o.InputFile);
 

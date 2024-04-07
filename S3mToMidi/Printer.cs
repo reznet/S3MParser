@@ -60,14 +60,14 @@ namespace S3mToMidi
             }
         }
 
-        private static object VolumeToString(int volume)
+        private static object VolumeToString(int? volume)
         {
-            return volume == -1 ? "  " : (object)volume.ToString("00");
+            return volume.HasValue ? "  " : (object)volume.Value.ToString("00");
         }
 
-        private static object InstrumentToString(int instrument)
+        private static object InstrumentToString(int? instrument)
         {
-            return instrument == -1 ? "  " : (object)instrument.ToString("X2");
+            return instrument.HasValue ? "  " : (object)instrument.Value.ToString("X2");
         }
 
         private static string NoteValueToString(int note)

@@ -4,8 +4,8 @@
     {
         public int ChannelNumber;
         public int Note = -1;
-        public int Instrument = -1;
-        public int Volume = -1;
+        public int? Instrument;
+        public int? Volume;
         public CommandType Command = CommandType.None;
         public int Data = -1;
         public Row? Row;
@@ -56,7 +56,6 @@
             }
             if ((first & VOLUME_FOLLOWS_MASK) == VOLUME_FOLLOWS_MASK)
             {
-                channelEvent.HasVolume = true;
                 channelEvent.Volume = reader.ReadByte();
             }
             if ((first & COMMAND_FOLLOWS_MASK) == COMMAND_FOLLOWS_MASK)

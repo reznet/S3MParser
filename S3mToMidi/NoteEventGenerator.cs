@@ -10,10 +10,6 @@ namespace S3mToMidi
             // a pattern has max 64 rows
             // tracker tempo is ALWAYS based on 6 ticks per row, 4 rows per beat = 24 ticks per beat
             // when speed = 6 and tempo = 60, 4 rows = 1 quarter note
-            // speed = 3, 4 rows = 8th note
-            // speed = 12, 1 row = 8th note
-            // speed = 24, 1 row = quarter note
-            // real lookup table:
             // speed = 24,1 row = quarter note (TICKS_PER_QUARTERNOTE / 1)
             // speed = 12,1 row = 8th note (TICKS_PER_QUARTERNOTE / 2)
             // speed = 6, 1 row = 16th note (TICKS_PER_QUARTERNOTE / 4)
@@ -28,7 +24,7 @@ namespace S3mToMidi
                 return speed == 0 ? speed : TICKS_PER_QUARTERNOTE * speed / 24;
             }
 
-            SortedDictionary<int, Channel> channels = [];
+            SortedDictionary<int, ChannelMultiplexer> channels = [];
 
             Console.WriteLine("initial speed {0}", file.InitialSpeed);
             int speed = file.InitialSpeed;
@@ -36,7 +32,7 @@ namespace S3mToMidi
             int rowSkip = 0;
             int finalRow = 0;
 
-            Channel firstChannel = GetChannel(channels, 1);
+            ChannelMultiplexer firstChannel = GetChannel(channels, 1);
             TempoEvent initialTempoEvent = new(tick, file.InitialTempo);
             bool hasAddedInitialTempo = false;
 
@@ -44,7 +40,7 @@ namespace S3mToMidi
             Dictionary<int, HashSet<Channel>> trackerChannelsAndMidiChannels = new Dictionary<int, System.Collections.Generic.HashSet<Channel>>();
 
             TimeSignatureEvent currentTimeSignatureEvent = new(tick, 4, 4);
-            firstChannel.AddNoteEvent(currentTimeSignatureEvent);
+            firstChannel.AddEvent(currentTimeSignatureEvent);
 
             int takePatterns = int.MaxValue;
 
@@ -80,32 +76,14 @@ namespace S3mToMidi
 
                     foreach (var channelEvent in row.ChannelEvents)
                     {
-                        if (channelEvent.ChannelNumber > 2){ continue;}
-                        int instrument = channelEvent.Instrument;
-                        if (!channelEvent.HasInstrument && lastInstrumentForChannel.ContainsKey(channelEvent.ChannelNumber)){
-                            instrument = lastInstrumentForChannel[channelEvent.ChannelNumber];
-                        }
+                        if (channelEvent.ChannelNumber > 1){ continue;}
 
-                        int virtualChannelNumber = (channelEvent.ChannelNumber * 10) + instrument;
-                        Channel channel = GetChannel(channels, virtualChannelNumber);
-
-                        if (!trackerChannelsAndMidiChannels.ContainsKey(channelEvent.ChannelNumber))
-                        {
-                            trackerChannelsAndMidiChannels[channelEvent.ChannelNumber] = new HashSet<Channel>();
-                        }
-
-                        if (!trackerChannelsAndMidiChannels[channelEvent.ChannelNumber].Contains(channel)){
-                            trackerChannelsAndMidiChannels[channelEvent.ChannelNumber].Add(channel);
-                        }
-
-                        if (channelEvent.HasInstrument){
-                            lastInstrumentForChannel[channelEvent.ChannelNumber] = channelEvent.Instrument;
-                        }
+                        ChannelMultiplexer channel = GetChannel(channels, channelEvent.ChannelNumber);
 
                         if (channel.IsPlayingNote && channelEvent.HasVolume && channelEvent.Volume == 0)
                         {
                             //Console.WriteLine("Pattern {0} Channel {1} ending previous note at tick {2}", pattern.PatternNumber, channelEvent.ChannelNumber, tick);
-                            channel.AddNoteEvent(GenerateNoteOffEvent(channel, tick));
+                            channel.NoteOff(tick);
                         }
 
                         if (channelEvent.NoteAction == NoteAction.Start)
@@ -116,17 +94,13 @@ namespace S3mToMidi
                             {
                                 delay = channelEvent.Data;
                             }
-                            foreach(var virtualChannel in trackerChannelsAndMidiChannels[channelEvent.ChannelNumber]){
-                                if (virtualChannel.IsPlayingNote){
-                                    virtualChannel.AddNoteEvent(GenerateNoteOffEvent(virtualChannel, tick + rowSpeedToTicks(delay)));
-                                }
+                            int time = tick + rowSpeedToTicks(delay);
+                            if(channel.IsPlayingNote)
+                            {
+                                channel.NoteOff(time);
                             }
-                            channel.AddNoteEvent(GenerateNoteOnEvent(channel, channelEvent, tick + rowSpeedToTicks(delay), options));
-                        }
-
-                        if (channelEvent.Data != 0)
-                        {
-                            channel.Data = channelEvent.Data;
+                            //int noteChannel = options.ChannelsFromPatterns ? channel.ChannelNumber : channel.Instrument - 1;
+                            channel.NoteOn(time, channelEvent.Instrument.Value, channelEvent.Note, channelEvent.Volume);
                         }
 
                         if (channelEvent.Command == CommandType.BreakPatternToRow)
@@ -150,14 +124,14 @@ namespace S3mToMidi
                             }
                             else
                             {
-                                firstChannel.AddNoteEvent(setTempoEvent);
+                                firstChannel.AddEvent(setTempoEvent);
                             }
                         }
                     }
 
                     if (rowIndex == 0 && !hasAddedInitialTempo)
                     {
-                        firstChannel.AddNoteEvent(initialTempoEvent);
+                        firstChannel.AddEvent(initialTempoEvent);
                         hasAddedInitialTempo = true;
                     }
 
@@ -229,16 +203,16 @@ namespace S3mToMidi
                 }
 
                 Console.WriteLine("Pattern {0} at {3} is time signature {1}/{2} and should end at {4}", pattern.PatternNumber, numerator, denominator, patternStartTick, tick);
-                firstChannel.AddNoteEvent(new TimeSignatureEvent(patternStartTick, numerator, denominator));
+                firstChannel.AddEvent(new TimeSignatureEvent(patternStartTick, numerator, denominator));
             }
 
             // finalize any leftover note on events
             foreach (var key in channels.Keys)
             {
-                Channel channel = channels[key];
-                if (channel.CurrentNote != null)
+                var channel = channels[key];
+                if (channel.IsPlayingNote)
                 {
-                    channel.AddNoteEvent(GenerateNoteOffEvent(channel, tick));
+                    channel.NoteOff(tick);
                 }
             }
 
@@ -246,75 +220,24 @@ namespace S3mToMidi
 
             foreach (var key in channels.Keys.OrderBy(i => i))
             {
-                channelEvents[key] = channels[key].NoteEvents;
+                channelEvents[key] = channels[key].Events;
             }
 
             return channelEvents;
         }
-
-        private static NoteEvent GenerateNoteOnEvent(Channel channel, ChannelEvent channelEvent, int tick, NoteEventGeneratorOptions options)
+        
+        private static ChannelMultiplexer GetChannel(SortedDictionary<int, ChannelMultiplexer> channels, int channelNumber)
         {
-            int volume = channelEvent.HasVolume ? channelEvent.Volume : channel.DefaultVolume;
-            channel.Instrument = channelEvent.HasInstrument ? channelEvent.Instrument : channel.Instrument;
-            int noteChannel = options.ChannelsFromPatterns ? channel.ChannelNumber : channel.Instrument - 1;
-            NoteEvent noteOnEvent = new(tick, NoteEvent.EventType.NoteOn, noteChannel, channelEvent.Note, volume);
-            channel.CurrentNote = noteOnEvent;
-            return noteOnEvent;
-        }
+            const int DefaultVolume = 64;
 
-        private static NoteEvent GenerateNoteOffEvent(Channel channel, int tick)
-        {
-            NoteEvent offEvent = channel.CurrentNote.Clone(tick);
-            offEvent.Type = NoteEvent.EventType.NoteOff;
-            channel.CurrentNote = null;
-            return offEvent;
-        }
-
-        static Dictionary<int, int> virtualChannels = new Dictionary<int, int>();
-        private static Channel GetChannel(SortedDictionary<int, Channel> channels, int channelNumber)
-        {
-            // virtual channel (35) -> midi channel 2 -> channel 2
-            if (virtualChannels.ContainsKey(channelNumber)){
-                return channels[virtualChannels[channelNumber]];
-            } else {
-                int nextMidiChannel = virtualChannels.Count + 1;
-
-                Console.WriteLine("Initializing virtual channel {0} with midi channel {1}", channelNumber, nextMidiChannel);
-                Channel newChannel = new Channel()
-                {
-                    ChannelNumber = nextMidiChannel,
-                    DefaultVolume = 64,
-                };
-
-                virtualChannels[channelNumber] = nextMidiChannel;
-                channels[nextMidiChannel] = newChannel;
-                return newChannel;
-            }
-
-/*
-            if (!channels.TryGetValue(channelNumber, out Channel? value))
+            if (!channels.TryGetValue(channelNumber, out ChannelMultiplexer? value))
             {
+                value = new ChannelMultiplexer(channelNumber, DefaultVolume);
                 channels.Add(channelNumber, value);
             }
+
             return value;
-            */
         }
 
-        private class Channel
-        {
-            public int ChannelNumber { get; set; }
-            public NoteEvent? CurrentNote;
-            public int DefaultVolume;
-            public int Instrument;
-            public int Data;
-            public List<Event> NoteEvents = [];
-
-            public bool IsPlayingNote => CurrentNote != null;
-
-            public void AddNoteEvent(Event noteEvent)
-            {
-                NoteEvents.Add(noteEvent);
-            }
-        }
     }
 }

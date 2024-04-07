@@ -1,0 +1,39 @@
+using System.Diagnostics;
+
+namespace S3mToMidi
+{
+    internal class OutputChannel
+    {
+        public OutputChannel(int channelNumber)
+        {
+            ChannelNumber = channelNumber;
+        }
+
+        public int ChannelNumber { get; }
+        public NoteEvent? CurrentNote;
+        public List<Event> NoteEvents = [];
+
+        public bool IsPlayingNote => CurrentNote != null;
+
+        public void AddEvent(Event noteEvent)
+        {
+            NoteEvents.Add(noteEvent);
+        }
+
+        public void AddEvent(NoteEvent noteEvent)
+        {
+            AddEvent((Event)noteEvent);
+            if (noteEvent.Type == NoteEvent.EventType.NoteOn)
+            {
+                Debug.Assert(CurrentNote == null, "trying to add note on event when there is already a current note");
+                CurrentNote = noteEvent;
+            }
+            else if (noteEvent.Type == NoteEvent.EventType.NoteOff)
+            {
+                Debug.Assert(CurrentNote != null, "Trying to add a ntoe off event where there is no note playing.");
+                CurrentNote = null;
+            }
+        }
+    }
+    
+}

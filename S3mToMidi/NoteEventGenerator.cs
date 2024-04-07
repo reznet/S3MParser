@@ -76,7 +76,7 @@ namespace S3mToMidi
 
                     foreach (var channelEvent in row.ChannelEvents)
                     {
-                        if (channelEvent.ChannelNumber > 2){ continue; }
+                        if (channelEvent.ChannelNumber > 3){ continue; }
 
                         ChannelMultiplexer channel = GetChannel(channelEvent.ChannelNumber);
 

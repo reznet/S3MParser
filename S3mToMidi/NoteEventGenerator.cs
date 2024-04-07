@@ -40,14 +40,18 @@ namespace S3mToMidi
             TempoEvent initialTempoEvent = new(tick, file.InitialTempo);
             bool hasAddedInitialTempo = false;
 
+            Dictionary<int, int> lastInstrumentForChannel = new Dictionary<int, int>();
+            Dictionary<int, HashSet<Channel>> trackerChannelsAndMidiChannels = new Dictionary<int, System.Collections.Generic.HashSet<Channel>>();
 
             TimeSignatureEvent currentTimeSignatureEvent = new(tick, 4, 4);
             firstChannel.AddNoteEvent(currentTimeSignatureEvent);
 
             int takePatterns = int.MaxValue;
 
+            int orderIndex = 0;
             foreach (var order in file.Orders.Skip(options.StartOrder ?? 0).Take(takePatterns))
             {
+                orderIndex++;
                 if (order == 255)
                 {
                     break;
@@ -61,12 +65,14 @@ namespace S3mToMidi
                     continue;
                 }
 
+                Console.WriteLine("Order {0} Pattern {1}", orderIndex, pattern.PatternNumber);
+
                 int patternStartTick = tick;
                 int rowIndex = rowSkip;
                 int patternTrackerTicks = 0;
                 for (; rowIndex < pattern.Rows.Count; rowIndex++)
                 {
-                    Console.WriteLine("Pattern {0} Row {1} patternTrackerTicks {2}", pattern.PatternNumber, rowIndex, patternTrackerTicks);
+                    //Console.WriteLine("Pattern {0} Row {1} patternTrackerTicks {2}", pattern.PatternNumber, rowIndex, patternTrackerTicks);
                     finalRow = rowIndex;
                     rowSkip = 0;
                     bool breakPatternToRow = false;
@@ -74,11 +80,31 @@ namespace S3mToMidi
 
                     foreach (var channelEvent in row.ChannelEvents)
                     {
-                        Channel channel = GetChannel(channels, channelEvent.ChannelNumber);
+                        if (channelEvent.ChannelNumber > 2){ continue;}
+                        int instrument = channelEvent.Instrument;
+                        if (!channelEvent.HasInstrument && lastInstrumentForChannel.ContainsKey(channelEvent.ChannelNumber)){
+                            instrument = lastInstrumentForChannel[channelEvent.ChannelNumber];
+                        }
+
+                        int virtualChannelNumber = (channelEvent.ChannelNumber * 10) + instrument;
+                        Channel channel = GetChannel(channels, virtualChannelNumber);
+
+                        if (!trackerChannelsAndMidiChannels.ContainsKey(channelEvent.ChannelNumber))
+                        {
+                            trackerChannelsAndMidiChannels[channelEvent.ChannelNumber] = new HashSet<Channel>();
+                        }
+
+                        if (!trackerChannelsAndMidiChannels[channelEvent.ChannelNumber].Contains(channel)){
+                            trackerChannelsAndMidiChannels[channelEvent.ChannelNumber].Add(channel);
+                        }
+
+                        if (channelEvent.HasInstrument){
+                            lastInstrumentForChannel[channelEvent.ChannelNumber] = channelEvent.Instrument;
+                        }
 
                         if (channel.IsPlayingNote && channelEvent.HasVolume && channelEvent.Volume == 0)
                         {
-                            Console.WriteLine("Pattern {0} Channel {1} ending previous note at tick {2}", pattern.PatternNumber, channelEvent.ChannelNumber, tick);
+                            //Console.WriteLine("Pattern {0} Channel {1} ending previous note at tick {2}", pattern.PatternNumber, channelEvent.ChannelNumber, tick);
                             channel.AddNoteEvent(GenerateNoteOffEvent(channel, tick));
                         }
 
@@ -90,9 +116,10 @@ namespace S3mToMidi
                             {
                                 delay = channelEvent.Data;
                             }
-                            if (channel.IsPlayingNote)
-                            {
-                                channel.AddNoteEvent(GenerateNoteOffEvent(channel, tick + rowSpeedToTicks(delay)));
+                            foreach(var virtualChannel in trackerChannelsAndMidiChannels[channelEvent.ChannelNumber]){
+                                if (virtualChannel.IsPlayingNote){
+                                    virtualChannel.AddNoteEvent(GenerateNoteOffEvent(virtualChannel, tick + rowSpeedToTicks(delay)));
+                                }
                             }
                             channel.AddNoteEvent(GenerateNoteOnEvent(channel, channelEvent, tick + rowSpeedToTicks(delay), options));
                         }
@@ -147,6 +174,7 @@ namespace S3mToMidi
 
 
                 }
+                /*
                 Console.WriteLine("Pattern {0} ending tracker ticks is {1} and midi ticks is {2}", pattern.PatternNumber, patternTrackerTicks, tick);
 
                 Console.WriteLine("Pattern {0} is {1} tracker ticks long", pattern.PatternNumber, (float)patternTrackerTicks);
@@ -154,6 +182,7 @@ namespace S3mToMidi
                 Console.WriteLine("Pattern {0} is {1} eighth notes long", pattern.PatternNumber, patternTrackerTicks / 12.0);
                 Console.WriteLine("Pattern {0} is {1} 16th notes long", pattern.PatternNumber, patternTrackerTicks / 6.0);
                 Console.WriteLine("Pattern {0} is {1} 32nd notes long", pattern.PatternNumber, patternTrackerTicks / 3.0);
+                */
                 // 32nd  - / 3.0
                 // 96th - / 1.0
                 // half notes / 48
@@ -227,7 +256,7 @@ namespace S3mToMidi
         {
             int volume = channelEvent.HasVolume ? channelEvent.Volume : channel.DefaultVolume;
             channel.Instrument = channelEvent.HasInstrument ? channelEvent.Instrument : channel.Instrument;
-            int noteChannel = options.ChannelsFromPatterns ? channelEvent.ChannelNumber : channel.Instrument - 1;
+            int noteChannel = options.ChannelsFromPatterns ? channel.ChannelNumber : channel.Instrument - 1;
             NoteEvent noteOnEvent = new(tick, NoteEvent.EventType.NoteOn, noteChannel, channelEvent.Note, volume);
             channel.CurrentNote = noteOnEvent;
             return noteOnEvent;
@@ -241,22 +270,39 @@ namespace S3mToMidi
             return offEvent;
         }
 
+        static Dictionary<int, int> virtualChannels = new Dictionary<int, int>();
         private static Channel GetChannel(SortedDictionary<int, Channel> channels, int channelNumber)
         {
-            if (!channels.TryGetValue(channelNumber, out Channel? value))
-            {
-                Console.WriteLine("Initializing channel {0}", channelNumber);
-                value = new Channel()
+            // virtual channel (35) -> midi channel 2 -> channel 2
+            if (virtualChannels.ContainsKey(channelNumber)){
+                return channels[virtualChannels[channelNumber]];
+            } else {
+                int nextMidiChannel = virtualChannels.Count + 1;
+
+                Console.WriteLine("Initializing virtual channel {0} with midi channel {1}", channelNumber, nextMidiChannel);
+                Channel newChannel = new Channel()
                 {
+                    ChannelNumber = nextMidiChannel,
                     DefaultVolume = 64,
                 };
+
+                virtualChannels[channelNumber] = nextMidiChannel;
+                channels[nextMidiChannel] = newChannel;
+                return newChannel;
+            }
+
+/*
+            if (!channels.TryGetValue(channelNumber, out Channel? value))
+            {
                 channels.Add(channelNumber, value);
             }
             return value;
+            */
         }
 
         private class Channel
         {
+            public int ChannelNumber { get; set; }
             public NoteEvent? CurrentNote;
             public int DefaultVolume;
             public int Instrument;

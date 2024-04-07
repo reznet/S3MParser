@@ -27,9 +27,9 @@ namespace S3mToMidi
                 var midiEvents = trackEvents
                     .Where(trackEvent => !exportOptions.ExcludedChannels.Contains(channelNumber))
                     .OrderBy(trackEvent => trackEvent.Tick)
-                    .Select(trackEvent => new { trackEvent.Tick, MidiMessage = Convert(trackEvent, channelLastTicks) })
-                    .Where(midiEvent => midiEvent.MidiMessage != null)
-                    .Select(midiEvent => midiEvent.MidiMessage);
+                    .SelectMany(trackEvent => Convert(trackEvent, channelLastTicks))
+                    .Where(midiEvent => midiEvent != null)
+                    .Select(midiEvent => midiEvent);
 
                 TrackChunk track = new(midiEvents);
                 tracks.Add(track);
@@ -40,7 +40,9 @@ namespace S3mToMidi
             file.Write(path, overwriteFile: true);
         }
 
-        private static MidiEvent? Convert(Event e, Dictionary<int, int> channelLastTicks)
+        private static HashSet<int> initializedChannels = new HashSet<int>();
+
+        private static IEnumerable<MidiEvent?> Convert(Event e, Dictionary<int, int> channelLastTicks)
         {
             if (e is NoteEvent note)
             {
@@ -50,13 +52,13 @@ namespace S3mToMidi
                 if (MAX_MIDI_CHANNEL < note.Channel)
                 {
                     Console.WriteLine("Ignoring note event {0} because its MIDI channel is greater than the maximum allowed 16.", note);
-                    return null;
+                    yield return null;
                 }
 
                 if (note.Type == NoteEvent.EventType.NoteOff)
                 {
                     //Console.Out.WriteLine("Channel {0} NoteOff Pitch {1}", note.Channel, note.Pitch);
-                    return new NoteOffEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity))
+                    yield return new NoteOffEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity))
                     {
                         Channel = (FourBitNumber)note.Channel,
                         DeltaTime = GetDeltaTimeForChannelTick(note.Channel, note.Tick, channelLastTicks)
@@ -64,8 +66,17 @@ namespace S3mToMidi
                 }
                 else
                 {
+                    if(!initializedChannels.Contains(note.Channel))
+                    {
+                        initializedChannels.Add(note.Channel);
+                        yield return new ProgramChangeEvent(){
+                            Channel = (FourBitNumber)note.Channel,
+                            ProgramNumber = (SevenBitNumber)0,
+                            DeltaTime = GetDeltaTimeForChannelTick(note.Channel, note.Tick, channelLastTicks)
+                        };
+                    }
                     //Console.Out.WriteLine("Channel {0} NoteOn Pitch {1}", note.Channel, note.Pitch);
-                    return new NoteOnEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity))
+                    yield return new NoteOnEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity))
                     {
                         Channel = (FourBitNumber)note.Channel,
                         DeltaTime = GetDeltaTimeForChannelTick(note.Channel, note.Tick, channelLastTicks)
@@ -76,7 +87,7 @@ namespace S3mToMidi
             {
                 Console.Out.WriteLine("TempoEvent Tick {0} Tempo {1} {2}", tempoEvent.Tick, tempoEvent.TempoBpm, 60000000 / tempoEvent.TempoBpm);
 
-                return new SetTempoEvent(60000000 / tempoEvent.TempoBpm)
+                yield return new SetTempoEvent(60000000 / tempoEvent.TempoBpm)
                 {
                     // todo how to compute delta for tempo events - which channel?
                     // maybe a pseudo-channel for tempo?
@@ -90,7 +101,7 @@ namespace S3mToMidi
                 Console.WriteLine("TimeSignatureEvent Tick {0} {1}/{2}", timeSignatureEvent.Tick, timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
                 const byte ClocksPerMetronomeClick = 24;
                 const byte ThirtySecondNotesPerQuarterNote = 8;
-                return new Melanchall.DryWetMidi.Core.TimeSignatureEvent((byte)timeSignatureEvent.BeatsPerBar,
+                yield return new Melanchall.DryWetMidi.Core.TimeSignatureEvent((byte)timeSignatureEvent.BeatsPerBar,
                                               (byte)timeSignatureEvent.BeatValue,
                                               ClocksPerMetronomeClick,
                                               ThirtySecondNotesPerQuarterNote)
@@ -103,7 +114,7 @@ namespace S3mToMidi
             else
             {
                 Debug.Fail("unknown event type " + e.GetType().Name);
-                return null;
+                yield return null;
             }
         }
 

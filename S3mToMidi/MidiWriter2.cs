@@ -44,6 +44,7 @@ namespace S3mToMidi
         {
             if (e is NoteEvent note)
             {
+                //Console.WriteLine("Converting Tick {0} Channel {1} Instrument {2} Event {3}", note.Tick, note.Channel, note.Instrument, note.Type);
 
                 // ignore channels beyond what MIDI supports
                 if (MAX_MIDI_CHANNEL < note.Channel)

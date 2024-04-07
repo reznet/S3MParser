@@ -19,7 +19,7 @@ namespace S3mToMidi
 
         public void AddEvent(Event @event)
         {
-            this[0].AddEvent(@event);
+            this[1].AddEvent(@event);
         }
 
         public void AddEvent(NoteEvent noteEvent)
@@ -65,10 +65,13 @@ namespace S3mToMidi
         {
             get
             {
-                if (!_outputChannels.TryGetValue(instrument, out OutputChannel? value))
+                // S3M supports max 100 instruments
+                // channel and instrument numbers start at 1
+                var channelKey = (InputChannelNumber - 1) << 8 | instrument;
+                if (!_outputChannels.TryGetValue(channelKey, out OutputChannel? value))
                 {
-                    value = new OutputChannel(_outputChannels.Count);
-                    _outputChannels.Add(value.ChannelNumber, value);
+                    value = new OutputChannel();
+                    _outputChannels.Add(channelKey, value);
                 }
                 return value;
             }

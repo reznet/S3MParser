@@ -4,9 +4,13 @@ namespace S3mToMidi
 {
     internal class OutputChannel
     {
-        public OutputChannel(int channelNumber)
+        private static int nextChannelNumber = 1;
+        
+        public OutputChannel()
         {
-            ChannelNumber = channelNumber;
+            ChannelNumber = nextChannelNumber++;
+            Console.WriteLine("Creating output channel {0}", ChannelNumber);
+            Debug.Assert(ChannelNumber <= 16, "output channel number out of range.");
         }
 
         public int ChannelNumber { get; }

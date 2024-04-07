@@ -24,7 +24,7 @@ namespace S3mToMidi
                 return speed == 0 ? speed : TICKS_PER_QUARTERNOTE * speed / 24;
             }
 
-            SortedDictionary<int, ChannelMultiplexer> channels = [];
+        
 
             Console.WriteLine("initial speed {0}", file.InitialSpeed);
             int speed = file.InitialSpeed;
@@ -32,7 +32,7 @@ namespace S3mToMidi
             int rowSkip = 0;
             int finalRow = 0;
 
-            ChannelMultiplexer firstChannel = GetChannel(channels, 1);
+            ChannelMultiplexer firstChannel = GetChannel(1);
             TempoEvent initialTempoEvent = new(tick, file.InitialTempo);
             bool hasAddedInitialTempo = false;
 
@@ -76,9 +76,9 @@ namespace S3mToMidi
 
                     foreach (var channelEvent in row.ChannelEvents)
                     {
-                        if (channelEvent.ChannelNumber > 1){ continue;}
+                        if (channelEvent.ChannelNumber > 1){ continue; }
 
-                        ChannelMultiplexer channel = GetChannel(channels, channelEvent.ChannelNumber);
+                        ChannelMultiplexer channel = GetChannel(channelEvent.ChannelNumber);
 
                         if (channel.IsPlayingNote && channelEvent.HasVolume && channelEvent.Volume == 0)
                         {
@@ -225,8 +225,8 @@ namespace S3mToMidi
 
             return channelEvents;
         }
-        
-        private static ChannelMultiplexer GetChannel(SortedDictionary<int, ChannelMultiplexer> channels, int channelNumber)
+        private static SortedDictionary<int, ChannelMultiplexer> channels = []; 
+        private static ChannelMultiplexer GetChannel(int channelNumber)
         {
             const int DefaultVolume = 64;
 

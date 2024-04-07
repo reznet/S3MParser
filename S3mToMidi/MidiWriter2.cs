@@ -60,7 +60,7 @@ namespace S3mToMidi
                     //Console.Out.WriteLine("Channel {0} NoteOff Pitch {1}", note.Channel, note.Pitch);
                     yield return new NoteOffEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity))
                     {
-                        Channel = (FourBitNumber)note.Channel,
+                        Channel = (FourBitNumber)(note.Channel - 1),
                         DeltaTime = GetDeltaTimeForChannelTick(note.Channel, note.Tick, channelLastTicks)
                     };
                 }
@@ -70,7 +70,7 @@ namespace S3mToMidi
                     {
                         initializedChannels.Add(note.Channel);
                         yield return new ProgramChangeEvent(){
-                            Channel = (FourBitNumber)note.Channel,
+                            Channel = (FourBitNumber)(note.Channel - 1),
                             ProgramNumber = (SevenBitNumber)0,
                             DeltaTime = GetDeltaTimeForChannelTick(note.Channel, note.Tick, channelLastTicks)
                         };
@@ -78,7 +78,7 @@ namespace S3mToMidi
                     //Console.Out.WriteLine("Channel {0} NoteOn Pitch {1}", note.Channel, note.Pitch);
                     yield return new NoteOnEvent((SevenBitNumber)ChannelNoteToMidiPitch(note.Pitch), (SevenBitNumber)ChannelVelocityToMidiVolume(note.Velocity))
                     {
-                        Channel = (FourBitNumber)note.Channel,
+                        Channel = (FourBitNumber)(note.Channel - 1),
                         DeltaTime = GetDeltaTimeForChannelTick(note.Channel, note.Tick, channelLastTicks)
                     };
                 }

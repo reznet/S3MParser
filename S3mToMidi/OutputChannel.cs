@@ -15,13 +15,14 @@ namespace S3mToMidi
 
         public int ChannelNumber { get; }
         public NoteEvent? CurrentNote;
-        public List<Event> NoteEvents = [];
+
+        public List<Event> Events = [];
 
         public bool IsPlayingNote => CurrentNote != null;
 
         public void AddEvent(Event noteEvent)
         {
-            NoteEvents.Add(noteEvent);
+            Events.Add(noteEvent);
         }
 
         public void AddEvent(NoteEvent noteEvent)

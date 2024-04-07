@@ -68,7 +68,7 @@ namespace S3mToMidi
                 int patternTrackerTicks = 0;
                 for (; rowIndex < pattern.Rows.Count; rowIndex++)
                 {
-                    //Console.WriteLine("Pattern {0} Row {1} patternTrackerTicks {2}", pattern.PatternNumber, rowIndex, patternTrackerTicks);
+                    //Console.WriteLine("Pattern {0} Row {1} patternTrackerTicks {2} trackerTicks {3}", pattern.PatternNumber, rowIndex, patternTrackerTicks, tick);
                     finalRow = rowIndex;
                     rowSkip = 0;
                     bool breakPatternToRow = false;
@@ -76,7 +76,7 @@ namespace S3mToMidi
 
                     foreach (var channelEvent in row.ChannelEvents)
                     {
-                        if (channelEvent.ChannelNumber > 1){ continue; }
+                        if (channelEvent.ChannelNumber > 2){ continue; }
 
                         ChannelMultiplexer channel = GetChannel(channelEvent.ChannelNumber);
 
@@ -178,7 +178,7 @@ namespace S3mToMidi
                     lastNumerator = patternTrackerTicks / ticksPerDenominator;
                     remainder = patternTrackerTicks % ticksPerDenominator;
 
-                    Console.WriteLine("Pattern {0} could be {1}/{2} with remainder {3}", pattern.PatternNumber, lastNumerator, lastDenominator, remainder);
+                    // Console.WriteLine("Pattern {0} could be {1}/{2} with remainder {3}", pattern.PatternNumber, lastNumerator, lastDenominator, remainder);
 
                     if (remainder == 0)
                     {
@@ -218,9 +218,9 @@ namespace S3mToMidi
 
             Dictionary<int, List<Event>> channelEvents = [];
 
-            foreach (var key in channels.Keys.OrderBy(i => i))
+            foreach (var outputChannel in channels.Values.SelectMany(c => c.OutputChannels))
             {
-                channelEvents[key] = channels[key].Events;
+                channelEvents[outputChannel.ChannelNumber] = outputChannel.Events;
             }
 
             return channelEvents;

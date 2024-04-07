@@ -45,11 +45,11 @@ namespace S3mToMidi
             channelPlayingNote.AddEvent(noteOff);
         }
 
-        public List<Event> Events
+        public IList<OutputChannel> OutputChannels
         {
             get 
             {
-                return _outputChannels.Values.SelectMany(c => c.NoteEvents).ToList();
+                return [.. _outputChannels.Values];
             }
         }
 

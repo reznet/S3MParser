@@ -111,6 +111,7 @@ namespace S3mToMidi
         {
             var lastTick = channelLastTicks[channel];
             var delta = tick - lastTick;
+
             channelLastTicks[channel] = tick;
 
             return delta;

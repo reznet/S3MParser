@@ -56,7 +56,7 @@ namespace S3mToMidi
                                     StartOrder = o.StartOrder,
                                 });
 
-                       MidiWriter2.Save(noteEvents,
+                       MidiWriter.Save(noteEvents,
                             Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")), new MidiExportOptions() { ExcludedChannels = o.ExcludeChannels.ToHashSet() });
                    })
                    .WithNotParsed((errors) =>

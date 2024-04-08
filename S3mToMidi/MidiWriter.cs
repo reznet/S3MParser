@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace S3mToMidi
 {
-    internal static class MidiWriter2
+    internal static class MidiWriter
     {
         private const int MAX_MIDI_CHANNEL = 16;
         public static void Save(Dictionary<int, List<Event>> allEvents, string path, MidiExportOptions exportOptions)

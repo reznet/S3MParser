@@ -7,7 +7,7 @@ namespace S3mToMidi
     internal static class MidiWriter
     {
         private const int MAX_MIDI_CHANNEL = 16;
-        public static void Save(Dictionary<int, List<Event>> allEvents, string path, MidiExportOptions exportOptions)
+        public static MidiFile Write(Dictionary<int, List<Event>> allEvents, MidiExportOptions exportOptions)
         {
             var channelLastTicks = new Dictionary<int, int>();
             for (int i = 0; i < MAX_MIDI_CHANNEL; i++)
@@ -37,7 +37,7 @@ namespace S3mToMidi
 
             MidiFile file = new(tracks);
 
-            file.Write(path, overwriteFile: true);
+            return file;
         }
 
         private static HashSet<int> initializedChannels = new HashSet<int>();

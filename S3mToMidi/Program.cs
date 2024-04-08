@@ -1,5 +1,8 @@
 ﻿using S3M;
 using CommandLine;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("S3mToMidi.Tests")]
 
 namespace S3mToMidi
 {
@@ -56,8 +59,9 @@ namespace S3mToMidi
                                     StartOrder = o.StartOrder,
                                 });
 
-                       MidiWriter.Save(noteEvents,
-                            Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")), new MidiExportOptions() { ExcludedChannels = o.ExcludeChannels.ToHashSet() });
+                       var midiFile = MidiWriter.Write(noteEvents, new MidiExportOptions() { ExcludedChannels = o.ExcludeChannels.ToHashSet() });
+
+                        midiFile.Write(Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")), overwriteFile: true);
                    })
                    .WithNotParsed((errors) =>
                    {

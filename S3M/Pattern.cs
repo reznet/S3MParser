@@ -8,7 +8,7 @@ namespace S3M
         public int PatternNumber
         {
             get;
-            internal set;
+            set;
         }
 
         public List<Row> Rows = new List<Row>();

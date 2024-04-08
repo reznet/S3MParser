@@ -8,7 +8,7 @@ namespace S3M
         public int RowNumber
         {
             get;
-            internal set;
+            set;
         }
 
         internal Pattern Pattern;

@@ -1,24 +1,215 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        ,
         {
-            "name": "Debug",
+            "name": "vfx 1 drac",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "dotnet: build",
             "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
             "args": [
-                "--file", "${workspaceFolder}/songs/v-bogey.s3m",
-                //"--pattern", "59",
-                 "--channels-from-patterns",
-                 "--start-order", "4",
-                 "--exclude-channel", "4",
-                 "--exclude-channel", "5"
+                "--file",
+                "${workspaceFolder}/songs/v-drac.s3m",
+                "--channels-from-patterns",
+                "--exclude-channel",
+                "4",
+                "--exclude-channel",
+                "5"
             ],
-            "cwd": "${workspaceFolder}/S3mToMidi",
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "vfx 1 bewm",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-bewm.s3m",
+                "--channels-from-patterns",
+                "--exclude-channel",
+                "4",
+                "--exclude-channel",
+                "5"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "vfx 1 bzam",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-bzam.s3m",
+                "--channels-from-patterns",
+                "--exclude-channel",
+                "4",
+                "--exclude-channel",
+                "5"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "vfx 1 zzap",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-zzap.s3m",
+                "--channels-from-patterns",
+                "--exclude-channel",
+                "4",
+                "--exclude-channel",
+                "5"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "vfx 1 drac",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-drac.s3m",
+                "--channels-from-patterns",
+                "--exclude-channel",
+                "4",
+                "--exclude-channel",
+                "5"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "vfx 2 waow",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-waow.s3m",
+                "--channels-from-patterns",
+                "--start-order",
+                "4",
+                "--exclude-channel",
+                "4",
+                "--exclude-channel",
+                "5"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "vfx 2 blast",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-blast.s3m",
+                "--channels-from-patterns",
+                "--exclude-channel",
+                "4",
+                "--exclude-channel",
+                "5"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "vfx 2 falcon",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-falcon.s3m",
+                "--channels-from-patterns",
+                "--exclude-channel",
+                "4",
+                "--exclude-channel",
+                "5"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "vfx 2 option",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-option.s3m",
+                "--channels-from-patterns",
+                "--exclude-channel",
+                "4",
+                "--exclude-channel",
+                "5"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "vfx 2 ptime",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-ptime.s3m",
+                "--channels-from-patterns",
+                "--exclude-channel",
+                "4",
+                "--exclude-channel",
+                "5"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "vfx 2 shock",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-shock.s3m",
+                "--channels-from-patterns",
+                "--exclude-channel",
+                "4",
+                "--exclude-channel",
+                "5"
+            ],
+            "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
             "console": "internalConsole"
         }

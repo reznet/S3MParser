@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\S3mToMidi\S3mToMidi.csproj" />
-    <ProjectReference Include="..\S3m\S3M.csproj" />
+    <ProjectReference Include="..\S3M\S3M.csproj" />
   </ItemGroup>
 
 </Project>

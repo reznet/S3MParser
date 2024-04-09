@@ -49,7 +49,7 @@ public class UnitTest1
         var chunks = midiFile.GetTrackChunks();
         var chunk = chunks.First();
         foreach(var chunkEvent in chunk.Events){
-            Console.WriteLine(chunkEvent.EventType);
+            Console.WriteLine(chunkEvent);
         }
         Assert.AreEqual(6, chunk.Events.Count);
 

@@ -48,6 +48,9 @@ public class UnitTest1
 
         var chunks = midiFile.GetTrackChunks();
         var chunk = chunks.First();
+        foreach(var chunkEvent in chunk.Events){
+            Console.WriteLine(chunkEvent.EventType);
+        }
         Assert.AreEqual(6, chunk.Events.Count);
 
         var midiNoteEvents = chunk.Events.Where(e => e is Melanchall.DryWetMidi.Core.NoteEvent).Cast<Melanchall.DryWetMidi.Core.NoteEvent>().ToList();

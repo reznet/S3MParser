@@ -2,9 +2,9 @@ using S3M;
 
 namespace S3mToMidi
 {
-    internal static class NoteEventGenerator
+    internal class NoteEventGenerator
     {
-        public static Dictionary<int, List<Event>> Generate(S3MFile file, NoteEventGeneratorOptions options)
+        public Dictionary<int, List<Event>> Generate(S3MFile file, NoteEventGeneratorOptions options)
         {
             const int TICKS_PER_QUARTERNOTE = 96;
             // a pattern has max 64 rows
@@ -39,6 +39,7 @@ namespace S3mToMidi
             Dictionary<int, int> lastInstrumentForChannel = new Dictionary<int, int>();
             Dictionary<int, HashSet<Channel>> trackerChannelsAndMidiChannels = new Dictionary<int, System.Collections.Generic.HashSet<Channel>>();
 
+            Console.WriteLine("writing initial time signature event at tick {0}", tick);
             TimeSignatureEvent currentTimeSignatureEvent = new(tick, 4, 4);
             firstChannel.AddEvent(currentTimeSignatureEvent);
 
@@ -124,6 +125,7 @@ namespace S3mToMidi
                             }
                             else
                             {
+                                Console.WriteLine("NoteEventGenerator AddEvent TempoEvent");
                                 firstChannel.AddEvent(setTempoEvent);
                             }
                         }
@@ -131,6 +133,7 @@ namespace S3mToMidi
 
                     if (rowIndex == 0 && !hasAddedInitialTempo)
                     {
+                        Console.WriteLine("NoteEventGenerator AddEvent InitialTempoEvent");
                         firstChannel.AddEvent(initialTempoEvent);
                         hasAddedInitialTempo = true;
                     }
@@ -225,8 +228,8 @@ namespace S3mToMidi
 
             return channelEvents;
         }
-        private static SortedDictionary<int, ChannelMultiplexer> channels = []; 
-        private static ChannelMultiplexer GetChannel(int channelNumber)
+        private SortedDictionary<int, ChannelMultiplexer> channels = []; 
+        private ChannelMultiplexer GetChannel(int channelNumber)
         {
             const int DefaultVolume = 64;
 

@@ -50,7 +50,7 @@ namespace S3mToMidi
                        }
 
                        Dictionary<int, List<Event>> noteEvents =
-                            NoteEventGenerator.Generate(
+                            new NoteEventGenerator().Generate(
                                 file,
                                 new NoteEventGeneratorOptions()
                                 {

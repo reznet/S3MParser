@@ -5,10 +5,10 @@ using System.Diagnostics;
 
 namespace S3mToMidi
 {
-    internal static class MidiWriter
+    internal class MidiWriter
     {
         private const int MAX_MIDI_CHANNEL = 16;
-        public static MidiFile Write(Dictionary<int, ImmutableList<Event>> allEvents)
+        public MidiFile Write(Dictionary<int, ImmutableList<Event>> allEvents)
         {
             var channelLastTicks = new Dictionary<int, int>();
             for (int i = 0; i < MAX_MIDI_CHANNEL; i++)
@@ -35,9 +35,9 @@ namespace S3mToMidi
             return file;
         }
 
-        private static HashSet<int> initializedChannels = new HashSet<int>();
+        private HashSet<int> initializedChannels = new HashSet<int>();
 
-        private static IEnumerable<MidiEvent?> Convert(Event e, Dictionary<int, int> channelLastTicks)
+        private IEnumerable<MidiEvent?> Convert(Event e, Dictionary<int, int> channelLastTicks)
         {
             if (e is NoteEvent note)
             {

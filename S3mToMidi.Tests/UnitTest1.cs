@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Melanchall.DryWetMidi.Core;
 using S3M;
 namespace S3mToMidi.Tests;
@@ -17,7 +18,7 @@ public class UnitTest1
 
         var noteEvents = new NoteEventGenerator(new NoteEventGeneratorOptions()).Generate(trackerFile);
 
-        var midiFile = MidiWriter.Write(noteEvents);
+        var midiFile = new MidiWriter().Write(noteEvents);
 
         Assert.AreEqual(1, midiFile.GetTrackChunks().Count());
     }
@@ -46,7 +47,7 @@ public class UnitTest1
 
         Console.WriteLine("note generator returned {0} keys and {1} events", noteEvents.Keys.Count, noteEvents.Values.SelectMany(v => v).Count());
 
-        var midiFile = MidiWriter.Write(noteEvents);
+        var midiFile = new MidiWriter().Write(noteEvents);
 
         var chunks = midiFile.GetTrackChunks();
         var chunk = chunks.First();
@@ -65,5 +66,63 @@ public class UnitTest1
         Assert.AreEqual(MidiEventType.NoteOff, midiNoteEvents[1].EventType); 
         Assert.AreEqual(36, midiNoteEvents[1].NoteNumber);
         Assert.AreEqual(24, midiNoteEvents[1].DeltaTime);
+    }
+
+    [TestMethod]
+    public void BogeyPattern000()
+    {
+        S3MFile trackerFile = new S3MFile();
+        trackerFile.InitialTempo = 120;
+        trackerFile.InitialSpeed = 3;
+        trackerFile.OrderCount = 1;
+        trackerFile.Orders = new int[] { 0 };
+        trackerFile.PatternCount = 1;
+        trackerFile.Patterns = new List<Pattern>(){ new Pattern(){ PatternNumber = 0, Rows = new List<Row>()}};
+
+        var row1 = new Row() { RowNumber = 1, ChannelEvents = new List<S3M.ChannelEvent>()};
+        row1.ChannelEvents.Add(new S3M.ChannelEvent() { ChannelNumber = 1, Note = 32, Instrument = 1 });
+
+        var row2 = new Row() { RowNumber = 2, ChannelEvents = new List<S3M.ChannelEvent>()};
+        row2.ChannelEvents.Add(new S3M.ChannelEvent() { ChannelNumber = 1, Note = 0xFE});
+
+        trackerFile.Patterns[0].Rows = new List<Row>()
+        {
+            new Row()
+            {
+                RowNumber = 1,
+                ChannelEvents = new List<S3M.ChannelEvent>()
+                {
+                    new S3M.ChannelEvent(){ ChannelNumber = 1, Note = 32, Instrument = 1 },
+                    new S3M.ChannelEvent(){ ChannelNumber = 2, Note = 0xFF, Command = CommandType.SetTempo, Data = 80 },
+                    new S3M.ChannelEvent(){ ChannelNumber = 3, Note = 32, Instrument = 5, Command = CommandType.SetSpeed, Data = 3 },
+                    new S3M.ChannelEvent(){ ChannelNumber = 4, Note = 32, Instrument = 6, Volume = 40, Command = CommandType.VolumeSlideDown, Data = 4 },
+                    new S3M.ChannelEvent(){ ChannelNumber = 5, Note = 32, Instrument = 8 }
+                }
+            }
+        };
+
+        var noteEvents = new NoteEventGenerator(new NoteEventGeneratorOptions(){ ExcludedChannels = [2, 3, 4, 5]}).Generate(trackerFile);
+
+        Console.WriteLine("note generator returned {0} keys and {1} events", noteEvents.Keys.Count, noteEvents.Values.SelectMany(v => v).Count());
+
+        var midiFile = new MidiWriter().Write(noteEvents);
+
+        var chunks = midiFile.GetTrackChunks();
+        var chunk = chunks.First();
+        foreach(var chunkEvent in chunk.Events){
+            Console.WriteLine(chunkEvent);
+        }
+        Assert.AreEqual(6, chunk.Events.Count);
+
+        var midiNoteEvents = chunk.Events.Where(e => e is Melanchall.DryWetMidi.Core.NoteEvent).Cast<Melanchall.DryWetMidi.Core.NoteEvent>().ToList();
+        Assert.AreEqual(2, midiNoteEvents.Count);
+
+        Assert.AreEqual(MidiEventType.NoteOn, midiNoteEvents[0].EventType); 
+        Assert.AreEqual(36, midiNoteEvents[0].NoteNumber);
+        Assert.AreEqual(0, midiNoteEvents[0].DeltaTime);
+
+        Assert.AreEqual(MidiEventType.NoteOff, midiNoteEvents[1].EventType); 
+        Assert.AreEqual(36, midiNoteEvents[1].NoteNumber);
+        Assert.AreEqual(12, midiNoteEvents[1].DeltaTime);
     }
 }

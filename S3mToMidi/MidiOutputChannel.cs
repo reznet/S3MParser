@@ -5,13 +5,11 @@ namespace S3mToMidi
 {
     internal class MidiOutputChannel : OutputChannel
     {
-        private static int nextChannelNumber = 1;
-
         private List<Event> events= new List<Event>();
         
         public MidiOutputChannel(int channelNumber) : base(channelNumber)
         {
-            Console.WriteLine("Creating output midi channel {0}", ChannelNumber);
+            Console.WriteLine("Creating output midi channel {0}", ChannelNumber + 1);
             Debug.Assert(ChannelNumber <= 16, "output channel number out of midi range.");
         }
 

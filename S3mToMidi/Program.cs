@@ -56,7 +56,7 @@ namespace S3mToMidi
                                 })
                                 .Generate(file);
 
-                       var midiFile = MidiWriter.Write(noteEvents);
+                       var midiFile = new MidiWriter().Write(noteEvents);
 
                         midiFile.Write(Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")), overwriteFile: true);
                    })

@@ -15,7 +15,7 @@ public class UnitTest1
         trackerFile.PatternCount = 1;
         trackerFile.Patterns = new List<Pattern>(){ new Pattern(){ PatternNumber = 0, Rows = new List<Row>()}};
 
-        Dictionary<int, List<Event>> noteEvents = new NoteEventGenerator().Generate(trackerFile, new NoteEventGeneratorOptions());
+        var noteEvents = new NoteEventGenerator(new NoteEventGeneratorOptions()).Generate(trackerFile);
 
         var midiFile = MidiWriter.Write(noteEvents, new MidiExportOptions());
 
@@ -42,7 +42,7 @@ public class UnitTest1
         trackerFile.Patterns[0].Rows.Add(row1);
         trackerFile.Patterns[0].Rows.Add(row2);
 
-        Dictionary<int, List<Event>> noteEvents = new NoteEventGenerator().Generate(trackerFile, new NoteEventGeneratorOptions());
+        var noteEvents = new NoteEventGenerator(new NoteEventGeneratorOptions()).Generate(trackerFile);
 
         Console.WriteLine("note generator returned {0} keys and {1} events", noteEvents.Keys.Count, noteEvents.Values.SelectMany(v => v).Count());
 

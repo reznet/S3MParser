@@ -1,5 +1,6 @@
 ﻿using Melanchall.DryWetMidi.Common;
 using Melanchall.DryWetMidi.Core;
+using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace S3mToMidi
@@ -7,7 +8,7 @@ namespace S3mToMidi
     internal static class MidiWriter
     {
         private const int MAX_MIDI_CHANNEL = 16;
-        public static MidiFile Write(Dictionary<int, List<Event>> allEvents, MidiExportOptions exportOptions)
+        public static MidiFile Write(Dictionary<int, ImmutableList<Event>> allEvents, MidiExportOptions exportOptions)
         {
             var channelLastTicks = new Dictionary<int, int>();
             for (int i = 0; i < MAX_MIDI_CHANNEL; i++)
@@ -18,14 +19,8 @@ namespace S3mToMidi
             List<TrackChunk> tracks = [];
             foreach (var channelNumber in allEvents.Keys)
             {
-                if (exportOptions.ExcludedChannels.Contains(channelNumber))
-                {
-                    Console.WriteLine("Excluding channel {0} from output midi file.", channelNumber);
-                    continue;
-                }
-                List<Event> trackEvents = allEvents[channelNumber];
+                var trackEvents = allEvents[channelNumber];
                 var midiEvents = trackEvents
-                    .Where(trackEvent => !exportOptions.ExcludedChannels.Contains(channelNumber))
                     .OrderBy(trackEvent => trackEvent.Tick)
                     .SelectMany(trackEvent => Convert(trackEvent, channelLastTicks))
                     .Where(midiEvent => midiEvent != null)
@@ -46,7 +41,7 @@ namespace S3mToMidi
         {
             if (e is NoteEvent note)
             {
-                //Console.WriteLine("Converting Tick {0} Channel {1} Instrument {2} Event {3}", note.Tick, note.Channel, note.Instrument, note.Type);
+                Console.WriteLine("Converting Tick {0} Channel {1} Instrument {2} Event {3}", note.Tick, note.Channel, note.Instrument, note.Type);
 
                 // ignore channels beyond what MIDI supports
                 if (MAX_MIDI_CHANNEL < note.Channel)
@@ -85,7 +80,7 @@ namespace S3mToMidi
             }
             else if (e is TempoEvent tempoEvent)
             {
-                Console.Out.WriteLine("TempoEvent Tick {0} Tempo {1} {2}", tempoEvent.Tick, tempoEvent.TempoBpm, 60000000 / tempoEvent.TempoBpm);
+                //Console.Out.WriteLine("TempoEvent Tick {0} Tempo {1} {2}", tempoEvent.Tick, tempoEvent.TempoBpm, 60000000 / tempoEvent.TempoBpm);
 
                 yield return new SetTempoEvent(60000000 / tempoEvent.TempoBpm)
                 {
@@ -98,7 +93,7 @@ namespace S3mToMidi
             }
             else if (e is TimeSignatureEvent timeSignatureEvent)
             {
-                Console.WriteLine("TimeSignatureEvent Tick {0} {1}/{2}", timeSignatureEvent.Tick, timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
+                // Console.WriteLine("TimeSignatureEvent Tick {0} {1}/{2}", timeSignatureEvent.Tick, timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
                 const byte ClocksPerMetronomeClick = 24;
                 const byte ThirtySecondNotesPerQuarterNote = 8;
                 yield return new Melanchall.DryWetMidi.Core.TimeSignatureEvent((byte)timeSignatureEvent.BeatsPerBar,

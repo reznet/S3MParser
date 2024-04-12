@@ -1,10 +1,24 @@
+using System.Collections.Immutable;
 using S3M;
 
 namespace S3mToMidi
 {
     internal class NoteEventGenerator
     {
-        public Dictionary<int, List<Event>> Generate(S3MFile file, NoteEventGeneratorOptions options)
+        private readonly NoteEventGeneratorOptions options;
+
+        private int nextMidiChannel = 1;
+
+        public NoteEventGenerator(NoteEventGeneratorOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            this.options = options;
+        }
+        public Dictionary<int, ImmutableList<Event>> Generate(S3MFile file)
         {
             const int TICKS_PER_QUARTERNOTE = 96;
             // a pattern has max 64 rows
@@ -23,8 +37,6 @@ namespace S3mToMidi
             {
                 return speed == 0 ? speed : TICKS_PER_QUARTERNOTE * speed / 24;
             }
-
-        
 
             Console.WriteLine("initial speed {0}", file.InitialSpeed);
             int speed = file.InitialSpeed;
@@ -77,8 +89,6 @@ namespace S3mToMidi
 
                     foreach (var channelEvent in row.ChannelEvents)
                     {
-                        if (channelEvent.ChannelNumber > 3){ continue; }
-
                         ChannelMultiplexer channel = GetChannel(channelEvent.ChannelNumber);
 
                         if (channel.IsPlayingNote && channelEvent.HasVolume && channelEvent.Volume == 0)
@@ -205,7 +215,7 @@ namespace S3mToMidi
                     throw new Exception("The time signature in pattern {0} cannot be expressed with MIDI.");
                 }
 
-                Console.WriteLine("Pattern {0} at {3} is time signature {1}/{2} and should end at {4}", pattern.PatternNumber, numerator, denominator, patternStartTick, tick);
+                //Console.WriteLine("Pattern {0} at {3} is time signature {1}/{2} and should end at {4}", pattern.PatternNumber, numerator, denominator, patternStartTick, tick);
                 firstChannel.AddEvent(new TimeSignatureEvent(patternStartTick, numerator, denominator));
             }
 
@@ -219,11 +229,11 @@ namespace S3mToMidi
                 }
             }
 
-            Dictionary<int, List<Event>> channelEvents = [];
+            Dictionary<int, ImmutableList<Event>> channelEvents = [];
 
             foreach (var outputChannel in channels.Values.SelectMany(c => c.OutputChannels))
             {
-                channelEvents[outputChannel.ChannelNumber] = outputChannel.Events;
+                channelEvents[outputChannel.ChannelNumber] = outputChannel.GetEvents();
             }
 
             return channelEvents;
@@ -235,12 +245,20 @@ namespace S3mToMidi
 
             if (!channels.TryGetValue(channelNumber, out ChannelMultiplexer? value))
             {
-                value = new ChannelMultiplexer(channelNumber, DefaultVolume);
+                value = new ChannelMultiplexer(channelNumber, DefaultVolume, options.ExcludedChannels.Contains(channelNumber), GetNextAvailableMidiChannel);
                 channels.Add(channelNumber, value);
             }
 
             return value;
         }
 
+        private int GetNextAvailableMidiChannel()
+        {
+            if (16 < nextMidiChannel)
+            {
+                throw new Exception("No more available midi channels.");
+            }
+            return nextMidiChannel++;
+        }
     }
 }

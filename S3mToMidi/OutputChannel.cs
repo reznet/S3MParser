@@ -1,34 +1,25 @@
+using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace S3mToMidi
 {
-    internal class OutputChannel
+    internal abstract class OutputChannel
     {
-        private static int nextChannelNumber = 1;
-        
-        public OutputChannel()
-        {
-            ChannelNumber = nextChannelNumber++;
-            if (ChannelNumber == 09) // 10 in zero-based counter is 09
-            {
-                // avoid General Midi channel 10 because players interpret it as a drum channel
-                Console.WriteLine("Skipping output drum channel 10");
-                ChannelNumber = nextChannelNumber++;
-            }
-            Console.WriteLine("Creating output channel {0}", ChannelNumber);
-            Debug.Assert(ChannelNumber <= 16, "output channel number out of range.");
-        }
-
         public int ChannelNumber { get; }
         public NoteEvent? CurrentNote;
 
-        public List<Event> Events = [];
+        public abstract ImmutableList<Event> GetEvents();
 
         public bool IsPlayingNote => CurrentNote != null;
 
-        public void AddEvent(Event noteEvent)
+        public OutputChannel(int channelNumber)
         {
-            Events.Add(noteEvent);
+            ChannelNumber = channelNumber;
+        }
+
+        public void AddEvent(Event @event)
+        {
+            AddEventInternal(@event);
         }
 
         public void AddEvent(NoteEvent noteEvent)
@@ -46,6 +37,7 @@ namespace S3mToMidi
                 CurrentNote = null;
             }
         }
+
+        protected abstract void AddEventInternal(Event @event);
     }
-    
 }

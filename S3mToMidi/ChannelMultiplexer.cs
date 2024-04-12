@@ -7,14 +7,21 @@ namespace S3mToMidi
     internal class ChannelMultiplexer
     {
         private readonly Dictionary<int, OutputChannel> _outputChannels = new Dictionary<int, OutputChannel>();
+
+        private readonly Func<int> GetNextAvailableMidiChannel;
+
         public int InputChannelNumber { get; }
 
         public int DefaultVolume { get; }
 
-        public ChannelMultiplexer(int inputChannelNumber, int defaultVolume)
+        public bool IsMuted { get; }
+
+        public ChannelMultiplexer(int inputChannelNumber, int defaultVolume, bool isMuted, Func<int> getNextAvailableMidiChannel)
         {
             InputChannelNumber = inputChannelNumber;
             DefaultVolume = defaultVolume;
+            IsMuted = isMuted;
+            GetNextAvailableMidiChannel = getNextAvailableMidiChannel;
         }
 
         public void AddEvent(Event @event)
@@ -70,10 +77,30 @@ namespace S3mToMidi
                 var channelKey = (InputChannelNumber - 1) << 8 | instrument;
                 if (!_outputChannels.TryGetValue(channelKey, out OutputChannel? value))
                 {
-                    value = new OutputChannel();
+                    value = CreateOutputChannel();
                     _outputChannels.Add(channelKey, value);
                 }
                 return value;
+            }
+        }
+
+        private OutputChannel CreateOutputChannel()
+        {
+            if (IsMuted)
+            {
+                return new MuteOutputChannel();
+            }
+            else
+            {
+                int channelNumber = GetNextAvailableMidiChannel();
+                if (channelNumber == 09) // 10 in zero-based counter is 09
+                {
+                    // avoid General Midi channel 10 because players interpret it as a drum channel
+                    Console.WriteLine("Skipping output drum channel 10");
+                    channelNumber = GetNextAvailableMidiChannel();
+                }
+
+                return new MidiOutputChannel(channelNumber);
             }
         }
     }

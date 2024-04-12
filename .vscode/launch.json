@@ -1,7 +1,6 @@
 {
     "version": "0.2.0",
     "configurations": [
-        ,
         {
             "name": "vfx 1 drac",
             "type": "coreclr",
@@ -11,11 +10,7 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-drac.s3m",
-                "--channels-from-patterns",
-                "--exclude-channel",
-                "4",
-                "--exclude-channel",
-                "5"
+                "--channels-from-patterns"
             ],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
@@ -132,6 +127,26 @@
                 "4",
                 "--exclude-channel",
                 "5"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "vfx 2 bogey",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-bogey.s3m",
+                "--exclude-channel",
+                "4",
+                "--exclude-channel",
+                "5",
+                "--start-order",
+                "4"
             ],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,

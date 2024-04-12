@@ -1,6 +1,7 @@
 ﻿using S3M;
 using CommandLine;
 using System.Runtime.CompilerServices;
+using System.Collections.Immutable;
 
 [assembly: InternalsVisibleTo("S3mToMidi.Tests")]
 
@@ -13,9 +14,6 @@ namespace S3mToMidi
         {
             [Option('f', "file", Required = true, HelpText = "Path to the file to convert.")]
             public string? InputFile { get; set; }
-
-            [Option("channels-from-patterns", Required = false, Default = false, HelpText = "ScreamTracker pattern channels to MIDI channels.  Otherwise, instruments or samples map to MIDI channels.")]
-            public bool ChannelsFromPatterns { get; set; }
 
             [Option("pattern", Required = false, HelpText = "The single pattern to export.")]
             public int? Pattern { get; set; }
@@ -49,17 +47,16 @@ namespace S3mToMidi
                            new VolumeFilter() { VolumeThreshold = o.MinimumVolume.Value }.Apply(file);
                        }
 
-                       Dictionary<int, List<Event>> noteEvents =
-                            new NoteEventGenerator().Generate(
-                                file,
-                                new NoteEventGeneratorOptions()
+                       Dictionary<int, ImmutableList<Event>> noteEvents =
+                            new NoteEventGenerator(new NoteEventGeneratorOptions()
                                 {
-                                    ChannelsFromPatterns = o.ChannelsFromPatterns,
                                     Pattern = o.Pattern,
                                     StartOrder = o.StartOrder,
-                                });
+                                    ExcludedChannels = o.ExcludeChannels.ToHashSet()
+                                })
+                                .Generate(file);
 
-                       var midiFile = MidiWriter.Write(noteEvents, new MidiExportOptions() { ExcludedChannels = o.ExcludeChannels.ToHashSet() });
+                       var midiFile = MidiWriter.Write(noteEvents, new MidiExportOptions());
 
                         midiFile.Write(Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")), overwriteFile: true);
                    })

@@ -10,7 +10,6 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-drac.s3m",
-                "--channels-from-patterns"
             ],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
@@ -25,7 +24,6 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-bewm.s3m",
-                "--channels-from-patterns",
                 "--exclude-channel",
                 "4",
                 "--exclude-channel",
@@ -44,7 +42,6 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-bzam.s3m",
-                "--channels-from-patterns",
                 "--exclude-channel",
                 "4",
                 "--exclude-channel",
@@ -63,26 +60,6 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-zzap.s3m",
-                "--channels-from-patterns",
-                "--exclude-channel",
-                "4",
-                "--exclude-channel",
-                "5"
-            ],
-            "cwd": "${workspaceFolder}",
-            "stopAtEntry": false,
-            "console": "internalConsole"
-        },
-        {
-            "name": "vfx 1 drac",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "dotnet: build",
-            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
-            "args": [
-                "--file",
-                "${workspaceFolder}/songs/v-drac.s3m",
-                "--channels-from-patterns",
                 "--exclude-channel",
                 "4",
                 "--exclude-channel",
@@ -101,9 +78,6 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-waow.s3m",
-                "--channels-from-patterns",
-                "--start-order",
-                "4",
                 "--exclude-channel",
                 "4",
                 "--exclude-channel",
@@ -122,7 +96,6 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-blast.s3m",
-                "--channels-from-patterns",
                 "--exclude-channel",
                 "4",
                 "--exclude-channel",
@@ -161,7 +134,6 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-falcon.s3m",
-                "--channels-from-patterns",
                 "--exclude-channel",
                 "4",
                 "--exclude-channel",
@@ -180,7 +152,6 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-option.s3m",
-                "--channels-from-patterns",
                 "--exclude-channel",
                 "4",
                 "--exclude-channel",
@@ -199,7 +170,6 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-ptime.s3m",
-                "--channels-from-patterns",
                 "--exclude-channel",
                 "4",
                 "--exclude-channel",
@@ -218,7 +188,6 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-shock.s3m",
-                "--channels-from-patterns",
                 "--exclude-channel",
                 "4",
                 "--exclude-channel",

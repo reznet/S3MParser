@@ -93,7 +93,7 @@ namespace S3mToMidi
             else
             {
                 int channelNumber = GetNextAvailableMidiChannel();
-                if (channelNumber == 09) // 10 in zero-based counter is 09
+                if (channelNumber == 10)
                 {
                     // avoid General Midi channel 10 because players interpret it as a drum channel
                     Console.WriteLine("Skipping output drum channel 10");

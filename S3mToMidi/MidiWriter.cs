@@ -8,7 +8,7 @@ namespace S3mToMidi
     internal static class MidiWriter
     {
         private const int MAX_MIDI_CHANNEL = 16;
-        public static MidiFile Write(Dictionary<int, ImmutableList<Event>> allEvents, MidiExportOptions exportOptions)
+        public static MidiFile Write(Dictionary<int, ImmutableList<Event>> allEvents)
         {
             var channelLastTicks = new Dictionary<int, int>();
             for (int i = 0; i < MAX_MIDI_CHANNEL; i++)

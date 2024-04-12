@@ -17,7 +17,7 @@ public class UnitTest1
 
         var noteEvents = new NoteEventGenerator(new NoteEventGeneratorOptions()).Generate(trackerFile);
 
-        var midiFile = MidiWriter.Write(noteEvents, new MidiExportOptions());
+        var midiFile = MidiWriter.Write(noteEvents);
 
         Assert.AreEqual(1, midiFile.GetTrackChunks().Count());
     }
@@ -46,7 +46,7 @@ public class UnitTest1
 
         Console.WriteLine("note generator returned {0} keys and {1} events", noteEvents.Keys.Count, noteEvents.Values.SelectMany(v => v).Count());
 
-        var midiFile = MidiWriter.Write(noteEvents, new MidiExportOptions());
+        var midiFile = MidiWriter.Write(noteEvents);
 
         var chunks = midiFile.GetTrackChunks();
         var chunk = chunks.First();

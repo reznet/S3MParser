@@ -10,18 +10,21 @@ namespace S3mToMidi
 
         private readonly Func<int> GetNextAvailableMidiChannel;
 
+        private readonly Func<int, int, int> GetChannelKey;
+
         public int InputChannelNumber { get; }
 
         public int DefaultVolume { get; }
 
         public bool IsMuted { get; }
 
-        public ChannelMultiplexer(int inputChannelNumber, int defaultVolume, bool isMuted, Func<int> getNextAvailableMidiChannel)
+        public ChannelMultiplexer(int inputChannelNumber, int defaultVolume, bool isMuted, Func<int> getNextAvailableMidiChannel, Func<int, int, int> getChannelKey)
         {
             InputChannelNumber = inputChannelNumber;
             DefaultVolume = defaultVolume;
             IsMuted = isMuted;
             GetNextAvailableMidiChannel = getNextAvailableMidiChannel;
+            GetChannelKey = getChannelKey;
         }
 
         public void AddEvent(Event @event)
@@ -72,9 +75,7 @@ namespace S3mToMidi
         {
             get
             {
-                // S3M supports max 100 instruments
-                // channel and instrument numbers start at 1
-                var channelKey = (InputChannelNumber - 1) << 8 | instrument;
+                var channelKey = GetChannelKey(InputChannelNumber, instrument);
                 if (!_outputChannels.TryGetValue(channelKey, out OutputChannel? value))
                 {
                     value = CreateOutputChannel();

@@ -1,6 +1,6 @@
 ﻿namespace S3mToMidi
 {
-    public class NoteEventGeneratorOptions
+    internal class NoteEventGeneratorOptions
     {
         /// <summary>
         /// Gets or sets the single pattern to export.
@@ -19,5 +19,10 @@
         /// Note that excluded channels are still processed for meta events such as time signature and pattern breaks.
         /// </remarks>
         public HashSet<int> ExcludedChannels { get; set; } = new HashSet<int>();
+
+        /// <summary>
+        /// Gets or sets a value indicating how to output channel instruments.
+        /// </summary>
+        public ChannelInstrumentOutputBehavior ChannelInstrumentOutputBehavior { get; set;}
     }
 }

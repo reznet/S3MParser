@@ -26,6 +26,9 @@ namespace S3mToMidi
 
             [Option("minimum-volume", Required = false, HelpText = "The minimum volume a note must have to be written to the output file.  Use this to remove echos and simplify a part.")]
             public int? MinimumVolume { get; set; }
+
+            [Option("explode-channels-by-instrument", Required = false, HelpText = "By default all instruments in a channel are written to the same output midi channel.  Use this to write each instrument in a channel to its own midi channel.")]
+            public bool ExplodeChannelsByInstrument { get; set; }
         }
 
         private static void Main(string[] args)
@@ -52,7 +55,8 @@ namespace S3mToMidi
                                 {
                                     Pattern = o.Pattern,
                                     StartOrder = o.StartOrder,
-                                    ExcludedChannels = o.ExcludeChannels.ToHashSet()
+                                    ExcludedChannels = o.ExcludeChannels.ToHashSet(),
+                                    ChannelInstrumentOutputBehavior = o.ExplodeChannelsByInstrument ? ChannelInstrumentOutputBehavior.Explode : ChannelInstrumentOutputBehavior.Collapse
                                 })
                                 .Generate(file);
 

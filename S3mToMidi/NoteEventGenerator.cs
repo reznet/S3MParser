@@ -245,7 +245,7 @@ namespace S3mToMidi
 
             if (!channels.TryGetValue(channelNumber, out ChannelMultiplexer? value))
             {
-                value = new ChannelMultiplexer(channelNumber, DefaultVolume, options.ExcludedChannels.Contains(channelNumber), GetNextAvailableMidiChannel);
+                value = new ChannelMultiplexer(channelNumber, DefaultVolume, options.ExcludedChannels.Contains(channelNumber), GetNextAvailableMidiChannel, options.ChannelInstrumentOutputBehavior == ChannelInstrumentOutputBehavior.Collapse ? GetChannelKeyForSharedOutputChannel : GetChannelKeyForSeparateOutputChannels);
                 channels.Add(channelNumber, value);
             }
 
@@ -259,6 +259,18 @@ namespace S3mToMidi
                 throw new Exception("No more available midi channels.");
             }
             return nextMidiChannel++;
+        }
+
+        private int GetChannelKeyForSharedOutputChannel(int channelNumber, int _)
+        {
+            return channelNumber;
+        }
+
+        private int GetChannelKeyForSeparateOutputChannels(int channelNumber, int instrument)
+        {
+            // S3M supports max 100 instruments
+            // channel and instrument numbers start at 1
+            return (channelNumber - 1) << 8 | instrument;
         }
     }
 }

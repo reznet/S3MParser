@@ -10,6 +10,10 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-drac.s3m",
+                "--exclude-channel",
+                "4",
+                "--exclude-channel",
+                "5"
             ],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
@@ -173,7 +177,8 @@
                 "--exclude-channel",
                 "4",
                 "--exclude-channel",
-                "5"
+                "5",
+                "--explode-channels-by-instrument"
             ],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,

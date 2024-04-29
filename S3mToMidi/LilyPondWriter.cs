@@ -55,7 +55,11 @@ namespace S3mToMidi
 
                 if (note.Type == NoteEvent.EventType.NoteOff)
                 {
-                    writer.Write("{0}{1} ", ChannelNoteToLilyPondPitch(note.Pitch), ConvertToLilyPondDuration(GetDurationForChannelTick(note.Channel, note.Tick, channelLastTicks)));
+                    // The font size, compared to the ‘normal’ size. 0 is style-sheet’s normal size, -1 is smaller, +1 is bigger. 
+                    // Each step of 1 is approximately 12% larger; 6 steps are exactly a factor 2 larger.
+                    // max velocity = 64
+                    writer.WriteLine("\\set fontSize = #-{0}", (64 - note.Velocity) % (64 / 6));
+                    writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(note.Pitch), ConvertToLilyPondDuration(GetDurationForChannelTick(note.Channel, note.Tick, channelLastTicks)));
                 }
                 else
                 {

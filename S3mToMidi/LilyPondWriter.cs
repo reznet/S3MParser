@@ -55,7 +55,7 @@ namespace S3mToMidi
 
                 if (note.Type == NoteEvent.EventType.NoteOff)
                 {
-                    writer.Write("{0}{1} ", ChannelNoteToLilyPondPitch(note.Pitch), GetDurationForChannelTick(note.Channel, note.Tick, channelLastTicks));
+                    writer.Write("{0}{1} ", ChannelNoteToLilyPondPitch(note.Pitch), ConvertToLilyPondDuration(GetDurationForChannelTick(note.Channel, note.Tick, channelLastTicks)));
                 }
                 else
                 {
@@ -99,14 +99,38 @@ namespace S3mToMidi
             }
         }
 
-        private static string GetDurationForChannelTick(int channel, int tick, Dictionary<int, int> channelLastTicks)
+        private static int GetDurationForChannelTick(int channel, int tick, Dictionary<int, int> channelLastTicks)
         {
             var lastTick = channelLastTicks[channel];
             var delta = tick - lastTick;
 
             channelLastTicks[channel] = tick;
 
-            return "4";
+            return delta;
+        }
+
+        const int TICKS_PER_QUARTERNOTE = 96;
+
+        private static Dictionary<int, string> LilyPondDurations = new Dictionary<int, string>
+        {
+            { TICKS_PER_QUARTERNOTE / 16, "64" },
+            { TICKS_PER_QUARTERNOTE / 8, "32" },
+            { TICKS_PER_QUARTERNOTE / 4, "16" },
+            { TICKS_PER_QUARTERNOTE / 2, "8" },
+            { TICKS_PER_QUARTERNOTE, "4" },
+            { TICKS_PER_QUARTERNOTE * 2, "2" },
+            { TICKS_PER_QUARTERNOTE * 4, "1" },
+        };
+
+        private static string ConvertToLilyPondDuration(int delta)
+        {
+            if(!LilyPondDurations.ContainsKey(delta))
+            {
+                Debug.Fail(string.Format("don't know how to convert duration {0} to LilyPond duration", delta));
+                return "4";
+            }
+
+            return LilyPondDurations[delta];
         }
 
         private static string[] PitchNames = ["c", "c-sharp", "d", "d-sharp", "e", "f", "f-sharp", "g", "g-sharp", "a", "a-sharp", "b"];

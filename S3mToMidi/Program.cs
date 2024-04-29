@@ -73,14 +73,30 @@ namespace S3mToMidi
 
         private static void ExportLilyPond(S3MFile file, Options o)
         {
-            var writer = new LilyPondWriter(new NoteEventGeneratorOptions()
+            Dictionary<int, ImmutableList<Event>> noteEvents =
+                new NoteEventGenerator(new NoteEventGeneratorOptions()
                     {
                         Pattern = o.Pattern,
                         StartOrder = o.StartOrder,
                         ExcludedChannels = o.ExcludeChannels.ToHashSet(),
                         ChannelInstrumentOutputBehavior = o.ExplodeChannelsByInstrument ? ChannelInstrumentOutputBehavior.Explode : ChannelInstrumentOutputBehavior.Collapse
-                    });
-            writer.Write(file);
+                    },
+                    (_) => new LilyPondOutputChannel())
+                .Generate(file);
+
+            using(var stringWriter = new StringWriter())
+            {
+                var writer = new LilyPondWriter(stringWriter);
+                writer.Write(noteEvents);
+
+                Console.Out.WriteLine(stringWriter.ToString());
+                var outputFilename = Path.GetFileName(Path.ChangeExtension(o.InputFile, ".ly"));
+                if(File.Exists(outputFilename))
+                {
+                    File.Delete(outputFilename);
+                }
+                File.WriteAllText(outputFilename, stringWriter.ToString());
+            }
         }
 
         private static void ExportMidi(S3MFile file, Options o)
@@ -92,7 +108,8 @@ namespace S3mToMidi
                         StartOrder = o.StartOrder,
                         ExcludedChannels = o.ExcludeChannels.ToHashSet(),
                         ChannelInstrumentOutputBehavior = o.ExplodeChannelsByInstrument ? ChannelInstrumentOutputBehavior.Explode : ChannelInstrumentOutputBehavior.Collapse
-                    })
+                    },
+                    (channelNumber) => new MidiOutputChannel(channelNumber))
                 .Generate(file);
 
             var midiFile = new MidiWriter().Write(noteEvents);

@@ -7,9 +7,11 @@ namespace S3mToMidi
     {
         private readonly NoteEventGeneratorOptions options;
 
+        private readonly Func<int, OutputChannel> getNewOutputChannel;
+
         private int nextMidiChannel = 1;
 
-        public NoteEventGenerator(NoteEventGeneratorOptions options)
+        public NoteEventGenerator(NoteEventGeneratorOptions options, Func<int, OutputChannel> getNewOutputChannel)
         {
             if (options == null)
             {
@@ -17,6 +19,7 @@ namespace S3mToMidi
             }
 
             this.options = options;
+            this.getNewOutputChannel = getNewOutputChannel;
         }
         public Dictionary<int, ImmutableList<Event>> Generate(S3MFile file)
         {
@@ -251,7 +254,7 @@ namespace S3mToMidi
                     options.ExcludedChannels.Contains(channelNumber), 
                     GetNextAvailableMidiChannel, 
                     options.ChannelInstrumentOutputBehavior == ChannelInstrumentOutputBehavior.Collapse ? GetChannelKeyForSharedOutputChannel : GetChannelKeyForSeparateOutputChannels,
-                    (channelNumber) => new MidiOutputChannel(channelNumber));
+                    getNewOutputChannel);
                 channels.Add(channelNumber, value);
             }
 

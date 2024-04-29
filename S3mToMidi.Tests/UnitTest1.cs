@@ -16,7 +16,7 @@ public class UnitTest1
         trackerFile.PatternCount = 1;
         trackerFile.Patterns = new List<Pattern>(){ new Pattern(){ PatternNumber = 0, Rows = new List<Row>()}};
 
-        var noteEvents = new NoteEventGenerator(new NoteEventGeneratorOptions()).Generate(trackerFile);
+        var noteEvents = new NoteEventGenerator(new NoteEventGeneratorOptions(), (c) => new MidiOutputChannel(c)).Generate(trackerFile);
 
         var midiFile = new MidiWriter().Write(noteEvents);
 
@@ -43,7 +43,7 @@ public class UnitTest1
         trackerFile.Patterns[0].Rows.Add(row1);
         trackerFile.Patterns[0].Rows.Add(row2);
 
-        var noteEvents = new NoteEventGenerator(new NoteEventGeneratorOptions()).Generate(trackerFile);
+        var noteEvents = new NoteEventGenerator(new NoteEventGeneratorOptions(), (c) => new MidiOutputChannel(c)).Generate(trackerFile);
 
         Console.WriteLine("note generator returned {0} keys and {1} events", noteEvents.Keys.Count, noteEvents.Values.SelectMany(v => v).Count());
 
@@ -101,7 +101,7 @@ public class UnitTest1
             }
         };
 
-        var noteEvents = new NoteEventGenerator(new NoteEventGeneratorOptions(){ ExcludedChannels = [2, 3, 4, 5]}).Generate(trackerFile);
+        var noteEvents = new NoteEventGenerator(new NoteEventGeneratorOptions(){ ExcludedChannels = [2, 3, 4, 5]}, (c) => new MidiOutputChannel(c)).Generate(trackerFile);
 
         Console.WriteLine("note generator returned {0} keys and {1} events", noteEvents.Keys.Count, noteEvents.Values.SelectMany(v => v).Count());
 

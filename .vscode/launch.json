@@ -20,6 +20,26 @@
             "console": "internalConsole"
         },
         {
+            "name": "vfx 1 drac lilypond",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-drac.s3m",
+                "--pattern", "0",
+                "--exclude-channel", "2",
+                "--exclude-channel", "3",
+                "--exclude-channel", "4",
+                "--exclude-channel", "5",
+                "--exporter", "lilypond"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
             "name": "vfx 1 bewm",
             "type": "coreclr",
             "request": "launch",

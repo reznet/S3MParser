@@ -10,6 +10,8 @@ namespace S3mToMidi
 
         private readonly Func<int> GetNextAvailableMidiChannel;
 
+        private readonly Func<int, OutputChannel> GetNewOutputChannel;
+
         private readonly Func<int, int, int> GetChannelKey;
 
         public int InputChannelNumber { get; }
@@ -18,13 +20,14 @@ namespace S3mToMidi
 
         public bool IsMuted { get; }
 
-        public ChannelMultiplexer(int inputChannelNumber, int defaultVolume, bool isMuted, Func<int> getNextAvailableMidiChannel, Func<int, int, int> getChannelKey)
+        public ChannelMultiplexer(int inputChannelNumber, int defaultVolume, bool isMuted, Func<int> getNextAvailableMidiChannel, Func<int, int, int> getChannelKey, Func<int, OutputChannel> getNewOutputChannel)
         {
             InputChannelNumber = inputChannelNumber;
             DefaultVolume = defaultVolume;
             IsMuted = isMuted;
             GetNextAvailableMidiChannel = getNextAvailableMidiChannel;
             GetChannelKey = getChannelKey;
+            GetNewOutputChannel = getNewOutputChannel;
         }
 
         public void AddEvent(Event @event)
@@ -101,7 +104,7 @@ namespace S3mToMidi
                     channelNumber = GetNextAvailableMidiChannel();
                 }
 
-                return new MidiOutputChannel(channelNumber);
+                return GetNewOutputChannel(channelNumber);
             }
         }
     }

@@ -33,7 +33,7 @@ namespace S3mToMidi
             }
             else if (noteEvent.Type == NoteEvent.EventType.NoteOff)
             {
-                Debug.Assert(CurrentNote != null, "Trying to add a ntoe off event where there is no note playing.");
+                Debug.Assert(CurrentNote != null, "Trying to add a note off event where there is no note playing.");
                 CurrentNote = null;
             }
         }

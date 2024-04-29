@@ -9,7 +9,6 @@ namespace S3mToMidi
 {
     internal class Program
     {
-
         public class Options
         {
             [Option('f', "file", Required = true, HelpText = "Path to the file to convert.")]
@@ -29,6 +28,9 @@ namespace S3mToMidi
 
             [Option("explode-channels-by-instrument", Required = false, HelpText = "By default all instruments in a channel are written to the same output midi channel.  Use this to write each instrument in a channel to its own midi channel.")]
             public bool ExplodeChannelsByInstrument { get; set; }
+
+            [Option("exporter", Required = false, Default = "midi", HelpText = "Which export format to use.")]
+            public string Exporter { get; set; } = "midi";
         }
 
         private static void Main(string[] args)
@@ -50,24 +52,52 @@ namespace S3mToMidi
                            new VolumeFilter() { VolumeThreshold = o.MinimumVolume.Value }.Apply(file);
                        }
 
-                       Dictionary<int, ImmutableList<Event>> noteEvents =
-                            new NoteEventGenerator(new NoteEventGeneratorOptions()
-                                {
-                                    Pattern = o.Pattern,
-                                    StartOrder = o.StartOrder,
-                                    ExcludedChannels = o.ExcludeChannels.ToHashSet(),
-                                    ChannelInstrumentOutputBehavior = o.ExplodeChannelsByInstrument ? ChannelInstrumentOutputBehavior.Explode : ChannelInstrumentOutputBehavior.Collapse
-                                })
-                                .Generate(file);
-
-                       var midiFile = new MidiWriter().Write(noteEvents);
-
-                        midiFile.Write(Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")), overwriteFile: true);
+                       switch (o.Exporter.ToLowerInvariant())
+                       {
+                        case "midi":
+                            ExportMidi(file, o);
+                        break;
+                        case "lilypond":
+                            ExportLilyPond(file, o);
+                        break;
+                        default:
+                            Console.Error.WriteLine("Unrecognized exporter {0}", o.Exporter);
+                            break;
+                       }
                    })
                    .WithNotParsed((errors) =>
                    {
                        Environment.Exit(1);
                    });
+        }
+
+        private static void ExportLilyPond(S3MFile file, Options o)
+        {
+            var writer = new LilyPondWriter(new NoteEventGeneratorOptions()
+                    {
+                        Pattern = o.Pattern,
+                        StartOrder = o.StartOrder,
+                        ExcludedChannels = o.ExcludeChannels.ToHashSet(),
+                        ChannelInstrumentOutputBehavior = o.ExplodeChannelsByInstrument ? ChannelInstrumentOutputBehavior.Explode : ChannelInstrumentOutputBehavior.Collapse
+                    });
+            writer.Write(file);
+        }
+
+        private static void ExportMidi(S3MFile file, Options o)
+        {
+            Dictionary<int, ImmutableList<Event>> noteEvents =
+                new NoteEventGenerator(new NoteEventGeneratorOptions()
+                    {
+                        Pattern = o.Pattern,
+                        StartOrder = o.StartOrder,
+                        ExcludedChannels = o.ExcludeChannels.ToHashSet(),
+                        ChannelInstrumentOutputBehavior = o.ExplodeChannelsByInstrument ? ChannelInstrumentOutputBehavior.Explode : ChannelInstrumentOutputBehavior.Collapse
+                    })
+                .Generate(file);
+
+            var midiFile = new MidiWriter().Write(noteEvents);
+
+            midiFile.Write(Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")), overwriteFile: true);
         }
     }
 }

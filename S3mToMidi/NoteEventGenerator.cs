@@ -245,7 +245,13 @@ namespace S3mToMidi
 
             if (!channels.TryGetValue(channelNumber, out ChannelMultiplexer? value))
             {
-                value = new ChannelMultiplexer(channelNumber, DefaultVolume, options.ExcludedChannels.Contains(channelNumber), GetNextAvailableMidiChannel, options.ChannelInstrumentOutputBehavior == ChannelInstrumentOutputBehavior.Collapse ? GetChannelKeyForSharedOutputChannel : GetChannelKeyForSeparateOutputChannels);
+                value = new ChannelMultiplexer(
+                    channelNumber, 
+                    DefaultVolume, 
+                    options.ExcludedChannels.Contains(channelNumber), 
+                    GetNextAvailableMidiChannel, 
+                    options.ChannelInstrumentOutputBehavior == ChannelInstrumentOutputBehavior.Collapse ? GetChannelKeyForSharedOutputChannel : GetChannelKeyForSeparateOutputChannels,
+                    (channelNumber) => new MidiOutputChannel(channelNumber));
                 channels.Add(channelNumber, value);
             }
 

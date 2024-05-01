@@ -100,8 +100,9 @@ namespace S3mToMidi
                             channel.NoteOff(tick);
                         }
 
-                        if (channelEvent.NoteAction == NoteAction.Start)
+                        if (channelEvent.NoteAction == NoteAction.Start || channelEvent.HasInstrument)
                         {
+                            int note = channelEvent.Note;
                             var delay = 0;
 
                             if (channelEvent.Command == CommandType.Notedelay)
@@ -111,10 +112,15 @@ namespace S3mToMidi
                             int time = tick + rowSpeedToTicks(delay);
                             if(channel.IsPlayingNote)
                             {
+                                if(channelEvent.NoteAction == NoteAction.None)
+                                {
+                                    // get pitch from previous note start
+                                    note = channel.PlayingPitch;
+                                }
                                 channel.NoteOff(time);
                             }
                             //int noteChannel = options.ChannelsFromPatterns ? channel.ChannelNumber : channel.Instrument - 1;
-                            channel.NoteOn(time, channelEvent.Instrument.Value, channelEvent.Note, channelEvent.Volume);
+                            channel.NoteOn(time, channelEvent.Instrument.Value, note, channelEvent.Volume);
                         }
 
                         if (channelEvent.Command == CommandType.BreakPatternToRow)

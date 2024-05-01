@@ -74,6 +74,14 @@ namespace S3mToMidi
             }
         }
 
+        public int PlayingPitch
+        {
+            get
+            {
+                return _outputChannels.Values.Where(c => c.IsPlayingNote).Select(c => c.CurrentNote.Pitch).FirstOrDefault(-1);
+            }
+        }
+
         private OutputChannel this[int instrument]
         {
             get

@@ -206,15 +206,19 @@ namespace S3mToMidi
 
         const int TICKS_PER_QUARTERNOTE = 96;
 
-        private static Dictionary<int, string> LilyPondDurations = new Dictionary<int, string>
+        private static List<(int, string)> LilyPondDurations = new List<(int, string)>
         {
-            { TICKS_PER_QUARTERNOTE / 16, "64" },
-            { TICKS_PER_QUARTERNOTE / 8, "32" },
-            { TICKS_PER_QUARTERNOTE / 4, "16" },
-            { TICKS_PER_QUARTERNOTE / 2, "8" },
-            { TICKS_PER_QUARTERNOTE, "4" },
-            { TICKS_PER_QUARTERNOTE * 2, "2" },
-            { TICKS_PER_QUARTERNOTE * 4, "1" },
+            ( TICKS_PER_QUARTERNOTE * 4, "1" ),
+            ( TICKS_PER_QUARTERNOTE * 3, "2." ),
+            ( TICKS_PER_QUARTERNOTE * 2, "2" ),
+            ( TICKS_PER_QUARTERNOTE * 3 / 2, "4." ),
+            ( TICKS_PER_QUARTERNOTE, "4" ),
+            ( TICKS_PER_QUARTERNOTE * 3 / 4, "8."),
+            ( TICKS_PER_QUARTERNOTE / 2, "8" ),
+            ( TICKS_PER_QUARTERNOTE * 5 / 4, "4~ 16" ),
+            ( TICKS_PER_QUARTERNOTE / 4, "16" ),
+            ( TICKS_PER_QUARTERNOTE / 8, "32" ),
+            ( TICKS_PER_QUARTERNOTE / 16, "64" ),
         };
 
         private static List<(int, string)>TupletDurations = new List<(int, string)>
@@ -233,14 +237,23 @@ namespace S3mToMidi
                     return lilyPondDuration;
                 }
             }
-            if(!LilyPondDurations.ContainsKey(delta))
+            foreach(var (duration, lilyPondDuration) in LilyPondDurations)
             {
-                //Debug.Fail(string.Format("don't know how to convert duration {0} to LilyPond duration", delta));
-                Console.Out.WriteLine("don't know how to convert duration {0} to LilyPond duration", delta);
-                return "4";
-            }
+                if(delta % duration == 0)
+                {
+                    if(delta == duration)
+                    {
+                        return lilyPondDuration;
+                    }
 
-            return LilyPondDurations[delta];
+                    var multiple = delta / duration;
+
+                }
+            }
+            
+            //Debug.Fail(string.Format("don't know how to convert duration {0} to LilyPond duration", delta));
+            Console.Out.WriteLine("don't know how to convert duration {0} to LilyPond duration", delta);
+            return "4";
         }
 
         private static string[] PitchNames = ["c", "c-sharp", "d", "d-sharp", "e", "f", "f-sharp", "g", "g-sharp", "a", "a-sharp", "b"];

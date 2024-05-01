@@ -4,6 +4,8 @@ using System.IO;
 using System.Collections;
 using S3M;
 using System.Diagnostics;
+using Melanchall.DryWetMidi.Core;
+using System.Net.Mail;
 
 namespace S3mToMidi
 {
@@ -28,12 +30,17 @@ namespace S3mToMidi
             {
                 var trackEvents = allEvents[channelNumber];
                 var sortedEvents = trackEvents
-                    .OrderBy(trackEvent => trackEvent.Tick);
+                    .OrderBy(trackEvent => trackEvent.Tick)
+                    .ToList();
                 
                 writer.Write("{ ");
-                foreach(var e in sortedEvents)
+
+                WriteClef("bass");
+
+                var collapsedEvents = CollapseNoteEvents(sortedEvents).ToImmutableList();
+                for(int i = 0; i < collapsedEvents.Count; i++)
                 {
-                    ProcessEvent(e, channelLastTicks);
+                    ProcessEvent(collapsedEvents, i);
                 }
                 writer.Write("}");
                 writer.WriteLine();
@@ -42,29 +49,113 @@ namespace S3mToMidi
             return writer.ToString();
         }
 
-        private void ProcessEvent(Event e, Dictionary<int, int> channelLastTicks)
+        private IEnumerable<Event> CollapseNoteEvents(List<Event> events)
         {
-            if (e is NoteEvent note)
+            for(int i = 0; i < events.Count; i++)
             {
-                //Console.WriteLine("Converting Tick {0} Channel {1} Instrument {2} Event {3}", note.Tick, note.Channel, note.Instrument, note.Type);
+                var @event = events[i];
 
-                if(!channelLastTicks.ContainsKey(note.Channel))
+                // get the easy stuff out of the way
+                if (@event is TempoEvent || @event is TimeSignatureEvent)
                 {
-                    channelLastTicks.Add(note.Channel, 0);
+                    yield return @event;
+                    continue;
                 }
 
-                if (note.Type == NoteEvent.EventType.NoteOff)
+                if (@event is NoteEvent noteEvent)
                 {
-                    // The font size, compared to the ‘normal’ size. 0 is style-sheet’s normal size, -1 is smaller, +1 is bigger. 
-                    // Each step of 1 is approximately 12% larger; 6 steps are exactly a factor 2 larger.
-                    // max velocity = 64
-                    writer.WriteLine("\\set fontSize = #-{0}", (64 - note.Velocity) % (64 / 6));
-                    writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(note.Pitch), ConvertToLilyPondDuration(GetDurationForChannelTick(note.Channel, note.Tick, channelLastTicks)));
+                    if (noteEvent.Type == NoteEvent.EventType.NoteOff)
+                    {
+                        Debug.Fail("got a note off event but don't have its note on event");
+                        yield return @event;
+                        continue;
+                    }
+
+                    // try to find the matching note end
+                    var noteOffIndex = events.FindIndex(i, (e) => e is NoteEvent && ((NoteEvent)e).Type == NoteEvent.EventType.NoteOff);
+                    Debug.Assert(0 <= noteOffIndex, "Could not find matching note off event");
+                    var noteEnd = events[noteOffIndex];
+
+                    var myNote = new NoteWithDurationEvent(noteEvent, (NoteEvent)noteEnd);
+                    events.RemoveAt(noteOffIndex);
+                    yield return myNote;
+                    continue;
                 }
-                else
+            }
+        }
+
+        private class NoteWithDurationEvent : Event
+        {
+            public readonly NoteEvent NoteOn;
+            public readonly NoteEvent NoteOff;
+
+            public NoteWithDurationEvent(NoteEvent noteOn, NoteEvent noteOff) : base(noteOn.Tick)
+            {
+                NoteOn = noteOn;
+                NoteOff = noteOff;
+            }
+
+            public int GetDurationTicks()
+            {
+                return NoteOff.Tick - NoteOn.Tick;
+            }
+        }
+
+        private void ProcessEvent(ImmutableList<Event> events, int eventIndex)
+        {
+            var e = events[eventIndex];
+            if (e is NoteWithDurationEvent myNote)
+            {
+                var durationTicks = myNote.GetDurationTicks();
+                Console.Out.WriteLine("Processing note duration {0}", durationTicks);
+
+                for(int tupletDurationIndex = 0; tupletDurationIndex < TupletDurations.Count; tupletDurationIndex++)
                 {
-                    GetDurationForChannelTick(note.Channel, note.Tick, channelLastTicks);
+                    var tupletBaseDuration = TupletDurations[tupletDurationIndex].Item1;
+                    if (durationTicks % tupletBaseDuration == 0 && (durationTicks / tupletBaseDuration) < 3)
+                    {
+                        // found a tuplet rhythm
+                        Console.Out.WriteLine("Duration {0} appears to be part of a tuplet with base duration {1}", durationTicks, tupletBaseDuration);
+                        var tupletNotes = new List<NoteWithDurationEvent>();
+                        tupletNotes.Add(myNote);
+
+                        int tupletValue = durationTicks / TupletDurations[tupletDurationIndex].Item1;
+                        int tupletDuration = (TupletDurations[tupletDurationIndex].Item1 * 3);
+                        int remainingTupletDuration = tupletDuration - durationTicks;
+
+                        for(int tupletIndex = eventIndex; tupletIndex < events.Count && tupletNotes.Sum(t => t.Tick) < tupletDuration; tupletIndex++)
+                        {
+                            if(events[tupletIndex] is NoteWithDurationEvent nextNote)
+                            {
+                                if(nextNote.GetDurationTicks() %tupletBaseDuration != 0)
+                                {
+                                    //Debug.Fail("needed next note to be part of tuplet but it wasn't");
+                                    break;
+                                }
+                                tupletNotes.Add(nextNote);
+                            }
+                        }
+
+                        // emit tuplet
+                        writer.WriteLine("\\tuplet 3/2 { ");
+
+                        foreach(var tupletNote in tupletNotes)
+                        {
+                            writer.WriteLine("\\set fontSize = #-{0}", (64 - tupletNote.NoteOn.Velocity) % (64 / 6));
+                            writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(tupletNote.NoteOn.Pitch), ConvertToLilyPondDuration(tupletNote.GetDurationTicks()));
+                        }
+                        
+                        writer.WriteLine(" }");
+                        return;
+                    }
                 }
+
+                writer.WriteLine("\\set fontSize = #-{0}", (64 - myNote.NoteOn.Velocity) % (64 / 6));
+                writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(myNote.NoteOn.Pitch), ConvertToLilyPondDuration(myNote.GetDurationTicks()));
+            }
+            else if (e is NoteEvent note)
+            {
+                Debug.Fail("should have collapsed note events");
             }
             else if (e is TempoEvent tempoEvent)
             {
@@ -126,11 +217,26 @@ namespace S3mToMidi
             { TICKS_PER_QUARTERNOTE * 4, "1" },
         };
 
+        private static List<(int, string)>TupletDurations = new List<(int, string)>
+        {
+            ((int)(TICKS_PER_QUARTERNOTE / 1.5), "4" ), // 64 ticks, quarter note triplets
+            (TICKS_PER_QUARTERNOTE / 3, "8" ), // 32 ticks, eighth note triplets
+            (TICKS_PER_QUARTERNOTE / 6, "16" ), // 16 ticks, sixteenth note triplets
+        };
+
         private static string ConvertToLilyPondDuration(int delta)
         {
+            foreach(var (tupletDuration, lilyPondDuration) in TupletDurations)
+            {
+                if(tupletDuration == delta)
+                {
+                    return lilyPondDuration;
+                }
+            }
             if(!LilyPondDurations.ContainsKey(delta))
             {
-                Debug.Fail(string.Format("don't know how to convert duration {0} to LilyPond duration", delta));
+                //Debug.Fail(string.Format("don't know how to convert duration {0} to LilyPond duration", delta));
+                Console.Out.WriteLine("don't know how to convert duration {0} to LilyPond duration", delta);
                 return "4";
             }
 
@@ -170,6 +276,11 @@ namespace S3mToMidi
         private void WriteLanguage()
         {
             writer.WriteLine("\\language \"english\"");
+        }
+
+        private void WriteClef(string clef)
+        {
+            writer.WriteLine("\\clef {0}", clef);
         }
     }
 }

@@ -28,7 +28,6 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-drac.s3m",
-                "--pattern", "0",
                 "--exclude-channel", "2",
                 "--exclude-channel", "3",
                 "--exclude-channel", "4",

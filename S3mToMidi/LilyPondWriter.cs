@@ -346,11 +346,11 @@ namespace S3mToMidi
                         }
                     }
                 }
-                else if(myNote is NoteWithDurationEvent notWithDuration)
+                else if(myNote is NoteWithDurationEvent noteWithDuration)
                 {
-                    clef.WriteStaffForChannelPitch(notWithDuration.Pitch, writer);
-                    writer.WriteLine("\\set fontSize = #-{0}", (64 - notWithDuration.Velocity) % (64 / 6));
-                    writer.Write(ChannelNoteToLilyPondPitch(notWithDuration.Pitch));
+                    clef.WriteStaffForChannelPitch(noteWithDuration.Pitch, writer);
+                    writer.WriteLine("\\set fontSize = #{0}", GetFontSizeForVelocity(noteWithDuration.Velocity));
+                    writer.Write(ChannelNoteToLilyPondPitch(noteWithDuration.Pitch));
                     writer.WriteLine(string.Join("~ ", durations.SelectMany(GetNoteTies).Select(ConvertToLilyPondDuration)));
                 }
             }
@@ -393,6 +393,11 @@ namespace S3mToMidi
                 Debug.Fail("unknown event type " + e.GetType().Name);
                 // no-op
             }
+        }
+
+        public static int GetFontSizeForVelocity(int velocity)
+        {
+            return -1 * (8 - Math.Min(8, (velocity + 8) / 8));
         }
 
         private static int GetDurationForChannelTick(int channel, int tick, Dictionary<int, int> channelLastTicks)

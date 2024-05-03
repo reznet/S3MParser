@@ -206,6 +206,8 @@ namespace S3mToMidi
             }
 
             public override int Pitch => NoteOn.Pitch;
+
+            public int Velocity => NoteOn.Velocity;
         }
 
         private void ProcessEvent(ImmutableList<Event> events, int eventIndex, Time time)
@@ -275,16 +277,11 @@ namespace S3mToMidi
                         }
                     }
                 }
-                else
+                else if(myNote is NoteWithDurationEvent notWithDuration)
                 {
-                    foreach(var subDuration in durations)
-                    {
-                        var notes = GetNoteTies(subDuration);
-                        var myDuration = string.Join("~ ", notes.Select(ConvertToLilyPondDuration));
-
-                        //writer.WriteLine("\\set fontSize = #-{0}", (64 - myNote.NoteOn.Velocity) % (64 / 6));
-                        writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(myNote.Pitch), myDuration);
-                    }
+                    writer.WriteLine("\\set fontSize = #-{0}", (64 - notWithDuration.Velocity) % (64 / 6));
+                    writer.Write(ChannelNoteToLilyPondPitch(notWithDuration.Pitch));
+                    writer.WriteLine(string.Join("~ ", durations.SelectMany(GetNoteTies).Select(ConvertToLilyPondDuration)));
                 }
             }
             else if (e is NoteEvent note)

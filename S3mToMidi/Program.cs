@@ -1,4 +1,4 @@
-﻿using S3M;
+using S3M;
 using CommandLine;
 using System.Runtime.CompilerServices;
 using System.Collections.Immutable;
@@ -81,7 +81,7 @@ namespace S3mToMidi
                         ExcludedChannels = o.ExcludeChannels.ToHashSet(),
                         ChannelInstrumentOutputBehavior = o.ExplodeChannelsByInstrument ? ChannelInstrumentOutputBehavior.Explode : ChannelInstrumentOutputBehavior.Collapse
                     },
-                    (_) => new LilyPondOutputChannel())
+                    (channelNumber) => new LilyPondOutputChannel(channelNumber))
                 .Generate(file);
 
             using(var stringWriter = new StringWriter())

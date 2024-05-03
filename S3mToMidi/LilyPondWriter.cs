@@ -24,29 +24,78 @@ namespace S3mToMidi
             WriteVersion();
             WriteLanguage();
 
+/*
+            writer.WriteLine(@"\paper {
+  page-breaking = #ly:one-line-auto-height-breaking
+}");
+*/
+
+            writer.WriteLine("<<");
+
             var channelLastTicks = new Dictionary<int, int>();
 
-            foreach (var channelNumber in allEvents.Keys.Take(1))
+            foreach (var channelNumber in allEvents.Keys)
             {
                 var trackEvents = allEvents[channelNumber];
                 var sortedEvents = trackEvents
                     .OrderBy(trackEvent => trackEvent.Tick)
                     .ToList();
+                var collapsedEvents = CollapseNoteEvents(sortedEvents).ToImmutableList();
+                if(!collapsedEvents.Any())
+                { 
+                    Console.Out.WriteLine("Could not find any complete notes in channel {0}", channelNumber);
+                    continue;
+                }
+                var withRests = WithRestEvents(collapsedEvents).ToImmutableList();
+
+                writer.Write("\\new Staff ");
                 
                 writer.Write("{ ");
 
                 WriteClef("bass");
 
-                var collapsedEvents = CollapseNoteEvents(sortedEvents).ToImmutableList();
-                for(int i = 0; i < collapsedEvents.Count; i++)
+                for(int i = 0; i < withRests.Count; i++)
                 {
-                    ProcessEvent(collapsedEvents, i);
+                    ProcessEvent(withRests, i);
                 }
                 writer.Write("}");
                 writer.WriteLine();
             }
 
+            writer.WriteLine(">>");
+
             return writer.ToString();
+        }
+
+        private IEnumerable<Event> WithRestEvents(ImmutableList<Event> events)
+        {
+            var time = 0;
+            for(int i = 0; i < events.Count; i++)
+            {
+                var @event = events[i];
+
+                // get the easy stuff out of the way
+                if (@event is TempoEvent || @event is TimeSignatureEvent)
+                {
+                    yield return @event;
+                    continue;
+                } 
+                if (@event is NoteWithDurationEvent noteEvent)
+                {
+                    var restDuration = noteEvent.Tick - time;
+                    if (0 < restDuration)
+                    {
+                        yield return new RestEvent(time, restDuration);
+                        time += restDuration;
+                    }
+                    time += noteEvent.Duration;
+                    yield return noteEvent;
+                }
+                else
+                {
+                    Debug.Fail("boom");
+                }
+            }
         }
 
         private IEnumerable<Event> CollapseNoteEvents(List<Event> events)
@@ -84,29 +133,46 @@ namespace S3mToMidi
             }
         }
 
-        private class NoteWithDurationEvent : Event
+        private abstract class DurationEvent : Event
+        {
+            public readonly int Duration;
+
+            public abstract int Pitch { get; }
+            public DurationEvent(int tick, int duration) : base(tick)
+            {
+                Duration = duration;
+            }
+        }
+
+        private class RestEvent : DurationEvent
+        {
+            public RestEvent(int tick, int duration) : base(tick, duration)
+            {
+            }
+
+            public override int Pitch => -1;
+        }
+
+        private class NoteWithDurationEvent : DurationEvent
         {
             public readonly NoteEvent NoteOn;
             public readonly NoteEvent NoteOff;
 
-            public NoteWithDurationEvent(NoteEvent noteOn, NoteEvent noteOff) : base(noteOn.Tick)
+            public NoteWithDurationEvent(NoteEvent noteOn, NoteEvent noteOff) : base(noteOn.Tick, noteOff.Tick - noteOn.Tick)
             {
                 NoteOn = noteOn;
                 NoteOff = noteOff;
             }
 
-            public int GetDurationTicks()
-            {
-                return NoteOff.Tick - NoteOn.Tick;
-            }
+            public override int Pitch => NoteOn.Pitch;
         }
 
         private void ProcessEvent(ImmutableList<Event> events, int eventIndex)
         {
             var e = events[eventIndex];
-            if (e is NoteWithDurationEvent myNote)
+            if (e is DurationEvent myNote)
             {
-                var durationTicks = myNote.GetDurationTicks();
+                var durationTicks = myNote.Duration;
                 Console.Out.WriteLine("Processing note duration {0}", durationTicks);
 
                 for(int tupletDurationIndex = 0; tupletDurationIndex < TupletDurations.Count; tupletDurationIndex++)
@@ -116,7 +182,7 @@ namespace S3mToMidi
                     {
                         // found a tuplet rhythm
                         Console.Out.WriteLine("Duration {0} appears to be part of a tuplet with base duration {1}", durationTicks, tupletBaseDuration);
-                        var tupletNotes = new List<NoteWithDurationEvent>();
+                        var tupletNotes = new List<DurationEvent>();
                         tupletNotes.Add(myNote);
 
                         int tupletValue = durationTicks / TupletDurations[tupletDurationIndex].Item1;
@@ -125,9 +191,9 @@ namespace S3mToMidi
 
                         for(int tupletIndex = eventIndex; tupletIndex < events.Count && tupletNotes.Sum(t => t.Tick) < tupletDuration; tupletIndex++)
                         {
-                            if(events[tupletIndex] is NoteWithDurationEvent nextNote)
+                            if(events[tupletIndex] is DurationEvent nextNote)
                             {
-                                if(nextNote.GetDurationTicks() %tupletBaseDuration != 0)
+                                if(nextNote.Duration %tupletBaseDuration != 0)
                                 {
                                     //Debug.Fail("needed next note to be part of tuplet but it wasn't");
                                     break;
@@ -141,8 +207,8 @@ namespace S3mToMidi
 
                         foreach(var tupletNote in tupletNotes)
                         {
-                            writer.WriteLine("\\set fontSize = #-{0}", (64 - tupletNote.NoteOn.Velocity) % (64 / 6));
-                            writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(tupletNote.NoteOn.Pitch), ConvertToLilyPondDuration(tupletNote.GetDurationTicks()));
+                            //writer.WriteLine("\\set fontSize = #-{0}", (64 - tupletNote.NoteOn.Velocity) % (64 / 6));
+                            writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(tupletNote.Pitch), ConvertToLilyPondDuration(tupletNote.Duration));
                         }
                         
                         writer.WriteLine(" }");
@@ -150,8 +216,8 @@ namespace S3mToMidi
                     }
                 }
 
-                writer.WriteLine("\\set fontSize = #-{0}", (64 - myNote.NoteOn.Velocity) % (64 / 6));
-                writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(myNote.NoteOn.Pitch), ConvertToLilyPondDuration(myNote.GetDurationTicks()));
+                //writer.WriteLine("\\set fontSize = #-{0}", (64 - myNote.NoteOn.Velocity) % (64 / 6));
+                writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(myNote.Pitch), ConvertToLilyPondDuration(myNote.Duration));
             }
             else if (e is NoteEvent note)
             {
@@ -264,6 +330,7 @@ namespace S3mToMidi
 
         private static string ChannelNoteToLilyPondPitch(int note)
         {
+            if(note == -1){ return "r"; }
             // C5 = 64 = octave 5 + step 0
             int step = note & 15;
             int octave = 1 + (note >> 4);

@@ -7,7 +7,7 @@ namespace S3mToMidi
     {
         private List<Event> events= new List<Event>();
 
-        public LilyPondOutputChannel() : base(1)
+        public LilyPondOutputChannel(int channelNumber) : base(channelNumber)
         {
             
         }

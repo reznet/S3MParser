@@ -72,7 +72,7 @@ namespace S3mToMidi
 
                 var pattern = file.Patterns[order];
 
-                if (options.PatternsToExport != null & !options.PatternsToExport.Contains(pattern.PatternNumber))
+                if (options.PatternsToExport != null & !options.PatternsToExport.IsEmpty && !options.PatternsToExport.Contains(pattern.PatternNumber))
                 {
                     Console.WriteLine("Skipping pattern {0} because pattern filter was specified.", pattern.PatternNumber);
                     continue;

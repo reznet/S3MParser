@@ -6,6 +6,7 @@ using S3M;
 using System.Diagnostics;
 using Melanchall.DryWetMidi.Core;
 using System.Net.Mail;
+using System.Runtime.CompilerServices;
 
 namespace S3mToMidi
 {
@@ -56,12 +57,13 @@ namespace S3mToMidi
                 WriteKeySignature("c", "minor");
 
                 WriteClef("bass");
+                Clef clef = new Clef("bass");
 
                 var time = new Time();
 
                 for(int i = 0; i < withRests.Count; i++)
                 {
-                    ProcessEvent(withRests, i, time);
+                    ProcessEvent(withRests, i, time, clef);
                 }
                 writer.Write("}");
                 writer.WriteLine();
@@ -70,6 +72,69 @@ namespace S3mToMidi
             writer.WriteLine(">>");
 
             return writer.ToString();
+        }
+
+        private class Clef
+        {
+            private readonly string clefName;
+            private readonly Ottava ottava;
+            private int currentOttava;
+
+            public Clef(string clefName)
+            {
+                this.clefName = clefName;
+                this.ottava = new Ottava(40, 60); // HACK low e to middle c
+            }
+
+            public void WriteStaffForChannelPitch(int channelPitch, TextWriter writer)
+            {
+                var midiPitch = ChannelNoteToMidiPitch(channelPitch);
+
+                int newOttava = ottava.GetOttava(midiPitch);
+                if (newOttava != currentOttava)
+                {
+                    currentOttava = newOttava;
+                    writer.WriteLine("\\ottava #{0}", newOttava);
+                }
+            }
+
+            private static int ChannelNoteToMidiPitch(int note)
+            {
+                // C5 = 64 = octave 5 + step 0
+                int step = note & 15;
+                int octave = 1 + (note >> 4);
+
+                return (octave * 12) + step;
+            }
+        }
+
+        private class Ottava
+        {
+            private readonly int minimumPitch;
+            private readonly int maximumPitch;
+
+            public Ottava(int mininumPitch, int maximumPitch)
+            {
+                this.minimumPitch = mininumPitch;
+                this.maximumPitch = maximumPitch;
+            }
+
+            public int GetOttava(int pitch)
+            {
+                Debug.Assert(0 < pitch);
+                int newOttava = 0;
+
+                if (maximumPitch < pitch)
+                {
+                    newOttava = 1;
+                }
+                else if (pitch < minimumPitch)
+                {
+                    newOttava = -1;
+                }
+
+                return newOttava;
+            }
         }
 
         private class Time
@@ -213,7 +278,7 @@ namespace S3mToMidi
             public int Velocity => NoteOn.Velocity;
         }
 
-        private void ProcessEvent(ImmutableList<Event> events, int eventIndex, Time time)
+        private void ProcessEvent(ImmutableList<Event> events, int eventIndex, Time time, Clef clef)
         {
             var e = events[eventIndex];
             if (e is DurationEvent myNote)
@@ -255,6 +320,7 @@ namespace S3mToMidi
                         {
                             //writer.WriteLine("\\set fontSize = #-{0}", (64 - tupletNote.NoteOn.Velocity) % (64 / 6));
                             var adjustedTupletDurationForDisplay = tupletNote.Duration * 3 / 2;
+                            clef.WriteStaffForChannelPitch(tupletNote.Pitch, writer);
                             writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(tupletNote.Pitch), ConvertToLilyPondDuration(adjustedTupletDurationForDisplay));
                         }
                         
@@ -282,6 +348,7 @@ namespace S3mToMidi
                 }
                 else if(myNote is NoteWithDurationEvent notWithDuration)
                 {
+                    clef.WriteStaffForChannelPitch(notWithDuration.Pitch, writer);
                     writer.WriteLine("\\set fontSize = #-{0}", (64 - notWithDuration.Velocity) % (64 / 6));
                     writer.Write(ChannelNoteToLilyPondPitch(notWithDuration.Pitch));
                     writer.WriteLine(string.Join("~ ", durations.SelectMany(GetNoteTies).Select(ConvertToLilyPondDuration)));

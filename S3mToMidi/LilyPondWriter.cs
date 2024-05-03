@@ -249,7 +249,8 @@ namespace S3mToMidi
                         foreach(var tupletNote in tupletNotes)
                         {
                             //writer.WriteLine("\\set fontSize = #-{0}", (64 - tupletNote.NoteOn.Velocity) % (64 / 6));
-                            writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(tupletNote.Pitch), ConvertToLilyPondDuration(tupletNote.Duration));
+                            var adjustedTupletDurationForDisplay = tupletNote.Duration * 3 / 2;
+                            writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(tupletNote.Pitch), ConvertToLilyPondDuration(adjustedTupletDurationForDisplay));
                         }
                         
                         writer.WriteLine(" }");

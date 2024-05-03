@@ -73,7 +73,7 @@ namespace S3mToMidi
         {
             public int Tick;
 
-            public string[] GetTies(int duration)
+            public int[] GetBarlineTies(int duration)
             {
                 //TODO: figure out or track the start of the measure
                 // figure out which measure we're currently in, assume 4/4 for now
@@ -89,16 +89,16 @@ namespace S3mToMidi
 
                 if(duration <= ticksRemainingInMeasure)
                 {
-                    return new string[]{ConvertToLilyPondDuration(duration)};
+                    return new int[]{ duration };
                 }
                 else
                 {
-                    List<string> durations = new List<string>();
+                    List<int> durations = new List<int>();
                     while(0 < duration)
                     {
                         var nextMaxDuration = ticksPerMeasure - tickInMeasure;  // the next duration cannot be longer than this value
                         var nextDuration = Math.Min(nextMaxDuration, duration);
-                        durations.Add(ConvertToLilyPondDuration(nextDuration));
+                        durations.Add(nextDuration);
                         duration -= nextDuration;
                         tickInMeasure = (tickInMeasure + nextDuration) % ticksPerMeasure;
                     }
@@ -260,13 +260,27 @@ namespace S3mToMidi
                     }
                 }
 
-                var durations = time.GetTies(myNote.Duration);
+                var durations = time.GetBarlineTies(myNote.Duration);
                 time.Tick += myNote.Duration;
 
-                var myDuration = string.Join("~ ", durations);
+                if(myNote is RestEvent)
+                {
+                    foreach(var subDuration in durations)
+                    {
+                        var rests = GetNoteTies(subDuration);
+                        foreach(var rest in rests)
+                        {
+                            writer.WriteLine("r{0} ", ConvertToLilyPondDuration(rest));
+                        }
+                    }
+                }
+                else
+                {
+                    var myDuration = string.Join("~ ", durations.Select(ConvertToLilyPondDuration));
 
-                //writer.WriteLine("\\set fontSize = #-{0}", (64 - myNote.NoteOn.Velocity) % (64 / 6));
-                writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(myNote.Pitch), myDuration);
+                    //writer.WriteLine("\\set fontSize = #-{0}", (64 - myNote.NoteOn.Velocity) % (64 / 6));
+                    writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(myNote.Pitch), myDuration);
+                }
             }
             else if (e is NoteEvent note)
             {
@@ -340,6 +354,34 @@ namespace S3mToMidi
             ( TICKS_PER_QUARTERNOTE / 16, "64" ),
         };
 
+        private static List<(int, string)> LilyPondSimpleDurations = new List<(int, string)>
+        {
+            ( TICKS_PER_QUARTERNOTE * 4, "1" ),
+            ( TICKS_PER_QUARTERNOTE * 2, "2" ),
+            ( TICKS_PER_QUARTERNOTE * 1, "4" ),
+            ( TICKS_PER_QUARTERNOTE / 2, "8" ),
+            ( TICKS_PER_QUARTERNOTE / 4, "16" ),
+            ( TICKS_PER_QUARTERNOTE / 8, "32" ),
+            ( TICKS_PER_QUARTERNOTE / 16, "64" ),
+        };
+
+        private static int[] GetNoteTies(int delta)
+        {
+            Debug.Assert(delta <= TICKS_PER_QUARTERNOTE * 4, "delta is too large to fit in 4/4 measure"); // todo handle other time signatures
+            List<int> parts = new List<int>();
+            for(int i = 0; i < LilyPondSimpleDurations.Count; i++)
+            {
+                var (ticks, duration) = LilyPondSimpleDurations[i];
+                if (ticks <= delta) 
+                { 
+                    parts.Add(ticks); 
+                    delta -= ticks;
+                }
+            }
+
+            return parts.ToArray();
+        }
+
         private static List<(int, string)>TupletDurations = new List<(int, string)>
         {
             ((int)(TICKS_PER_QUARTERNOTE / 1.5), "4" ), // 64 ticks, quarter note triplets
@@ -349,6 +391,17 @@ namespace S3mToMidi
 
         private static string ConvertToLilyPondDuration(int delta)
         {
+            foreach(var (ticks, name) in LilyPondSimpleDurations)
+            {
+                if (delta == ticks)
+                {
+                    return name;
+                }
+            }
+            //Debug.Fail(string.Format("don't know how to convert duration {0} to LilyPond duration", delta));
+            Console.Out.WriteLine("don't know how to convert duration {0} to LilyPond duration", delta);
+            return "4";
+            /*
             foreach(var (tupletDuration, lilyPondDuration) in TupletDurations)
             {
                 if(tupletDuration == delta)
@@ -356,6 +409,10 @@ namespace S3mToMidi
                     return lilyPondDuration;
                 }
             }
+            */
+
+            //return ConvertToLilyPondDuration2(delta);
+            /*
             foreach(var (duration, lilyPondDuration) in LilyPondDurations)
             {
                 if(delta % duration == 0)
@@ -373,6 +430,7 @@ namespace S3mToMidi
             //Debug.Fail(string.Format("don't know how to convert duration {0} to LilyPond duration", delta));
             Console.Out.WriteLine("don't know how to convert duration {0} to LilyPond duration", delta);
             return "4";
+            */
         }
 
         private static string[] PitchNames = ["c", "c-sharp", "d", "d-sharp", "e", "f", "f-sharp", "g", "g-sharp", "a", "a-sharp", "b"];

@@ -83,7 +83,7 @@ namespace S3mToMidi
             public Clef(string clefName)
             {
                 this.clefName = clefName;
-                this.ottava = new Ottava(40, 60); // HACK low e to middle c
+                this.ottava = new Ottava(24, 67); // HACK low e to middle g
             }
 
             public void WriteStaffForChannelPitch(int channelPitch, TextWriter writer)
@@ -511,23 +511,26 @@ namespace S3mToMidi
 
         private static string ChannelNoteToLilyPondPitch(int note)
         {
+            // byte 0 - Note; hi=oct, lo=note, 255=empty note,
+            // 254=key off (used with adlib, with samples stops smp)
             if(note == -1){ return "r"; }
             // C5 = 64 = octave 5 + step 0
+            int octave = (note >> 4) + 1;
             int step = note & 15;
-            int octave = 1 + (note >> 4);
+            
             string octaveName = "";
 
-            if(5 < octave)
+            if(4 < octave)
             {
-                octaveName = new string('\'', octave - 5);
+                octaveName = new string('\'', octave - 4);
             }
-            else if (5 == octave)
+            else if (4 == octave)
             {
                 // no-op
             }
-            else if (octave < 5)
+            else if (octave < 4)
             {
-                octaveName = new string(',', 5 - octave);
+                octaveName = new string(',', 4 - octave);
             }
 
             return PitchNamesFlats[step] + octaveName;

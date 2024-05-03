@@ -52,6 +52,9 @@ namespace S3mToMidi
                 
                 writer.Write("{ ");
 
+                // hack key signature
+                WriteKeySignature("c", "minor");
+
                 WriteClef("bass");
 
                 var time = new Time();
@@ -436,7 +439,8 @@ namespace S3mToMidi
             */
         }
 
-        private static string[] PitchNames = ["c", "c-sharp", "d", "d-sharp", "e", "f", "f-sharp", "g", "g-sharp", "a", "a-sharp", "b"];
+        private static string[] PitchNamesSharps = ["c", "c-sharp", "d", "d-sharp", "e", "f", "f-sharp", "g", "g-sharp", "a", "a-sharp", "b"];
+        private static string[] PitchNamesFlats = ["c", "d-flat", "d", "e-flat", "e", "f", "g-flat", "g", "a-flat", "a", "b-flat", "b"];
 
         private static string ChannelNoteToLilyPondPitch(int note)
         {
@@ -459,7 +463,7 @@ namespace S3mToMidi
                 octaveName = new string(',', 5 - octave);
             }
 
-            return PitchNames[step] + octaveName;
+            return PitchNamesFlats[step] + octaveName;
         }
 
         private void WriteVersion()
@@ -475,6 +479,11 @@ namespace S3mToMidi
         private void WriteClef(string clef)
         {
             writer.WriteLine("\\clef {0}", clef);
+        }
+
+        private void WriteKeySignature(string key, string mode)
+        {
+            writer.WriteLine("\\key {0} \\{1}", key, mode);
         }
     }
 }

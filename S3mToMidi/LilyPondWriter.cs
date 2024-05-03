@@ -382,7 +382,7 @@ namespace S3mToMidi
                 }
             }
 
-            return parts.ToArray();
+            return ((IEnumerable<int>)parts).Reverse().ToArray();
         }
 
         private static List<(int, string)>TupletDurations = new List<(int, string)>

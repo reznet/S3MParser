@@ -54,9 +54,11 @@ namespace S3mToMidi
 
                 WriteClef("bass");
 
+                var time = new Time();
+
                 for(int i = 0; i < withRests.Count; i++)
                 {
-                    ProcessEvent(withRests, i);
+                    ProcessEvent(withRests, i, time);
                 }
                 writer.Write("}");
                 writer.WriteLine();
@@ -65,6 +67,45 @@ namespace S3mToMidi
             writer.WriteLine(">>");
 
             return writer.ToString();
+        }
+
+        private class Time
+        {
+            public int Tick;
+
+            public string[] GetTies(int duration)
+            {
+                //TODO: figure out or track the start of the measure
+                // figure out which measure we're currently in, assume 4/4 for now
+                var ticksPerMeasure = TICKS_PER_QUARTERNOTE * 4;
+                var measure = Tick / ticksPerMeasure;
+                var tickInMeasure = Tick % ticksPerMeasure;
+                var ticksRemainingInMeasure = ticksPerMeasure - tickInMeasure;
+
+                Console.Out.WriteLine("seems we're currently {0}/{1} ticks into measure {2}.  there are {3} ticks left in the measure.", tickInMeasure, ticksPerMeasure, measure, ticksRemainingInMeasure);
+
+                Debug.Assert(0 < ticksRemainingInMeasure);
+                Debug.Assert(0 < duration);
+
+                if(duration <= ticksRemainingInMeasure)
+                {
+                    return new string[]{ConvertToLilyPondDuration(duration)};
+                }
+                else
+                {
+                    List<string> durations = new List<string>();
+                    while(0 < duration)
+                    {
+                        var nextMaxDuration = ticksPerMeasure - tickInMeasure;  // the next duration cannot be longer than this value
+                        var nextDuration = Math.Min(nextMaxDuration, duration);
+                        durations.Add(ConvertToLilyPondDuration(nextDuration));
+                        duration -= nextDuration;
+                        tickInMeasure = (tickInMeasure + nextDuration) % ticksPerMeasure;
+                    }
+                    Console.Out.WriteLine("Split duration {0} across bar lines into [{1}]", duration, string.Join(", ", durations));
+                    return durations.ToArray();
+                }
+            }
         }
 
         private IEnumerable<Event> WithRestEvents(ImmutableList<Event> events)
@@ -167,7 +208,7 @@ namespace S3mToMidi
             public override int Pitch => NoteOn.Pitch;
         }
 
-        private void ProcessEvent(ImmutableList<Event> events, int eventIndex)
+        private void ProcessEvent(ImmutableList<Event> events, int eventIndex, Time time)
         {
             var e = events[eventIndex];
             if (e is DurationEvent myNote)
@@ -212,12 +253,20 @@ namespace S3mToMidi
                         }
                         
                         writer.WriteLine(" }");
+
+                        time.Tick += myNote.Duration;
+
                         return;
                     }
                 }
 
+                var durations = time.GetTies(myNote.Duration);
+                time.Tick += myNote.Duration;
+
+                var myDuration = string.Join("~ ", durations);
+
                 //writer.WriteLine("\\set fontSize = #-{0}", (64 - myNote.NoteOn.Velocity) % (64 / 6));
-                writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(myNote.Pitch), ConvertToLilyPondDuration(myNote.Duration));
+                writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(myNote.Pitch), myDuration);
             }
             else if (e is NoteEvent note)
             {

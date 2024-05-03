@@ -276,10 +276,14 @@ namespace S3mToMidi
                 }
                 else
                 {
-                    var myDuration = string.Join("~ ", durations.Select(ConvertToLilyPondDuration));
+                    foreach(var subDuration in durations)
+                    {
+                        var notes = GetNoteTies(subDuration);
+                        var myDuration = string.Join("~ ", notes.Select(ConvertToLilyPondDuration));
 
-                    //writer.WriteLine("\\set fontSize = #-{0}", (64 - myNote.NoteOn.Velocity) % (64 / 6));
-                    writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(myNote.Pitch), myDuration);
+                        //writer.WriteLine("\\set fontSize = #-{0}", (64 - myNote.NoteOn.Velocity) % (64 / 6));
+                        writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(myNote.Pitch), myDuration);
+                    }
                 }
             }
             else if (e is NoteEvent note)
@@ -363,6 +367,7 @@ namespace S3mToMidi
             ( TICKS_PER_QUARTERNOTE / 4, "16" ),
             ( TICKS_PER_QUARTERNOTE / 8, "32" ),
             ( TICKS_PER_QUARTERNOTE / 16, "64" ),
+            ( TICKS_PER_QUARTERNOTE / 32, "128" ),
         };
 
         private static int[] GetNoteTies(int delta)
@@ -398,7 +403,7 @@ namespace S3mToMidi
                     return name;
                 }
             }
-            //Debug.Fail(string.Format("don't know how to convert duration {0} to LilyPond duration", delta));
+            Debug.Fail(string.Format("don't know how to convert duration {0} to LilyPond duration", delta));
             Console.Out.WriteLine("don't know how to convert duration {0} to LilyPond duration", delta);
             return "4";
             /*

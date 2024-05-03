@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using S3M;
 
 namespace S3mToMidi
@@ -71,9 +72,9 @@ namespace S3mToMidi
 
                 var pattern = file.Patterns[order];
 
-                if (options.Pattern.HasValue && options.Pattern.Value != pattern.PatternNumber)
+                if (options.PatternsToExport != null & !options.PatternsToExport.Contains(pattern.PatternNumber))
                 {
-                    Console.WriteLine("Skipping pattern {0} because pattern filter \"{1}\" was specified.", pattern.PatternNumber, options.Pattern.Value);
+                    Console.WriteLine("Skipping pattern {0} because pattern filter was specified.", pattern.PatternNumber);
                     continue;
                 }
 

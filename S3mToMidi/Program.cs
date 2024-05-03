@@ -1,4 +1,4 @@
-using S3M;
+﻿using S3M;
 using CommandLine;
 using System.Runtime.CompilerServices;
 using System.Collections.Immutable;
@@ -14,8 +14,8 @@ namespace S3mToMidi
             [Option('f', "file", Required = true, HelpText = "Path to the file to convert.")]
             public string? InputFile { get; set; }
 
-            [Option("pattern", Required = false, HelpText = "The single pattern to export.")]
-            public int? Pattern { get; set; }
+            [Option("pattern", Required = false, HelpText = "A pattern to export.  Can be specified multiple times.")]
+            public IEnumerable<int>? Pattern { get; set; }
 
             [Option("start-order", Required = false, HelpText = "The order in the song to start at.  Use this to skip patterns in the beginning of the song with time signatures that do not render well in MIDI programs.")]
             public int? StartOrder { get; set; }
@@ -76,7 +76,7 @@ namespace S3mToMidi
             Dictionary<int, ImmutableList<Event>> noteEvents =
                 new NoteEventGenerator(new NoteEventGeneratorOptions()
                     {
-                        Pattern = o.Pattern,
+                        PatternsToExport = o.Pattern?.ToImmutableHashSet(),
                         StartOrder = o.StartOrder,
                         ExcludedChannels = o.ExcludeChannels.ToHashSet(),
                         ChannelInstrumentOutputBehavior = o.ExplodeChannelsByInstrument ? ChannelInstrumentOutputBehavior.Explode : ChannelInstrumentOutputBehavior.Collapse
@@ -104,7 +104,7 @@ namespace S3mToMidi
             Dictionary<int, ImmutableList<Event>> noteEvents =
                 new NoteEventGenerator(new NoteEventGeneratorOptions()
                     {
-                        Pattern = o.Pattern,
+                        PatternsToExport = o.Pattern?.ToImmutableHashSet(),
                         StartOrder = o.StartOrder,
                         ExcludedChannels = o.ExcludeChannels.ToHashSet(),
                         ChannelInstrumentOutputBehavior = o.ExplodeChannelsByInstrument ? ChannelInstrumentOutputBehavior.Explode : ChannelInstrumentOutputBehavior.Collapse

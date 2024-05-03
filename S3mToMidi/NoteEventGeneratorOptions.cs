@@ -1,11 +1,13 @@
-﻿namespace S3mToMidi
+﻿using System.Collections.Immutable;
+
+namespace S3mToMidi
 {
     internal class NoteEventGeneratorOptions
     {
         /// <summary>
-        /// Gets or sets the single pattern to export.
+        /// Gets or sets the patterns to export.
         /// </summary>
-        public int? Pattern { get; set; }
+        public ImmutableHashSet<int> PatternsToExport { get; set; }
 
         /// <summary>
         /// Gets or sets the index of the Orders where the export should start.

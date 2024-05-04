@@ -403,6 +403,7 @@ namespace S3mToMidi
             }
             else if (e is TempoEvent tempoEvent)
             {
+                writer.WriteLine(@"\tempo 4 = {0}", tempoEvent.TempoBpm);
                 //Console.Out.WriteLine("TempoEvent Tick {0} Tempo {1} {2}", tempoEvent.Tick, tempoEvent.TempoBpm, 60000000 / tempoEvent.TempoBpm);
 
 /*

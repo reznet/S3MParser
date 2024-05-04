@@ -24,6 +24,8 @@ namespace S3mToMidi
         {
             WriteVersion();
             WriteLanguage();
+            WriteScoreStart();
+            
 
 /*
             writer.WriteLine(@"\paper {
@@ -71,7 +73,48 @@ namespace S3mToMidi
 
             writer.WriteLine(">>");
 
+            WriteLayout();
+            WriteMidi();
+            WriteScoreEnd();
+
             return writer.ToString();
+        }
+
+        private void WriteMidi()
+        {
+            writer.WriteLine(@"\midi {}");
+        }
+
+        private void WriteScoreStart()
+        {
+            /*
+                \score {
+                … music …
+                \layout { }
+                \midi { }
+                }
+            */
+            writer.WriteLine(@"\score {");
+            
+            
+        }
+
+        private void WriteScoreEnd()
+        {
+            writer.WriteLine("}");
+        }
+
+        private void WriteLayout()
+        {
+            writer.WriteLine(@"\layout {
+  \context {
+    \Voice
+    \remove Note_heads_engraver
+    \consists Completion_heads_engraver
+    \remove Rest_engraver
+    \consists Completion_rest_engraver
+  }
+}");
         }
 
         private class Clef

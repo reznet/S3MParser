@@ -219,6 +219,7 @@ _Pvt_Extensions
 
 # ignore generated MIDI files
 *.mid
+*.midi
 
 # ignore generated LilyPond files
 *.ly

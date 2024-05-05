@@ -132,19 +132,7 @@ namespace S3mToMidi.LilyPond
             }
             else if (e is TimeSignatureEvent timeSignatureEvent)
             {
-                /*
-                // Console.WriteLine("TimeSignatureEvent Tick {0} {1}/{2}", timeSignatureEvent.Tick, timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
-                const byte ClocksPerMetronomeClick = 24;
-                const byte ThirtySecondNotesPerQuarterNote = 8;
-                yield return new Melanchall.DryWetMidi.Core.TimeSignatureEvent((byte)timeSignatureEvent.BeatsPerBar,
-                                              (byte)timeSignatureEvent.BeatValue,
-                                              ClocksPerMetronomeClick,
-                                              ThirtySecondNotesPerQuarterNote)
-                {
-                    // todo: how to compute delta for events that don't have a channel
-                    DeltaTime = GetDeltaTimeForChannelTick(1, timeSignatureEvent.Tick, channelLastTicks)
-                };
-*/
+                writer.WriteLine(@"\time {0}/{1}", timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
             }
             else
             {

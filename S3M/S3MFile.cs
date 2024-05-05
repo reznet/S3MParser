@@ -5,6 +5,9 @@ namespace S3M
 {
     public class S3MFile
     {
+        internal const int CHANNEL_COUNT = 32;
+        internal const int ROW_COUNT = 64;
+
         public string Name;
         public int Type;
         public int OrderCount;
@@ -56,7 +59,7 @@ namespace S3M
                 file.UltraClickRemoval = reader.ReadBytesAsInt(1);
                 file.LoadChannelPanSettings = reader.ReadBytesAsInt(1);
                 stream.Seek(0x40, SeekOrigin.Begin);
-                file.ChannelSettings = ReadByteArrayAsIntArray(32, reader);
+                file.ChannelSettings = ReadByteArrayAsIntArray(CHANNEL_COUNT, reader);
                 file.Orders = ReadByteArrayAsIntArray(file.OrderCount, reader);
                 file.InstrumentPointers = ReadParapointers(file.InstrumentCount, reader);
                 file.PatternPointers = ReadParapointers(file.PatternCount, reader);

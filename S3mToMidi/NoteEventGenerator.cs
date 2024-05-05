@@ -83,16 +83,18 @@ namespace S3mToMidi
                 int patternStartTick = tick;
                 int rowIndex = rowSkip;
                 int patternTrackerTicks = 0;
-                for (; rowIndex < pattern.Rows.Count; rowIndex++)
+                for (; rowIndex < pattern.Rows.Length; rowIndex++)
                 {
+                    Row row = pattern.Rows[rowIndex];
                     //Console.WriteLine("Pattern {0} Row {1} patternTrackerTicks {2} trackerTicks {3}", pattern.PatternNumber, rowIndex, patternTrackerTicks, tick);
                     finalRow = rowIndex;
                     rowSkip = 0;
                     bool breakPatternToRow = false;
-                    Row row = pattern.Rows[rowIndex];
+                    
 
                     foreach (var channelEvent in row.ChannelEvents)
                     {
+                        if (channelEvent == null) { break; }
                         ChannelMultiplexer channel = GetChannel(channelEvent.ChannelNumber);
 
                         if (channel.IsPlayingNote && channelEvent.HasVolume && channelEvent.Volume == 0)
@@ -122,6 +124,16 @@ namespace S3mToMidi
                             }
                             //int noteChannel = options.ChannelsFromPatterns ? channel.ChannelNumber : channel.Instrument - 1;
                             channel.NoteOn(time, channelEvent.Instrument.Value, note, channelEvent.Volume);
+                        }
+                        else if (channelEvent.NoteAction == NoteAction.Stop)
+                        {
+                            var delay = 0;
+                            if (channelEvent.Command == CommandType.Notedelay)
+                            {
+                                delay = channelEvent.Data;
+                            }
+                            int time = tick + rowSpeedToTicks(delay);
+                            channel.NoteOff(time);
                         }
 
                         if (channelEvent.Command == CommandType.BreakPatternToRow)

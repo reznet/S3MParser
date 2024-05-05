@@ -34,7 +34,7 @@ namespace S3mToMidi
                 foreach (Row row in pattern.Rows)
                 {
                     int channelIndex = 0;
-                    for (int cIndex = 0; cIndex < row.ChannelEvents.Count; cIndex++)
+                    for (int cIndex = 0; cIndex < row.ChannelEvents.Length; cIndex++)
                     {
                         ChannelEvent evt = row.ChannelEvents[cIndex];
                         while (channelIndex < channelHeaders.Count && channelHeaders[channelIndex] < evt.ChannelNumber)

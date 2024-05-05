@@ -459,25 +459,6 @@ namespace S3mToMidi
         private static List<(int, string)> LilyPondDurations = new List<(int, string)>
         {
             ( TICKS_PER_QUARTERNOTE * 4, "1" ),
-            ( TICKS_PER_QUARTERNOTE * 3, "2." ),
-            ( TICKS_PER_QUARTERNOTE * 2, "2" ),
-            ( TICKS_PER_QUARTERNOTE * 15 / 8, "4~ 8~ 16." ),
-            ( TICKS_PER_QUARTERNOTE * 3 / 2, "4." ),
-            ( TICKS_PER_QUARTERNOTE, "4" ),
-            ( TICKS_PER_QUARTERNOTE * 7 / 8, "8~ 16." ),
-            ( TICKS_PER_QUARTERNOTE * 3 / 4, "8."),
-            ( TICKS_PER_QUARTERNOTE / 2, "8" ),
-            ( TICKS_PER_QUARTERNOTE * 5 / 4, "4~ 16" ),
-            ( TICKS_PER_QUARTERNOTE * 5 / 8, "8~ 32" ),
-            ( TICKS_PER_QUARTERNOTE * 3 / 8, "16." ),
-            ( TICKS_PER_QUARTERNOTE / 4, "16" ),
-            ( TICKS_PER_QUARTERNOTE / 8, "32" ),
-            ( TICKS_PER_QUARTERNOTE / 16, "64" ),
-        };
-
-        private static List<(int, string)> LilyPondSimpleDurations = new List<(int, string)>
-        {
-            ( TICKS_PER_QUARTERNOTE * 4, "1" ),
             ( TICKS_PER_QUARTERNOTE * 2, "2" ),
             ( TICKS_PER_QUARTERNOTE * 1, "4" ),
             ( TICKS_PER_QUARTERNOTE / 2, "8" ),
@@ -491,9 +472,9 @@ namespace S3mToMidi
         {
             Debug.Assert(delta <= TICKS_PER_QUARTERNOTE * 4, "delta is too large to fit in 4/4 measure"); // todo handle other time signatures
             List<int> parts = new List<int>();
-            for(int i = 0; i < LilyPondSimpleDurations.Count; i++)
+            for(int i = 0; i < LilyPondDurations.Count; i++)
             {
-                var (ticks, duration) = LilyPondSimpleDurations[i];
+                var (ticks, duration) = LilyPondDurations[i];
                 if (ticks <= delta) 
                 { 
                     parts.Add(ticks); 
@@ -513,7 +494,7 @@ namespace S3mToMidi
 
         private static string ConvertToLilyPondDuration(int delta)
         {
-            foreach(var (ticks, name) in LilyPondSimpleDurations)
+            foreach(var (ticks, name) in LilyPondDurations)
             {
                 if (delta == ticks)
                 {
@@ -523,36 +504,6 @@ namespace S3mToMidi
             Debug.Fail(string.Format("don't know how to convert duration {0} to LilyPond duration", delta));
             Console.Out.WriteLine("don't know how to convert duration {0} to LilyPond duration", delta);
             return "4";
-            /*
-            foreach(var (tupletDuration, lilyPondDuration) in TupletDurations)
-            {
-                if(tupletDuration == delta)
-                {
-                    return lilyPondDuration;
-                }
-            }
-            */
-
-            //return ConvertToLilyPondDuration2(delta);
-            /*
-            foreach(var (duration, lilyPondDuration) in LilyPondDurations)
-            {
-                if(delta % duration == 0)
-                {
-                    if(delta == duration)
-                    {
-                        return lilyPondDuration;
-                    }
-
-                    var multiple = delta / duration;
-
-                }
-            }
-            
-            //Debug.Fail(string.Format("don't know how to convert duration {0} to LilyPond duration", delta));
-            Console.Out.WriteLine("don't know how to convert duration {0} to LilyPond duration", delta);
-            return "4";
-            */
         }
 
         private static string[] PitchNamesSharps = ["c", "c-sharp", "d", "d-sharp", "e", "f", "f-sharp", "g", "g-sharp", "a", "a-sharp", "b"];

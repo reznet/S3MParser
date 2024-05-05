@@ -216,4 +216,15 @@ FakesAssemblies/
 _Pvt_Extensions
 
 .DS_Store
+
+# ignore generated MIDI files
 *.mid
+
+# ignore generated LilyPond files
+*.ly
+
+# ignore generated pdf files from LilyPond output
+*.pdf
+
+# ignore generated avi files from ly2video output
+*.avi

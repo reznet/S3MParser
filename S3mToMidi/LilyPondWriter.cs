@@ -404,17 +404,6 @@ namespace S3mToMidi
             else if (e is TempoEvent tempoEvent)
             {
                 writer.WriteLine(@"\tempo 4 = {0}", tempoEvent.TempoBpm);
-                //Console.Out.WriteLine("TempoEvent Tick {0} Tempo {1} {2}", tempoEvent.Tick, tempoEvent.TempoBpm, 60000000 / tempoEvent.TempoBpm);
-
-/*
-                yield return new SetTempoEvent(60000000 / tempoEvent.TempoBpm)
-                {
-                    // todo how to compute delta for tempo events - which channel?
-                    // maybe a pseudo-channel for tempo?
-                    DeltaTime = GetDeltaTimeForChannelTick(1, tempoEvent.Tick, channelLastTicks),
-
-                };
-*/
             }
             else if (e is TimeSignatureEvent timeSignatureEvent)
             {

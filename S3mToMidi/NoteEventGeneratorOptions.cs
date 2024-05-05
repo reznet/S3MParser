@@ -25,6 +25,6 @@ namespace S3mToMidi
         /// <summary>
         /// Gets or sets a value indicating how to output channel instruments.
         /// </summary>
-        public ChannelInstrumentOutputBehavior ChannelInstrumentOutputBehavior { get; set;}
+        public ChannelInstrumentOutputBehavior ChannelInstrumentOutputBehavior { get; set; }
     }
 }

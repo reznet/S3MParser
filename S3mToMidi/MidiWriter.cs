@@ -61,10 +61,11 @@ namespace S3mToMidi
                 }
                 else
                 {
-                    if(!initializedChannels.Contains(note.Channel))
+                    if (!initializedChannels.Contains(note.Channel))
                     {
                         initializedChannels.Add(note.Channel);
-                        yield return new ProgramChangeEvent(){
+                        yield return new ProgramChangeEvent()
+                        {
                             Channel = (FourBitNumber)(note.Channel - 1),
                             ProgramNumber = (SevenBitNumber)0,
                             DeltaTime = GetDeltaTimeForChannelTick(note.Channel, note.Tick, channelLastTicks)

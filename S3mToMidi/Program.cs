@@ -54,15 +54,15 @@ namespace S3mToMidi
 
                        switch (o.Exporter.ToLowerInvariant())
                        {
-                        case "midi":
-                            ExportMidi(file, o);
-                        break;
-                        case "lilypond":
-                            ExportLilyPond(file, o);
-                        break;
-                        default:
-                            Console.Error.WriteLine("Unrecognized exporter {0}", o.Exporter);
-                            break;
+                           case "midi":
+                               ExportMidi(file, o);
+                               break;
+                           case "lilypond":
+                               ExportLilyPond(file, o);
+                               break;
+                           default:
+                               Console.Error.WriteLine("Unrecognized exporter {0}", o.Exporter);
+                               break;
                        }
                    })
                    .WithNotParsed((errors) =>
@@ -75,23 +75,23 @@ namespace S3mToMidi
         {
             Dictionary<int, ImmutableList<Event>> noteEvents =
                 new NoteEventGenerator(new NoteEventGeneratorOptions()
-                    {
-                        PatternsToExport = o.Pattern?.ToImmutableHashSet(),
-                        StartOrder = o.StartOrder,
-                        ExcludedChannels = o.ExcludeChannels.ToHashSet(),
-                        ChannelInstrumentOutputBehavior = o.ExplodeChannelsByInstrument ? ChannelInstrumentOutputBehavior.Explode : ChannelInstrumentOutputBehavior.Collapse
-                    },
+                {
+                    PatternsToExport = o.Pattern?.ToImmutableHashSet(),
+                    StartOrder = o.StartOrder,
+                    ExcludedChannels = o.ExcludeChannels.ToHashSet(),
+                    ChannelInstrumentOutputBehavior = o.ExplodeChannelsByInstrument ? ChannelInstrumentOutputBehavior.Explode : ChannelInstrumentOutputBehavior.Collapse
+                },
                     (channelNumber) => new LilyPondOutputChannel(channelNumber))
                 .Generate(file);
 
-            using(var stringWriter = new StringWriter())
+            using (var stringWriter = new StringWriter())
             {
                 var writer = new LilyPondWriter(stringWriter);
                 writer.Write(noteEvents);
 
                 Console.Out.WriteLine(stringWriter.ToString());
                 var outputFilename = Path.GetFileName(Path.ChangeExtension(o.InputFile, ".ly"));
-                if(File.Exists(outputFilename))
+                if (File.Exists(outputFilename))
                 {
                     File.Delete(outputFilename);
                 }
@@ -103,12 +103,12 @@ namespace S3mToMidi
         {
             Dictionary<int, ImmutableList<Event>> noteEvents =
                 new NoteEventGenerator(new NoteEventGeneratorOptions()
-                    {
-                        PatternsToExport = o.Pattern?.ToImmutableHashSet(),
-                        StartOrder = o.StartOrder,
-                        ExcludedChannels = o.ExcludeChannels.ToHashSet(),
-                        ChannelInstrumentOutputBehavior = o.ExplodeChannelsByInstrument ? ChannelInstrumentOutputBehavior.Explode : ChannelInstrumentOutputBehavior.Collapse
-                    },
+                {
+                    PatternsToExport = o.Pattern?.ToImmutableHashSet(),
+                    StartOrder = o.StartOrder,
+                    ExcludedChannels = o.ExcludeChannels.ToHashSet(),
+                    ChannelInstrumentOutputBehavior = o.ExplodeChannelsByInstrument ? ChannelInstrumentOutputBehavior.Explode : ChannelInstrumentOutputBehavior.Collapse
+                },
                     (channelNumber) => new MidiOutputChannel(channelNumber))
                 .Generate(file);
 

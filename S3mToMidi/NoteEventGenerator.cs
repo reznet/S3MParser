@@ -111,9 +111,9 @@ namespace S3mToMidi
                                 delay = channelEvent.Data;
                             }
                             int time = tick + rowSpeedToTicks(delay);
-                            if(channel.IsPlayingNote)
+                            if (channel.IsPlayingNote)
                             {
-                                if(channelEvent.NoteAction == NoteAction.None)
+                                if (channelEvent.NoteAction == NoteAction.None)
                                 {
                                     // get pitch from previous note start
                                     note = channel.PlayingPitch;
@@ -248,7 +248,7 @@ namespace S3mToMidi
 
             return channelEvents;
         }
-        private SortedDictionary<int, ChannelMultiplexer> channels = []; 
+        private SortedDictionary<int, ChannelMultiplexer> channels = [];
         private ChannelMultiplexer GetChannel(int channelNumber)
         {
             const int DefaultVolume = 64;
@@ -256,10 +256,10 @@ namespace S3mToMidi
             if (!channels.TryGetValue(channelNumber, out ChannelMultiplexer? value))
             {
                 value = new ChannelMultiplexer(
-                    channelNumber, 
-                    DefaultVolume, 
-                    options.ExcludedChannels.Contains(channelNumber), 
-                    GetNextAvailableMidiChannel, 
+                    channelNumber,
+                    DefaultVolume,
+                    options.ExcludedChannels.Contains(channelNumber),
+                    GetNextAvailableMidiChannel,
                     options.ChannelInstrumentOutputBehavior == ChannelInstrumentOutputBehavior.Collapse ? GetChannelKeyForSharedOutputChannel : GetChannelKeyForSeparateOutputChannels,
                     getNewOutputChannel);
                 channels.Add(channelNumber, value);

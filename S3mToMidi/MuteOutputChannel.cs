@@ -5,7 +5,7 @@ namespace S3mToMidi
     internal class MuteOutputChannel : OutputChannel
     {
         const int MuteMidiChannel = 0;
-        public MuteOutputChannel() : base(MuteMidiChannel){}
+        public MuteOutputChannel() : base(MuteMidiChannel) { }
 
         public override ImmutableList<Event> GetEvents()
         {

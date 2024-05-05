@@ -5,8 +5,8 @@ namespace S3mToMidi
 {
     internal class MidiOutputChannel : OutputChannel
     {
-        private List<Event> events= new List<Event>();
-        
+        private List<Event> events = new List<Event>();
+
         public MidiOutputChannel(int channelNumber) : base(channelNumber)
         {
             Console.WriteLine("Creating output midi channel {0}", ChannelNumber + 1);
@@ -23,5 +23,5 @@ namespace S3mToMidi
             events.Add(@event);
         }
     }
-    
+
 }

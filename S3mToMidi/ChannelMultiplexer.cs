@@ -60,7 +60,7 @@ namespace S3mToMidi
 
         public IList<OutputChannel> OutputChannels
         {
-            get 
+            get
             {
                 return [.. _outputChannels.Values];
             }

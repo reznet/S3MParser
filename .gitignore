@@ -229,3 +229,4 @@ _Pvt_Extensions
 
 # ignore generated avi files from ly2video output
 *.avi
+*.mp4

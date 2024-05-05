@@ -43,6 +43,11 @@ namespace S3mToMidi
                 var trackEvents = allEvents[channelNumber];
                 var sortedEvents = trackEvents
                     .OrderBy(trackEvent => trackEvent.Tick)
+                    .ThenBy(trackEvent => {
+                        if(trackEvent is TimeSignatureEvent) { return -1; }
+                        else if(trackEvent is TempoEvent) { return 0; }
+                        else { return 1; }
+                    })
                     .ToList();
                 var collapsedEvents = CollapseNoteEvents(sortedEvents).ToImmutableList();
                 if (!collapsedEvents.Any())

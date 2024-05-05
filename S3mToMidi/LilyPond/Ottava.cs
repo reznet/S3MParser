@@ -7,9 +7,9 @@ namespace S3mToMidi.LilyPond
         private readonly int minimumPitch;
         private readonly int maximumPitch;
 
-        public Ottava(int mininumPitch, int maximumPitch)
+        public Ottava(int minimumPitch, int maximumPitch)
         {
-            this.minimumPitch = mininumPitch;
+            this.minimumPitch = minimumPitch;
             this.maximumPitch = maximumPitch;
         }
 

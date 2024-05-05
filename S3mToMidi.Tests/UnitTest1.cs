@@ -34,8 +34,8 @@ public class UnitTest1
         trackerFile.PatternCount = 1;
         trackerFile.Patterns = new List<Pattern>(){ new Pattern(){ PatternNumber = 0 }};
 
-        trackerFile.Patterns[0].Rows[0].ChannelEvents[0] = new S3M.ChannelEvent() { ChannelNumber = 1, Note = 32, Instrument = 1 };
-        trackerFile.Patterns[0].Rows[1].ChannelEvents[0] = new S3M.ChannelEvent() { ChannelNumber = 1, Note = 0xFE};
+        trackerFile.Patterns[0].Rows[0].ChannelEvents[0] = new S3M.ChannelEvent(1) { Note = 32, Instrument = 1 };
+        trackerFile.Patterns[0].Rows[1].ChannelEvents[0] = new S3M.ChannelEvent(1) { Note = 0xFE};
 
         var noteEvents = new NoteEventGenerator(new NoteEventGeneratorOptions(), (c) => new MidiOutputChannel(c)).Generate(trackerFile);
 
@@ -74,17 +74,17 @@ public class UnitTest1
         trackerFile.Patterns = new List<Pattern>(){ new Pattern(){ PatternNumber = 0 } };
 
         var row1 = new Row() { RowNumber = 1 };
-        row1.ChannelEvents[0] = new S3M.ChannelEvent() { ChannelNumber = 1, Note = 32, Instrument = 1 };
+        row1.ChannelEvents[0] = new S3M.ChannelEvent(1) { Note = 32, Instrument = 1 };
 
         var row2 = new Row() { RowNumber = 2 };
-        row2.ChannelEvents[0] = new S3M.ChannelEvent() { ChannelNumber = 1, Note = 0xFE};
+        row2.ChannelEvents[0] = new S3M.ChannelEvent(1) { Note = 0xFE};
 
-        trackerFile.Patterns[0].Rows[0].ChannelEvents[0] = new S3M.ChannelEvent(){ ChannelNumber = 1, Note = 32, Instrument = 1 };
-        trackerFile.Patterns[0].Rows[0].ChannelEvents[1] = new S3M.ChannelEvent(){ ChannelNumber = 2, Note = 0xFF, Command = CommandType.SetTempo, Data = 80 };
-        trackerFile.Patterns[0].Rows[0].ChannelEvents[2] = new S3M.ChannelEvent(){ ChannelNumber = 3, Note = 32, Instrument = 5, Command = CommandType.SetSpeed, Data = 3 };
-        trackerFile.Patterns[0].Rows[0].ChannelEvents[3] = new S3M.ChannelEvent(){ ChannelNumber = 4, Note = 32, Instrument = 6, Volume = 40, Command = CommandType.VolumeSlideDown, Data = 4 };
-        trackerFile.Patterns[0].Rows[0].ChannelEvents[4] = new S3M.ChannelEvent(){ ChannelNumber = 5, Note = 32, Instrument = 8 };
-        trackerFile.Patterns[0].Rows[1].ChannelEvents[0] = new S3M.ChannelEvent(){ ChannelNumber = 1, Note = 0xFE};
+        trackerFile.Patterns[0].Rows[0].ChannelEvents[0] = new S3M.ChannelEvent(1){ Note = 32, Instrument = 1 };
+        trackerFile.Patterns[0].Rows[0].ChannelEvents[1] = new S3M.ChannelEvent(2){ Note = 0xFF, Command = CommandType.SetTempo, Data = 80 };
+        trackerFile.Patterns[0].Rows[0].ChannelEvents[2] = new S3M.ChannelEvent(3){ Note = 32, Instrument = 5, Command = CommandType.SetSpeed, Data = 3 };
+        trackerFile.Patterns[0].Rows[0].ChannelEvents[3] = new S3M.ChannelEvent(4){ Note = 32, Instrument = 6, Volume = 40, Command = CommandType.VolumeSlideDown, Data = 4 };
+        trackerFile.Patterns[0].Rows[0].ChannelEvents[4] = new S3M.ChannelEvent(5){ Note = 32, Instrument = 8 };
+        trackerFile.Patterns[0].Rows[1].ChannelEvents[0] = new S3M.ChannelEvent(1){ Note = 0xFE };
 
         var noteEvents = new NoteEventGenerator(new NoteEventGeneratorOptions(){ ExcludedChannels = [2, 3, 4, 5]}, (c) => new MidiOutputChannel(c)).Generate(trackerFile);
 

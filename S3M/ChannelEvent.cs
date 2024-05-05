@@ -2,7 +2,11 @@
 {
     public class ChannelEvent
     {
-        public int ChannelNumber;
+        public ChannelEvent(int channelNumber)
+        {
+            ChannelNumber = channelNumber; ;
+        }
+        public int ChannelNumber { get; }
         public int Note = -1;
         public int? Instrument;
         public int? Volume;
@@ -41,13 +45,13 @@
 
         internal static ChannelEvent? Parse(BinaryReader reader)
         {
-            ChannelEvent channelEvent = new();
             byte first = reader.ReadByte();
             if (first == 0)
             {
                 return null;
             }
-            channelEvent.ChannelNumber = (1 + first) & CHANNEL_MASK;
+            var channelNumber = (1 + first) & CHANNEL_MASK;
+            ChannelEvent channelEvent = new(channelNumber);
             if ((first & NOTE_INSTRUMENT_FOLLOWS_MASK) == NOTE_INSTRUMENT_FOLLOWS_MASK)
             {
                 // read note and instrument

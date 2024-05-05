@@ -117,6 +117,7 @@ namespace S3mToMidi
         private IEnumerable<Event> WithRestEvents(ImmutableList<Event> events)
         {
             var time = 0;
+            RestEvent firstRest = null;
             for (int i = 0; i < events.Count; i++)
             {
                 var @event = events[i];
@@ -127,16 +128,28 @@ namespace S3mToMidi
                     yield return @event;
                     continue;
                 }
-                if (@event is NoteWithDurationEvent noteEvent)
+                else if (@event is NoteWithDurationEvent noteEvent)
                 {
                     var restDuration = noteEvent.Tick - time;
                     if (0 < restDuration)
                     {
-                        yield return new RestEvent(time, restDuration);
+                        var rest = new RestEvent(time, restDuration);
+                        if( firstRest == null )
+                        {
+                            firstRest = rest;
+                        }
+                        yield return rest;
                         time += restDuration;
                     }
                     time += noteEvent.Duration;
                     yield return noteEvent;
+                }
+                else if (@event is SongEndEvent songEnd)
+                {
+                    if (firstRest == null )
+                    {
+                        yield return new RestEvent(0, songEnd.Tick);
+                    }
                 }
                 else
                 {

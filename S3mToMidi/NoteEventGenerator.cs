@@ -86,7 +86,7 @@ namespace S3mToMidi
                 for (; rowIndex < pattern.Rows.Length; rowIndex++)
                 {
                     Row row = pattern.Rows[rowIndex];
-                    //Console.WriteLine("Pattern {0} Row {1} patternTrackerTicks {2} trackerTicks {3}", pattern.PatternNumber, rowIndex, patternTrackerTicks, tick);
+                    Console.WriteLine("Pattern {0} Row {1}", pattern.PatternNumber, rowIndex);
                     finalRow = rowIndex;
                     rowSkip = 0;
                     bool breakPatternToRow = false;
@@ -94,7 +94,6 @@ namespace S3mToMidi
 
                     foreach (var channelEvent in row.ChannelEvents)
                     {
-                        if (channelEvent == null) { break; }
                         ChannelMultiplexer channel = GetChannel(channelEvent.ChannelNumber);
 
                         if (channel.IsPlayingNote && channelEvent.HasVolume && channelEvent.Volume == 0)
@@ -125,7 +124,7 @@ namespace S3mToMidi
                             //int noteChannel = options.ChannelsFromPatterns ? channel.ChannelNumber : channel.Instrument - 1;
                             channel.NoteOn(time, channelEvent.Instrument.Value, note, channelEvent.Volume);
                         }
-                        else if (channelEvent.NoteAction == NoteAction.Stop)
+                        else if (channelEvent.NoteAction == NoteAction.Stop && channel.IsPlayingNote)
                         {
                             var delay = 0;
                             if (channelEvent.Command == CommandType.Notedelay)
@@ -241,7 +240,7 @@ namespace S3mToMidi
                 firstChannel.AddEvent(new TimeSignatureEvent(patternStartTick, numerator, denominator));
             }
 
-            // finalize any leftover note on events
+            // finalize any leftover note on events and signal the song is over
             foreach (var key in channels.Keys)
             {
                 var channel = channels[key];
@@ -249,6 +248,7 @@ namespace S3mToMidi
                 {
                     channel.NoteOff(tick);
                 }
+                channel.AddEvent(new SongEndEvent(tick));
             }
 
             Dictionary<int, ImmutableList<Event>> channelEvents = [];
@@ -282,10 +282,12 @@ namespace S3mToMidi
 
         private int GetNextAvailableMidiChannel()
         {
+            /*
             if (16 < nextMidiChannel)
             {
                 throw new Exception("No more available midi channels.");
             }
+            */
             return nextMidiChannel++;
         }
 

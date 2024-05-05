@@ -5,6 +5,11 @@ namespace S3M
     [DebuggerDisplay("RowNumber={RowNumber} Pattern={Pattern.PatternNumber}")]
     public class Row
     {
+
+        public Row()
+        {
+            ChannelEvents = Enumerable.Range(0, S3MFile.CHANNEL_COUNT).Select(i => new ChannelEvent(i)).ToArray();
+        }
         public int RowNumber
         {
             get;
@@ -13,7 +18,7 @@ namespace S3M
 
         internal Pattern Pattern;
 
-        public ChannelEvent[] ChannelEvents = new ChannelEvent[S3MFile.CHANNEL_COUNT];
+        public ChannelEvent[] ChannelEvents;
 
         internal static Row Parse(BinaryReader reader)
         {

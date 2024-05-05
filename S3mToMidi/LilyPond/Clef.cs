@@ -9,7 +9,7 @@ namespace S3mToMidi.LilyPond
         public Clef(string clefName)
         {
             this.clefName = clefName;
-            this.ottava = new Ottava(24, 67); // HACK low e to middle g
+            this.ottava = new Ottava(24, 36, 67, 79); // HACK
         }
 
         public void WriteStaffForChannelPitch(int channelPitch, TextWriter writer)

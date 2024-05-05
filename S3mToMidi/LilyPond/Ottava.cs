@@ -4,27 +4,38 @@ namespace S3mToMidi.LilyPond
 {
     internal class Ottava
     {
-        private readonly int minimumPitch;
-        private readonly int maximumPitch;
+        private readonly int mb;
+        private readonly int vb;
+        private readonly int va;
+        private readonly int ma;
 
-        public Ottava(int minimumPitch, int maximumPitch)
+        public Ottava(int mb, int vb, int va, int ma)
         {
-            this.minimumPitch = minimumPitch;
-            this.maximumPitch = maximumPitch;
+            this.mb = mb;
+            this.vb = vb;
+            this.va = va;
+            this.ma = ma;
         }
 
         public int GetOttava(int pitch)
         {
             Debug.Assert(0 < pitch);
             int newOttava = 0;
-
-            if (maximumPitch < pitch)
+            if (pitch < mb)
             {
-                newOttava = 1;
+                newOttava = -2;
             }
-            else if (pitch < minimumPitch)
+            else if (pitch < vb)
             {
                 newOttava = -1;
+            }
+            else if (ma < pitch)
+            {
+                newOttava = 2;
+            }
+            else if (va < pitch)
+            {
+                newOttava = 1;
             }
 
             return newOttava;

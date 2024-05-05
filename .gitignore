@@ -230,3 +230,6 @@ _Pvt_Extensions
 # ignore generated avi files from ly2video output
 *.avi
 *.mp4
+
+# ignore 'None' file produced by TiMidity during creation of scrolling score
+None

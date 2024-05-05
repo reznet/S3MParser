@@ -7,6 +7,7 @@ using System.Diagnostics;
 using Melanchall.DryWetMidi.Core;
 using System.Net.Mail;
 using System.Runtime.CompilerServices;
+using S3mToMidi.LilyPond;
 
 namespace S3mToMidi
 {
@@ -16,7 +17,7 @@ namespace S3mToMidi
 
         internal LilyPondWriter(TextWriter writer)
         {
-            if(writer == null){ throw new ArgumentNullException(nameof(writer)); }
+            if (writer == null) { throw new ArgumentNullException(nameof(writer)); }
             this.writer = writer;
         }
 
@@ -25,13 +26,13 @@ namespace S3mToMidi
             WriteVersion();
             WriteLanguage();
             WriteScoreStart();
-            
 
-/*
-            writer.WriteLine(@"\paper {
-  page-breaking = #ly:one-line-auto-height-breaking
-}");
-*/
+
+            /*
+                        writer.WriteLine(@"\paper {
+              page-breaking = #ly:one-line-auto-height-breaking
+            }");
+            */
 
             writer.WriteLine("<<");
 
@@ -44,31 +45,14 @@ namespace S3mToMidi
                     .OrderBy(trackEvent => trackEvent.Tick)
                     .ToList();
                 var collapsedEvents = CollapseNoteEvents(sortedEvents).ToImmutableList();
-                if(!collapsedEvents.Any())
-                { 
+                if (!collapsedEvents.Any())
+                {
                     Console.Out.WriteLine("Could not find any complete notes in channel {0}", channelNumber);
                     continue;
                 }
                 var withRests = WithRestEvents(collapsedEvents).ToImmutableList();
 
-                writer.Write("\\new Staff ");
-                
-                writer.Write("{ ");
-
-                // hack key signature
-                WriteKeySignature("c", "minor");
-
-                WriteClef("bass");
-                Clef clef = new Clef("bass");
-
-                var time = new Time();
-
-                for(int i = 0; i < withRests.Count; i++)
-                {
-                    ProcessEvent(withRests, i, time, clef);
-                }
-                writer.Write("}");
-                writer.WriteLine();
+                new StaffWriter(writer).Write(withRests);
             }
 
             writer.WriteLine(">>");
@@ -95,8 +79,6 @@ namespace S3mToMidi
                 }
             */
             writer.WriteLine(@"\score {");
-            
-            
         }
 
         private void WriteScoreEnd()
@@ -117,112 +99,20 @@ namespace S3mToMidi
 }");
         }
 
-        private class Clef
+        private void WriteVersion()
         {
-            private readonly string clefName;
-            private readonly Ottava ottava;
-            private int currentOttava;
-
-            public Clef(string clefName)
-            {
-                this.clefName = clefName;
-                this.ottava = new Ottava(24, 67); // HACK low e to middle g
-            }
-
-            public void WriteStaffForChannelPitch(int channelPitch, TextWriter writer)
-            {
-                var midiPitch = ChannelNoteToMidiPitch(channelPitch);
-
-                int newOttava = ottava.GetOttava(midiPitch);
-                if (newOttava != currentOttava)
-                {
-                    currentOttava = newOttava;
-                    writer.WriteLine("\\ottava #{0}", newOttava);
-                }
-            }
-
-            private static int ChannelNoteToMidiPitch(int note)
-            {
-                // C5 = 64 = octave 5 + step 0
-                int step = note & 15;
-                int octave = 1 + (note >> 4);
-
-                return (octave * 12) + step;
-            }
+            writer.WriteLine("\\version \"2.24.3\"");
         }
 
-        private class Ottava
+        private void WriteLanguage()
         {
-            private readonly int minimumPitch;
-            private readonly int maximumPitch;
-
-            public Ottava(int mininumPitch, int maximumPitch)
-            {
-                this.minimumPitch = mininumPitch;
-                this.maximumPitch = maximumPitch;
-            }
-
-            public int GetOttava(int pitch)
-            {
-                Debug.Assert(0 < pitch);
-                int newOttava = 0;
-
-                if (maximumPitch < pitch)
-                {
-                    newOttava = 1;
-                }
-                else if (pitch < minimumPitch)
-                {
-                    newOttava = -1;
-                }
-
-                return newOttava;
-            }
-        }
-
-        private class Time
-        {
-            public int Tick;
-
-            public int[] GetBarlineTies(int duration)
-            {
-                //TODO: figure out or track the start of the measure
-                // figure out which measure we're currently in, assume 4/4 for now
-                var ticksPerMeasure = TICKS_PER_QUARTERNOTE * 4;
-                var measure = Tick / ticksPerMeasure;
-                var tickInMeasure = Tick % ticksPerMeasure;
-                var ticksRemainingInMeasure = ticksPerMeasure - tickInMeasure;
-
-                Console.Out.WriteLine("seems we're currently {0}/{1} ticks into measure {2}.  there are {3} ticks left in the measure.", tickInMeasure, ticksPerMeasure, measure, ticksRemainingInMeasure);
-
-                Debug.Assert(0 < ticksRemainingInMeasure);
-                Debug.Assert(0 < duration);
-
-                if(duration <= ticksRemainingInMeasure)
-                {
-                    return new int[]{ duration };
-                }
-                else
-                {
-                    List<int> durations = new List<int>();
-                    while(0 < duration)
-                    {
-                        var nextMaxDuration = ticksPerMeasure - tickInMeasure;  // the next duration cannot be longer than this value
-                        var nextDuration = Math.Min(nextMaxDuration, duration);
-                        durations.Add(nextDuration);
-                        duration -= nextDuration;
-                        tickInMeasure = (tickInMeasure + nextDuration) % ticksPerMeasure;
-                    }
-                    Console.Out.WriteLine("Split duration {0} across bar lines into [{1}]", duration, string.Join(", ", durations));
-                    return durations.ToArray();
-                }
-            }
+            writer.WriteLine("\\language \"english\"");
         }
 
         private IEnumerable<Event> WithRestEvents(ImmutableList<Event> events)
         {
             var time = 0;
-            for(int i = 0; i < events.Count; i++)
+            for (int i = 0; i < events.Count; i++)
             {
                 var @event = events[i];
 
@@ -231,7 +121,7 @@ namespace S3mToMidi
                 {
                     yield return @event;
                     continue;
-                } 
+                }
                 if (@event is NoteWithDurationEvent noteEvent)
                 {
                     var restDuration = noteEvent.Tick - time;
@@ -252,7 +142,7 @@ namespace S3mToMidi
 
         private IEnumerable<Event> CollapseNoteEvents(List<Event> events)
         {
-            for(int i = 0; i < events.Count; i++)
+            for (int i = 0; i < events.Count; i++)
             {
                 var @event = events[i];
 
@@ -283,266 +173,6 @@ namespace S3mToMidi
                     continue;
                 }
             }
-        }
-
-        private abstract class DurationEvent : Event
-        {
-            public readonly int Duration;
-
-            public abstract int Pitch { get; }
-            public DurationEvent(int tick, int duration) : base(tick)
-            {
-                Duration = duration;
-            }
-        }
-
-        private class RestEvent : DurationEvent
-        {
-            public RestEvent(int tick, int duration) : base(tick, duration)
-            {
-            }
-
-            public override int Pitch => -1;
-        }
-
-        private class NoteWithDurationEvent : DurationEvent
-        {
-            public readonly NoteEvent NoteOn;
-            public readonly NoteEvent NoteOff;
-
-            public NoteWithDurationEvent(NoteEvent noteOn, NoteEvent noteOff) : base(noteOn.Tick, noteOff.Tick - noteOn.Tick)
-            {
-                NoteOn = noteOn;
-                NoteOff = noteOff;
-            }
-
-            public override int Pitch => NoteOn.Pitch;
-
-            public int Velocity => NoteOn.Velocity;
-        }
-
-        private void ProcessEvent(ImmutableList<Event> events, int eventIndex, Time time, Clef clef)
-        {
-            var e = events[eventIndex];
-            if (e is DurationEvent myNote)
-            {
-                var durationTicks = myNote.Duration;
-                Console.Out.WriteLine("Processing note duration {0}", durationTicks);
-
-                for(int tupletDurationIndex = 0; tupletDurationIndex < TupletDurations.Count; tupletDurationIndex++)
-                {
-                    var tupletBaseDuration = TupletDurations[tupletDurationIndex].Item1;
-                    if (durationTicks % tupletBaseDuration == 0 && (durationTicks / tupletBaseDuration) < 3)
-                    {
-                        // found a tuplet rhythm
-                        Console.Out.WriteLine("Duration {0} appears to be part of a tuplet with base duration {1}", durationTicks, tupletBaseDuration);
-                        var tupletNotes = new List<DurationEvent>();
-                        tupletNotes.Add(myNote);
-
-                        int tupletValue = durationTicks / TupletDurations[tupletDurationIndex].Item1;
-                        int tupletDuration = (TupletDurations[tupletDurationIndex].Item1 * 3);
-                        int remainingTupletDuration = tupletDuration - durationTicks;
-
-                        for(int tupletIndex = eventIndex; tupletIndex < events.Count && tupletNotes.Sum(t => t.Tick) < tupletDuration; tupletIndex++)
-                        {
-                            if(events[tupletIndex] is DurationEvent nextNote)
-                            {
-                                if(nextNote.Duration %tupletBaseDuration != 0)
-                                {
-                                    //Debug.Fail("needed next note to be part of tuplet but it wasn't");
-                                    break;
-                                }
-                                tupletNotes.Add(nextNote);
-                            }
-                        }
-
-                        // emit tuplet
-                        writer.WriteLine("\\tuplet 3/2 { ");
-
-                        foreach(var tupletNote in tupletNotes)
-                        {
-                            //writer.WriteLine("\\set fontSize = #-{0}", (64 - tupletNote.NoteOn.Velocity) % (64 / 6));
-                            var adjustedTupletDurationForDisplay = tupletNote.Duration * 3 / 2;
-                            clef.WriteStaffForChannelPitch(tupletNote.Pitch, writer);
-                            writer.WriteLine("{0}{1} ", ChannelNoteToLilyPondPitch(tupletNote.Pitch), ConvertToLilyPondDuration(adjustedTupletDurationForDisplay));
-                        }
-                        
-                        writer.WriteLine(" }");
-
-                        time.Tick += myNote.Duration;
-
-                        return;
-                    }
-                }
-
-                var durations = time.GetBarlineTies(myNote.Duration);
-                time.Tick += myNote.Duration;
-
-                if(myNote is RestEvent)
-                {
-                    foreach(var subDuration in durations)
-                    {
-                        var rests = GetNoteTies(subDuration);
-                        foreach(var rest in rests)
-                        {
-                            writer.WriteLine("r{0} ", ConvertToLilyPondDuration(rest));
-                        }
-                    }
-                }
-                else if(myNote is NoteWithDurationEvent noteWithDuration)
-                {
-                    clef.WriteStaffForChannelPitch(noteWithDuration.Pitch, writer);
-                    writer.WriteLine("\\set fontSize = #{0}", GetFontSizeForVelocity(noteWithDuration.Velocity));
-                    writer.Write(ChannelNoteToLilyPondPitch(noteWithDuration.Pitch));
-                    writer.WriteLine(string.Join("~ ", durations.SelectMany(GetNoteTies).Select(ConvertToLilyPondDuration)));
-                }
-            }
-            else if (e is NoteEvent note)
-            {
-                Debug.Fail("should have collapsed note events");
-            }
-            else if (e is TempoEvent tempoEvent)
-            {
-                writer.WriteLine(@"\tempo 4 = {0}", tempoEvent.TempoBpm);
-            }
-            else if (e is TimeSignatureEvent timeSignatureEvent)
-            {
-                /*
-                // Console.WriteLine("TimeSignatureEvent Tick {0} {1}/{2}", timeSignatureEvent.Tick, timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
-                const byte ClocksPerMetronomeClick = 24;
-                const byte ThirtySecondNotesPerQuarterNote = 8;
-                yield return new Melanchall.DryWetMidi.Core.TimeSignatureEvent((byte)timeSignatureEvent.BeatsPerBar,
-                                              (byte)timeSignatureEvent.BeatValue,
-                                              ClocksPerMetronomeClick,
-                                              ThirtySecondNotesPerQuarterNote)
-                {
-                    // todo: how to compute delta for events that don't have a channel
-                    DeltaTime = GetDeltaTimeForChannelTick(1, timeSignatureEvent.Tick, channelLastTicks)
-                };
-*/
-            }
-            else
-            {
-                Debug.Fail("unknown event type " + e.GetType().Name);
-                // no-op
-            }
-        }
-
-        public static int GetFontSizeForVelocity(int velocity)
-        {
-            return -1 * (8 - Math.Min(8, (velocity + 8) / 8));
-        }
-
-        private static int GetDurationForChannelTick(int channel, int tick, Dictionary<int, int> channelLastTicks)
-        {
-            var lastTick = channelLastTicks[channel];
-            var delta = tick - lastTick;
-
-            channelLastTicks[channel] = tick;
-
-            return delta;
-        }
-
-        const int TICKS_PER_QUARTERNOTE = 96;
-
-        private static List<(int, string)> LilyPondDurations = new List<(int, string)>
-        {
-            ( TICKS_PER_QUARTERNOTE * 4, "1" ),
-            ( TICKS_PER_QUARTERNOTE * 2, "2" ),
-            ( TICKS_PER_QUARTERNOTE * 1, "4" ),
-            ( TICKS_PER_QUARTERNOTE / 2, "8" ),
-            ( TICKS_PER_QUARTERNOTE / 4, "16" ),
-            ( TICKS_PER_QUARTERNOTE / 8, "32" ),
-            ( TICKS_PER_QUARTERNOTE / 16, "64" ),
-            ( TICKS_PER_QUARTERNOTE / 32, "128" ),
-        };
-
-        private static int[] GetNoteTies(int delta)
-        {
-            Debug.Assert(delta <= TICKS_PER_QUARTERNOTE * 4, "delta is too large to fit in 4/4 measure"); // todo handle other time signatures
-            List<int> parts = new List<int>();
-            for(int i = 0; i < LilyPondDurations.Count; i++)
-            {
-                var (ticks, duration) = LilyPondDurations[i];
-                if (ticks <= delta) 
-                { 
-                    parts.Add(ticks); 
-                    delta -= ticks;
-                }
-            }
-
-            return ((IEnumerable<int>)parts).Reverse().ToArray();
-        }
-
-        private static List<(int, string)>TupletDurations = new List<(int, string)>
-        {
-            ((int)(TICKS_PER_QUARTERNOTE / 1.5), "4" ), // 64 ticks, quarter note triplets
-            (TICKS_PER_QUARTERNOTE / 3, "8" ), // 32 ticks, eighth note triplets
-            (TICKS_PER_QUARTERNOTE / 6, "16" ), // 16 ticks, sixteenth note triplets
-        };
-
-        private static string ConvertToLilyPondDuration(int delta)
-        {
-            foreach(var (ticks, name) in LilyPondDurations)
-            {
-                if (delta == ticks)
-                {
-                    return name;
-                }
-            }
-            Debug.Fail(string.Format("don't know how to convert duration {0} to LilyPond duration", delta));
-            Console.Out.WriteLine("don't know how to convert duration {0} to LilyPond duration", delta);
-            return "4";
-        }
-
-        private static string[] PitchNamesSharps = ["c", "c-sharp", "d", "d-sharp", "e", "f", "f-sharp", "g", "g-sharp", "a", "a-sharp", "b"];
-        private static string[] PitchNamesFlats = ["c", "d-flat", "d", "e-flat", "e", "f", "g-flat", "g", "a-flat", "a", "b-flat", "b"];
-
-        private static string ChannelNoteToLilyPondPitch(int note)
-        {
-            // byte 0 - Note; hi=oct, lo=note, 255=empty note,
-            // 254=key off (used with adlib, with samples stops smp)
-            if(note == -1){ return "r"; }
-            // C5 = 64 = octave 5 + step 0
-            int octave = (note >> 4) + 1;
-            int step = note & 15;
-            
-            string octaveName = "";
-
-            if(4 < octave)
-            {
-                octaveName = new string('\'', octave - 4);
-            }
-            else if (4 == octave)
-            {
-                // no-op
-            }
-            else if (octave < 4)
-            {
-                octaveName = new string(',', 4 - octave);
-            }
-
-            return PitchNamesFlats[step] + octaveName;
-        }
-
-        private void WriteVersion()
-        {
-            writer.WriteLine("\\version \"2.24.3\"");
-        }
-
-        private void WriteLanguage()
-        {
-            writer.WriteLine("\\language \"english\"");
-        }
-
-        private void WriteClef(string clef)
-        {
-            writer.WriteLine("\\clef {0}", clef);
-        }
-
-        private void WriteKeySignature(string key, string mode)
-        {
-            writer.WriteLine("\\key {0} \\{1}", key, mode);
         }
     }
 }

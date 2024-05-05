@@ -94,14 +94,13 @@ namespace S3mToMidi.LilyPond
 
                         writer.WriteLine(" }");
 
-                        time.Tick += myNote.Duration;
+                        time.AddTime(myNote.Duration);
 
                         return;
                     }
                 }
 
                 var durations = time.GetBarlineTies(myNote.Duration);
-                time.Tick += myNote.Duration;
 
                 if (myNote is RestEvent)
                 {
@@ -121,6 +120,8 @@ namespace S3mToMidi.LilyPond
                     writer.Write(pitch.ChannelNoteToLilyPondPitch(noteWithDuration.Pitch));
                     writer.WriteLine(string.Join("~ ", durations.SelectMany(time.GetNoteTies).Select(time.ConvertToLilyPondDuration)));
                 }
+
+                time.AddTime(myNote.Duration);
             }
             else if (e is NoteEvent note)
             {
@@ -133,6 +134,7 @@ namespace S3mToMidi.LilyPond
             else if (e is TimeSignatureEvent timeSignatureEvent)
             {
                 writer.WriteLine(@"\time {0}/{1}", timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
+                time.SetTimeSignature(timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
             }
             else
             {

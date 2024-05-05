@@ -4,7 +4,10 @@ namespace S3mToMidi.LilyPond
 {
     internal class Time
     {
-        public int Tick;
+        //private int Tick;
+        private int TickInMeasure;
+        public int TicksPerMeasure;
+        private int TicksSinceLastTimeSignatureChange;
 
         const int TICKS_PER_QUARTERNOTE = 96;
 
@@ -30,16 +33,28 @@ namespace S3mToMidi.LilyPond
             (TICKS_PER_QUARTERNOTE / 6, "16" ), // 16 ticks, sixteenth note triplets
         };
 
+        public void SetTimeSignature(int beatsPerBar, int beatsValue)
+        {
+            TicksPerMeasure = TICKS_PER_QUARTERNOTE * 4 / beatsValue * beatsPerBar;
+            TicksSinceLastTimeSignatureChange = 0;
+        }
+
+        public void AddTime(int duration)
+        {
+            //Tick += duration;
+            TicksSinceLastTimeSignatureChange += duration;
+        }
+
         public int[] GetBarlineTies(int duration)
         {
             //TODO: figure out or track the start of the measure
             // figure out which measure we're currently in, assume 4/4 for now
-            var ticksPerMeasure = TICKS_PER_QUARTERNOTE * 4;
-            var measure = Tick / ticksPerMeasure;
-            var tickInMeasure = Tick % ticksPerMeasure;
-            var ticksRemainingInMeasure = ticksPerMeasure - tickInMeasure;
+            //var ticksPerMeasure = TicksPerMeasure;
+            var measure = TicksSinceLastTimeSignatureChange / TicksPerMeasure;
+            var tickInMeasure = TicksSinceLastTimeSignatureChange % TicksPerMeasure;
+            var ticksRemainingInMeasure = TicksPerMeasure - tickInMeasure;
 
-            Console.Out.WriteLine("seems we're currently {0}/{1} ticks into measure {2}.  there are {3} ticks left in the measure.", tickInMeasure, ticksPerMeasure, measure, ticksRemainingInMeasure);
+            Console.Out.WriteLine("seems we're currently {0}/{1} ticks into measure {2}.  there are {3} ticks left in the measure.", tickInMeasure, TicksPerMeasure, measure, ticksRemainingInMeasure);
 
             Debug.Assert(0 < ticksRemainingInMeasure);
             Debug.Assert(0 < duration);
@@ -51,14 +66,8 @@ namespace S3mToMidi.LilyPond
             else
             {
                 List<int> durations = new List<int>();
-                while (0 < duration)
-                {
-                    var nextMaxDuration = ticksPerMeasure - tickInMeasure;  // the next duration cannot be longer than this value
-                    var nextDuration = Math.Min(nextMaxDuration, duration);
-                    durations.Add(nextDuration);
-                    duration -= nextDuration;
-                    tickInMeasure = (tickInMeasure + nextDuration) % ticksPerMeasure;
-                }
+                durations.Add(ticksRemainingInMeasure);
+                durations.Add(duration - ticksRemainingInMeasure);
                 Console.Out.WriteLine("Split duration {0} across bar lines into [{1}]", duration, string.Join(", ", durations));
                 return durations.ToArray();
             }
@@ -66,7 +75,7 @@ namespace S3mToMidi.LilyPond
 
         public int[] GetNoteTies(int delta)
         {
-            Debug.Assert(delta <= TICKS_PER_QUARTERNOTE * 4, "delta is too large to fit in 4/4 measure"); // todo handle other time signatures
+            Debug.Assert(delta <= TICKS_PER_QUARTERNOTE * 4, $"delta {delta} is too large to fit in 4/4 measure"); // todo handle other time signatures
             List<int> parts = new List<int>();
             for (int i = 0; i < LilyPondDurations.Count; i++)
             {

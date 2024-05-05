@@ -123,10 +123,27 @@ namespace S3mToMidi
                 var @event = events[i];
 
                 // get the easy stuff out of the way
-                if (@event is TempoEvent || @event is TimeSignatureEvent)
+                if (@event is TempoEvent)
                 {
                     yield return @event;
                     continue;
+                }
+                else if (@event is TimeSignatureEvent timeSignatureEvent)
+                {
+                    // create rest as a multiple of the outgoing time signature
+                    var restDuration = timeSignatureEvent.Tick - time;
+                    if (0 < restDuration)
+                    {
+                        var rest = new RestEvent(time, restDuration);
+                        if( firstRest == null )
+                        {
+                            firstRest = rest;
+                        }
+                        yield return rest;
+                        time += restDuration;
+                    }
+                    //time += timeSignatureEvent.Duration;
+                    yield return timeSignatureEvent;
                 }
                 else if (@event is NoteWithDurationEvent noteEvent)
                 {

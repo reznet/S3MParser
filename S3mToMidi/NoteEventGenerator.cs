@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Melanchall.DryWetMidi.Core;
 using S3M;
 
 namespace S3mToMidi
@@ -55,9 +56,9 @@ namespace S3mToMidi
             Dictionary<int, int> lastInstrumentForChannel = new Dictionary<int, int>();
             Dictionary<int, HashSet<Channel>> trackerChannelsAndMidiChannels = new Dictionary<int, System.Collections.Generic.HashSet<Channel>>();
 
-            Console.WriteLine("writing initial time signature event at tick {0}", tick);
-            TimeSignatureEvent currentTimeSignatureEvent = new(tick, 4, 4);
-            firstChannel.AddEvent(currentTimeSignatureEvent);
+            //Console.WriteLine("writing initial time signature event at tick {0}", tick);
+            //TimeSignatureEvent currentTimeSignatureEvent = new(tick, 4, 4);
+            //firstChannel.AddEvent(currentTimeSignatureEvent);
 
             int takePatterns = int.MaxValue;
 
@@ -90,7 +91,6 @@ namespace S3mToMidi
                     finalRow = rowIndex;
                     rowSkip = 0;
                     bool breakPatternToRow = false;
-                    
 
                     foreach (var channelEvent in row.ChannelEvents)
                     {
@@ -157,15 +157,19 @@ namespace S3mToMidi
                             else
                             {
                                 Console.WriteLine("NoteEventGenerator AddEvent TempoEvent");
-                                firstChannel.AddEvent(setTempoEvent);
+                                //firstChannel.AddEvent(setTempoEvent);
+                                ForEachChannel((channel) => channel.AddEvent(new TempoEvent(tick, channelEvent.Data)));
                             }
                         }
                     }
 
                     if (rowIndex == 0 && !hasAddedInitialTempo)
                     {
+                        // avoid writing a tempo marking from the file header if we're immediately
+                        // going to overwrite it from a channel event
                         Console.WriteLine("NoteEventGenerator AddEvent InitialTempoEvent");
-                        firstChannel.AddEvent(initialTempoEvent);
+                        //firstChannel.AddEvent(initialTempoEvent);
+                        ForEachChannel((channel) => channel.AddEvent(new TempoEvent(tick, file.InitialTempo)));
                         hasAddedInitialTempo = true;
                     }
 
@@ -236,11 +240,13 @@ namespace S3mToMidi
                     throw new Exception("The time signature in pattern {0} cannot be expressed with MIDI.");
                 }
 
-                //Console.WriteLine("Pattern {0} at {3} is time signature {1}/{2} and should end at {4}", pattern.PatternNumber, numerator, denominator, patternStartTick, tick);
-                firstChannel.AddEvent(new TimeSignatureEvent(patternStartTick, numerator, denominator));
+                ForEachChannel((channel) => 
+                {
+                    channel.AddEvent(new TimeSignatureEvent(patternStartTick, numerator, denominator));
+                });
             }
 
-            // finalize any leftover note on events and signal the song is over
+            // finalize any leftover note on events
             foreach (var key in channels.Keys)
             {
                 var channel = channels[key];
@@ -248,19 +254,62 @@ namespace S3mToMidi
                 {
                     channel.NoteOff(tick);
                 }
-                channel.AddEvent(new SongEndEvent(tick));
+            }
+
+            // prune channels that are empty
+            foreach (var key in channels.Keys.ToImmutableHashSet())
+            {
+                if (channels[key].OutputChannels.SelectMany(c => c.GetEvents()).Count() == 0)
+                {
+                    channels.Remove(key);
+                }
+            }
+
+            // signal that the song has ended
+            foreach (var key in channels.Keys)
+            {
+                channels[key].AddEvent(new SongEndEvent(tick));
             }
 
             Dictionary<int, ImmutableList<Event>> channelEvents = [];
 
             foreach (var outputChannel in channels.Values.SelectMany(c => c.OutputChannels))
             {
-                channelEvents[outputChannel.ChannelNumber] = outputChannel.GetEvents();
+                // ensure that time signature comes before anything else
+                var events = outputChannel.GetEvents()
+                .OrderBy(e => e.Tick)
+                .ThenBy(e =>
+                {
+                    if (e is TimeSignatureEvent) { return -1; }
+                    else { return 0; }
+                }).ToImmutableList();
+
+                // ignore channels that don't have any notes
+                // meta events should already be copied to all channels
+                if (events.Any(e => e is NoteEvent))
+                {
+                    channelEvents[outputChannel.ChannelNumber] = events;
+                }
             }
 
             return channelEvents;
         }
         private SortedDictionary<int, ChannelMultiplexer> channels = [];
+
+        private void InitializeChannels(S3MFile file)
+        {
+            for (int i = 0; i < file.ChannelCount; i++)
+            {
+                GetChannel(i);
+            }
+        }
+        private void ForEachChannel(Action<ChannelMultiplexer> action)
+        {
+            foreach(var channel in channels.Keys)
+            {
+                action(channels[channel]);
+            }
+        }
         private ChannelMultiplexer GetChannel(int channelNumber)
         {
             const int DefaultVolume = 64;
@@ -271,7 +320,7 @@ namespace S3mToMidi
                     channelNumber,
                     DefaultVolume,
                     options.ExcludedChannels.Contains(channelNumber),
-                    GetNextAvailableMidiChannel,
+                    () => channelNumber,
                     options.ChannelInstrumentOutputBehavior == ChannelInstrumentOutputBehavior.Collapse ? GetChannelKeyForSharedOutputChannel : GetChannelKeyForSeparateOutputChannels,
                     getNewOutputChannel);
                 channels.Add(channelNumber, value);

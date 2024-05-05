@@ -8,6 +8,9 @@ namespace S3M
         internal const int CHANNEL_COUNT = 32;
         internal const int ROW_COUNT = 64;
 
+        public int ChannelCount { get { return CHANNEL_COUNT; } }
+        public int RowCount { get { return ROW_COUNT; } }
+
         public string Name;
         public int Type;
         public int OrderCount;

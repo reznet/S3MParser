@@ -9,6 +9,7 @@ public class TimeUnitTests
     public void TwoWholeRestsInFourFour()
     {
         Time time= new Time();
+        time.SetTimeSignature(4, 4);
 
         var ties = time.GetBarlineTies(96 * 4 * 2);
 
@@ -21,6 +22,7 @@ public class TimeUnitTests
     public void WholeRestTiedToQuarterNoteInFourFour()
     {
         Time time= new Time();
+        time.SetTimeSignature(4, 4);
 
         var ties = time.GetBarlineTies(96 * 5);
 
@@ -33,6 +35,7 @@ public class TimeUnitTests
     public void QuarterNoteInFourFour()
     {
         Time time = new Time();
+        time.SetTimeSignature(4, 4);
 
         var ties = time.GetNoteTies(96);
 

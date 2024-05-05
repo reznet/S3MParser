@@ -90,7 +90,7 @@ namespace S3mToMidi
                 writer.Write(noteEvents);
 
                 Console.Out.WriteLine(stringWriter.ToString());
-                var outputFilename = Path.GetFileName(Path.ChangeExtension(o.InputFile, ".ly"));
+                var outputFilename = Path.ChangeExtension(o.InputFile, ".ly");
                 if (File.Exists(outputFilename))
                 {
                     File.Delete(outputFilename);

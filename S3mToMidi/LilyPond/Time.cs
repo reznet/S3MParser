@@ -9,6 +9,9 @@ namespace S3mToMidi.LilyPond
         public int TicksPerMeasure;
         private int TicksSinceLastTimeSignatureChange;
 
+        private int beatsPerBar;
+        private int beatValue;
+
         const int TICKS_PER_QUARTERNOTE = 96;
 
         private static List<(int, string)> LilyPondDurations = new List<(int, string)>
@@ -33,9 +36,11 @@ namespace S3mToMidi.LilyPond
             (TICKS_PER_QUARTERNOTE / 6, "16" ), // 16 ticks, sixteenth note triplets
         };
 
-        public void SetTimeSignature(int beatsPerBar, int beatsValue)
+        public void SetTimeSignature(int beatsPerBar, int beatValue)
         {
-            TicksPerMeasure = TICKS_PER_QUARTERNOTE * 4 / beatsValue * beatsPerBar;
+            this.beatsPerBar = beatsPerBar;
+            this.beatValue = beatValue;
+            TicksPerMeasure = TICKS_PER_QUARTERNOTE * 4 / beatValue * beatsPerBar;
             TicksSinceLastTimeSignatureChange = 0;
         }
 
@@ -61,7 +66,7 @@ namespace S3mToMidi.LilyPond
 
             if (duration <= ticksRemainingInMeasure)
             {
-                return new int[] { duration };
+                return new int[] { duration, 0 };
             }
             else
             {
@@ -75,7 +80,7 @@ namespace S3mToMidi.LilyPond
 
         public int[] GetNoteTies(int delta)
         {
-            Debug.Assert(delta <= TICKS_PER_QUARTERNOTE * 4, $"delta {delta} is too large to fit in 4/4 measure"); // todo handle other time signatures
+            Debug.Assert(delta <= TicksPerMeasure, $"duration {delta} is too large to fit in a measure of ${beatsPerBar}/${beatValue}");
             List<int> parts = new List<int>();
             for (int i = 0; i < LilyPondDurations.Count; i++)
             {

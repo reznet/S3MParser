@@ -2,17 +2,23 @@ namespace S3mToMidi.LilyPond
 {
     internal class NoteWithDurationEvent : DurationEvent
     {
-        public readonly NoteEvent NoteOn;
-        public readonly NoteEvent NoteOff;
+        private readonly int pitch;
+        private readonly int velocity;
 
         public NoteWithDurationEvent(NoteEvent noteOn, NoteEvent noteOff) : base(noteOn.Tick, noteOff.Tick - noteOn.Tick)
         {
-            NoteOn = noteOn;
-            NoteOff = noteOff;
+            pitch = noteOff.Pitch;
+            velocity = noteOn.Velocity;
         }
 
-        public override int Pitch => NoteOn.Pitch;
+        public NoteWithDurationEvent(int startTick, int duration, int pitch, int velocity) : base(startTick, duration)
+        {
+            this.pitch = pitch;
+            this.velocity = velocity;
+        }
 
-        public int Velocity => NoteOn.Velocity;
+        public override int Pitch => pitch;
+
+        public override int Velocity => velocity;
     }
 }

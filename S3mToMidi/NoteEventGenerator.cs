@@ -79,6 +79,17 @@ namespace S3mToMidi
                     continue;
                 }
 
+                ForEachChannel((c) => 
+                {
+                    if(c.IsPlayingNote)
+                    {
+                        var pitch = c.PlayingPitch;
+                        var instrument = c.PlayingInstrument;
+                        c.NoteOff(tick);
+                        c.NoteOn(tick, 1, pitch, null); // hack instrument
+                    }
+                });
+
                 Console.WriteLine("Order {0} Pattern {1}", orderIndex, pattern.PatternNumber);
 
                 int patternStartTick = tick;

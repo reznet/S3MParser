@@ -43,9 +43,10 @@ namespace S3mToMidi
                 var trackEvents = allEvents[channelNumber];
                 var sortedEvents = trackEvents
                     .OrderBy(trackEvent => trackEvent.Tick)
-                    .ThenBy(trackEvent => {
-                        if(trackEvent is TimeSignatureEvent) { return -1; }
-                        else if(trackEvent is TempoEvent) { return 0; }
+                    .ThenBy(trackEvent =>
+                    {
+                        if (trackEvent is TimeSignatureEvent) { return -1; }
+                        else if (trackEvent is TempoEvent) { return 0; }
                         else { return 1; }
                     })
                     .ToList();
@@ -56,6 +57,19 @@ namespace S3mToMidi
                     continue;
                 }
                 var withRests = WithRestEvents(collapsedEvents).ToImmutableList();
+                var withSplits = SplitNotesByTimeSignature2(withRests).ToImmutableList();
+
+                withRests
+                .Where(e => e is TempoEvent || e is TimeSignatureEvent)
+                .Concat(withSplits)
+                .OrderBy(trackEvent => trackEvent.Tick)
+                .ThenBy(trackEvent =>
+                {
+                    if (trackEvent is TimeSignatureEvent) { return -1; }
+                    else if (trackEvent is TempoEvent) { return 0; }
+                    else { return 1; }
+                })
+                .ToImmutableList();
 
                 new StaffWriter(writer).Write(withRests);
             }
@@ -114,6 +128,88 @@ namespace S3mToMidi
             writer.WriteLine("\\language \"english\"");
         }
 
+        private IEnumerable<Event> SplitNotesByTimeSignature2(ImmutableList<Event> events)
+        {
+            var durations = events.Where(e => e is DurationEvent).Cast<DurationEvent>().ToList();
+            var durationIndex = 0;
+
+
+            var timeSignatures = events.Where(e => e is TimeSignatureEvent).Cast<TimeSignatureEvent>().ToList();
+            var initialTimeSignature = timeSignatures.First();
+            Time time = new Time();
+            time.SetTimeSignature(initialTimeSignature.BeatsPerBar, initialTimeSignature.BeatValue);
+            var remainingTimeSignatures = timeSignatures.Skip(1);
+
+
+            foreach (var timeSignatureChange in timeSignatures)
+            {
+                time.SetTimeSignature(timeSignatureChange.BeatsPerBar, timeSignatureChange.BeatValue);
+                while (durationIndex < durations.Count)
+                {
+                    var duration = durations[durationIndex];
+                    durationIndex++;
+                }
+            }
+            
+
+            // no more time signature changes so process remaining notes
+            while (durationIndex < durations.Count)
+            {
+                var duration = durations[durationIndex];
+                int subDurationTick = duration.Tick;
+                var remainingTime = duration.Duration;
+
+                while (0 < remainingTime)
+                {
+                    var ties = time.GetBarlineTies(remainingTime);
+
+                    if(duration is NoteWithDurationEvent note)
+                    {
+                        yield return new NoteWithDurationEvent(subDurationTick, ties[0], duration.Pitch, duration.Velocity);
+                    } 
+                    else if (duration is RestEvent rest)
+                    {
+                        yield return new RestEvent(subDurationTick, ties[0]);
+
+                    }
+                    
+                    subDurationTick += ties[0];
+                    remainingTime = ties[1];
+                    time.AddTime(ties[0]);
+                }
+
+                durationIndex++;
+            }
+        }
+
+        private IEnumerable<Event> SplitNotesByTimeSignature(ImmutableList<Event> events)
+        {
+            var timeSignatures = events.Where(e => e is TimeSignatureEvent).Cast<TimeSignatureEvent>().ToList();
+            var timeSignatureIndex = 0;
+            var durations = events.Where(e => e is DurationEvent).Cast<DurationEvent>().ToList();
+            var durationIndex = 0;
+
+            var hasMoreTimeSignatures = timeSignatureIndex < timeSignatures.Count;
+            var currentTimeSignature = timeSignatures[timeSignatureIndex];
+            var nextTimeSignature = (TimeSignatureEvent)null;
+            // figure out when the next timesignature is
+
+            if (hasMoreTimeSignatures)
+            {
+                timeSignatureIndex++;
+                hasMoreTimeSignatures = timeSignatureIndex < timeSignatures.Count;
+                nextTimeSignature = timeSignatures[timeSignatureIndex];
+            }
+            else
+            {
+                // return remaining notes
+                foreach (var e in durations.Skip(durationIndex))
+                {
+                    yield return e;
+                }
+            }
+        }
+
         private IEnumerable<Event> WithRestEvents(ImmutableList<Event> events)
         {
             var time = 0;
@@ -135,7 +231,7 @@ namespace S3mToMidi
                     if (0 < restDuration)
                     {
                         var rest = new RestEvent(time, restDuration);
-                        if( firstRest == null )
+                        if (firstRest == null)
                         {
                             firstRest = rest;
                         }
@@ -151,7 +247,7 @@ namespace S3mToMidi
                     if (0 < restDuration)
                     {
                         var rest = new RestEvent(time, restDuration);
-                        if( firstRest == null )
+                        if (firstRest == null)
                         {
                             firstRest = rest;
                         }
@@ -163,7 +259,7 @@ namespace S3mToMidi
                 }
                 else if (@event is SongEndEvent songEnd)
                 {
-                    if (firstRest == null )
+                    if (firstRest == null)
                     {
                         yield return new RestEvent(0, songEnd.Tick);
                     }
@@ -204,7 +300,10 @@ namespace S3mToMidi
 
                     var myNote = new NoteWithDurationEvent(noteEvent, (NoteEvent)noteEnd);
                     events.RemoveAt(noteOffIndex);
-                    yield return myNote;
+                    if (0 < myNote.Duration)
+                    {
+                        yield return myNote;
+                    }
                     continue;
                 }
             }

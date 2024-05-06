@@ -82,6 +82,14 @@ namespace S3mToMidi
             }
         }
 
+        public int? PlayingInstrument
+        {
+            get
+            {
+                return _outputChannels.Values.Where(c => c.IsPlayingNote).Select(c => c.CurrentNote.Instrument).FirstOrDefault();
+            }
+        }
+
         private OutputChannel this[int instrument]
         {
             get

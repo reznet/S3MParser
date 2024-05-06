@@ -15,7 +15,7 @@ $path_to_me/S3mToMidi/bin/Release/net8.0/publish/S3mToMidi \
     --exporter lilypond
 
 # generate scrolling score
-ly2video -i "$filename_no_extension.ly"
+ly2video -i "$filename_no_extension.ly" --padding 0,0
 
 # convert to mp4 for final cut pro
 ffmpeg -i "$filename_no_extension.avi" -c:v copy -c:a copy "$filename_no_extension.mp4"

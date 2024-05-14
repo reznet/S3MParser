@@ -44,6 +44,18 @@ public class TimeUnitTests
     }
 
     [TestMethod]
+    public void DottedHalfNoteInFourFour()
+    {
+        Time time = new Time();
+        time.SetTimeSignature(4, 4);
+
+        var ties = time.GetNoteTies(Time.TICKS_PER_QUARTERNOTE * 3);
+
+        Assert.AreEqual(1, ties.Length, "wrong number of ties");
+        Assert.AreEqual(Time.TICKS_PER_QUARTERNOTE * 3, ties[0], "wrong quarter note duration");
+    }
+
+    [TestMethod]
     public void BzamPattern47Channel1()
     {
         Time time = new Time();

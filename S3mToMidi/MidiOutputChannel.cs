@@ -10,7 +10,7 @@ namespace S3mToMidi
         public MidiOutputChannel(int channelNumber) : base(channelNumber)
         {
             Console.WriteLine("Creating output midi channel {0}", ChannelNumber + 1);
-            Debug.Assert(ChannelNumber <= 16, "output channel number out of midi range.");
+            //Debug.Assert(ChannelNumber <= 16, "output channel number out of midi range.");
         }
 
         public override ImmutableList<Event> GetEvents()

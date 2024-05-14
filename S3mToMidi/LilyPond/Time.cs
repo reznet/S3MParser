@@ -12,17 +12,25 @@ namespace S3mToMidi.LilyPond
         private int beatsPerBar;
         private int beatValue;
 
-        const int TICKS_PER_QUARTERNOTE = 96;
+        public const int TICKS_PER_QUARTERNOTE = 96;
 
         private static List<(int, string)> LilyPondDurations = new List<(int, string)>
         {
+            ( TICKS_PER_QUARTERNOTE * 4 * 3 / 2, "1." ),
             ( TICKS_PER_QUARTERNOTE * 4, "1" ),
+            ( TICKS_PER_QUARTERNOTE * 2 * 3 / 2, "2." ),
             ( TICKS_PER_QUARTERNOTE * 2, "2" ),
+            ( TICKS_PER_QUARTERNOTE * 1 * 3 / 2, "4." ),
             ( TICKS_PER_QUARTERNOTE * 1, "4" ),
+            ( TICKS_PER_QUARTERNOTE / 2 * 3 / 2, "8." ),
             ( TICKS_PER_QUARTERNOTE / 2, "8" ),
+            ( TICKS_PER_QUARTERNOTE / 4 * 3 / 2, "16." ),
             ( TICKS_PER_QUARTERNOTE / 4, "16" ),
+            ( TICKS_PER_QUARTERNOTE / 8 * 3 / 2, "32." ),
             ( TICKS_PER_QUARTERNOTE / 8, "32" ),
+            ( TICKS_PER_QUARTERNOTE / 16 * 3 / 2, "64." ),
             ( TICKS_PER_QUARTERNOTE / 16, "64" ),
+            ( TICKS_PER_QUARTERNOTE / 32 * 3 / 2, "128." ),
             ( TICKS_PER_QUARTERNOTE / 32, "128" ),
         };
 
@@ -102,6 +110,10 @@ namespace S3mToMidi.LilyPond
                 if (delta == ticks)
                 {
                     return name;
+                }
+                else if (delta == ticks * 1.5)
+                {
+                    return name + ".";
                 }
             }
             Debug.Fail(string.Format("don't know how to convert duration {0} to LilyPond duration", delta));

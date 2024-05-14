@@ -13,7 +13,7 @@ $path_to_me/S3mToMidi/bin/Release/net8.0/publish/S3mToMidi \
     --exporter lilypond
 
 # generate scrolling score
-ly2video -i "$filename_no_extension.ly" --padding 0,0
+ly2video -i "$filename_no_extension.ly" --padding 0,0 --quality 1
 
 # generate audio file
 if [[ ! -a "$filename_no_extension.mp3" ]]; then

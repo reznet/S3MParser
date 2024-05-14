@@ -44,12 +44,14 @@ namespace S3mToMidi.LilyPond
             (TICKS_PER_QUARTERNOTE / 6, "16" ), // 16 ticks, sixteenth note triplets
         };
 
-        public void SetTimeSignature(int beatsPerBar, int beatValue)
+        public bool SetTimeSignature(int beatsPerBar, int beatValue)
         {
+            if (this.beatsPerBar == beatsPerBar && this.beatValue == beatValue) { return false;}
             this.beatsPerBar = beatsPerBar;
             this.beatValue = beatValue;
             TicksPerMeasure = TICKS_PER_QUARTERNOTE * 4 / beatValue * beatsPerBar;
             TicksSinceLastTimeSignatureChange = 0;
+            return true;
         }
 
         public void AddTime(int duration)

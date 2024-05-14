@@ -133,8 +133,10 @@ namespace S3mToMidi.LilyPond
             }
             else if (e is TimeSignatureEvent timeSignatureEvent)
             {
-                writer.WriteLine(@"\time {0}/{1}", timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
-                time.SetTimeSignature(timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
+                if (time.SetTimeSignature(timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue))
+                {
+                    writer.WriteLine(@"\time {0}/{1}", timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
+                }
             }
             else
             {

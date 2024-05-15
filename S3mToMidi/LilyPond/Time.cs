@@ -58,6 +58,7 @@ namespace S3mToMidi.LilyPond
         {
             //Tick += duration;
             TicksSinceLastTimeSignatureChange += duration;
+            TickInMeasure = TicksSinceLastTimeSignatureChange % TicksPerMeasure;
         }
 
         public int[] GetBarlineTies(int duration)
@@ -88,7 +89,7 @@ namespace S3mToMidi.LilyPond
             }
         }
 
-        public int[] GetNoteTies(int delta)
+        public int[] GetNoteTiesOld(int delta)
         {
             Debug.Assert(delta <= TicksPerMeasure, $"duration {delta} is too large to fit in a measure of ${beatsPerBar}/${beatValue}");
             List<int> parts = new List<int>();
@@ -103,6 +104,88 @@ namespace S3mToMidi.LilyPond
             }
 
             return ((IEnumerable<int>)parts).Reverse().ToArray();
+        }
+
+        public int[] GetNoteTies(int duration)
+        {
+            List<int> ties = new List<int>();
+
+            var subdivisionCells = new List<bool[]>();
+
+            for (int subdivision = 0; subdivision < 8; subdivision++)
+            {
+                var tempDuration = duration;
+                var numberOfSubdivisionsInMeasure = (int)Math.Pow(2, subdivision);
+                subdivisionCells.Add(new bool[numberOfSubdivisionsInMeasure]);
+                var cellDuration = TICKS_PER_QUARTERNOTE * 4 / numberOfSubdivisionsInMeasure;
+
+                var tickInMeasure = TickInMeasure;
+
+                // skip leading rests
+                var cellIndex = tickInMeasure / cellDuration;
+
+                // round up to next cell
+                //tickInMeasure = index * cellDuration;
+                tempDuration -= (cellIndex * cellDuration);
+
+                //Debug.Assert(cellIndex < subdivisionCells[subdivision].Length);
+                while (cellIndex < subdivisionCells[subdivision].Length && cellDuration <= tempDuration)
+                {
+                    subdivisionCells[subdivision][cellIndex] = true;
+                    tempDuration -= cellDuration;
+                    cellIndex++;
+                }
+            }
+
+            // figure out the ties
+            var maxSubdivisions = (int)Math.Pow(2, 7);
+            var subdivisionIndex = 0;
+            var moveSubdivionsIndexBy = 1;
+            while(subdivisionIndex < maxSubdivisions)
+            {
+                int powerIndex = subdivisionIndex;
+                for(int power = 0; power < 7; power++)
+                {
+                    var numberOfSubdivisionsInMeasure = (int)Math.Pow(2, power);
+                    int numberOfCellsInSubdivision = (int)Math.Pow(2, 7 - power);
+                    var cellDuration = TICKS_PER_QUARTERNOTE * 4 / numberOfSubdivisionsInMeasure;
+                    // figure out the equivalent cell index of the current subdivision power
+                    powerIndex = subdivisionIndex / numberOfCellsInSubdivision;
+                    if (subdivisionCells[power][powerIndex])
+                    {
+                        // move our pointer by the number of lowest-level cells equivalent to the 
+                        // subdivision that matched
+                        ties.Add(cellDuration);
+                        moveSubdivionsIndexBy = numberOfCellsInSubdivision;
+                        Debug.Assert(0 < moveSubdivionsIndexBy);
+                        break;
+                    }
+                }
+
+                subdivisionIndex += moveSubdivionsIndexBy;
+                moveSubdivionsIndexBy = 1;
+            }
+
+            return ties.ToArray();
+
+/*
+            // minimum note is 128th note.  32 per quarter note
+            var index = 0;
+            var cells = new bool[128];
+            var cellDuration = TICKS_PER_QUARTERNOTE / 32;
+            for (int i = 0; i < tickInMeasure; i++)
+            {
+                index ++;;
+                i += cellDuration;
+            }
+
+            Debug.Assert(index < cells.Length);
+            while (index < cells.Length && 0 < duration)
+            {
+                cells[index] = true;
+                duration -= cellDuration;
+            }
+            */
         }
 
         public string ConvertToLilyPondDuration(int delta)

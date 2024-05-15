@@ -56,6 +56,23 @@ public class TimeUnitTests
     }
 
     [TestMethod]
+    public void DottedQuarterStartingOnAnd()
+    {
+        // arrange
+        Time time = new Time();
+        time.SetTimeSignature(4,4);
+        time.AddTime(Time.TICKS_PER_QUARTERNOTE / 2);
+
+        // act
+        var ties = time.GetNoteTies(Time.TICKS_PER_QUARTERNOTE * 3 / 2);
+
+        // assert
+        Assert.AreEqual(2, ties.Length, "wrong number of ties");
+        Assert.AreEqual(Time.TICKS_PER_QUARTERNOTE / 2, ties[0], "expected eighth note for first tie");
+        Assert.AreEqual(Time.TICKS_PER_QUARTERNOTE * 1, ties[1], "expected quarter note for second tie");
+    }
+
+    [TestMethod]
     public void BzamPattern47Channel1()
     {
         Time time = new Time();

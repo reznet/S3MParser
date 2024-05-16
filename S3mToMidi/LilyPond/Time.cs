@@ -42,6 +42,8 @@ namespace S3mToMidi.LilyPond
             ((int)(TICKS_PER_QUARTERNOTE / 1.5), "4" ), // 64 ticks, quarter note triplets
             (TICKS_PER_QUARTERNOTE / 3, "8" ), // 32 ticks, eighth note triplets
             (TICKS_PER_QUARTERNOTE / 6, "16" ), // 16 ticks, sixteenth note triplets
+            (TICKS_PER_QUARTERNOTE / 12, "32" ), // 8 ticks, thirtysecond note triplets
+            (TICKS_PER_QUARTERNOTE / 24, "64" ), // 4 ticks, sixtyforth note triplets
         };
 
         public bool SetTimeSignature(int beatsPerBar, int beatValue)
@@ -58,7 +60,9 @@ namespace S3mToMidi.LilyPond
         {
             //Tick += duration;
             TicksSinceLastTimeSignatureChange += duration;
+            var measure = TicksSinceLastTimeSignatureChange / TicksPerMeasure;
             TickInMeasure = TicksSinceLastTimeSignatureChange % TicksPerMeasure;
+            Console.Out.WriteLine("Added {0} ticks to time.  Measure is {1}. TickInMeasure is now {2}", duration, measure, TickInMeasure);
         }
 
         public int[] GetBarlineTies(int duration)
@@ -77,7 +81,7 @@ namespace S3mToMidi.LilyPond
 
             if (duration <= ticksRemainingInMeasure)
             {
-                return new int[] { duration, 0 };
+                return new int[] { duration };
             }
             else
             {
@@ -133,6 +137,7 @@ namespace S3mToMidi.LilyPond
 
         public int[] GetNoteTies(int duration)
         {
+            Debug.Assert(0 < duration, "trying to get note ties for zero duration");
             List<int> ties = new List<int>();
 
             var subdivisionCells = new List<bool[]>();

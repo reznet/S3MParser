@@ -20,5 +20,10 @@ namespace S3mToMidi.LilyPond
         public override int Pitch => pitch;
 
         public override int Velocity => velocity;
+
+        public override string ToString()
+        {
+            return string.Format("NoteWithDurationEvent Tick:{0} Duration:{1} Pitch:{2} Velocity:{3}", Tick, Duration, Pitch, Velocity);
+        }
     }
 }

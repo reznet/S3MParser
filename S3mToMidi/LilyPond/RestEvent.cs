@@ -9,5 +9,10 @@ namespace S3mToMidi.LilyPond
         public override int Pitch => -1;
 
         public override int Velocity => -1;
+
+        public override string ToString()
+        {
+            return string.Format("RestEvent Tick:{0} Duration:{1}", Tick, Duration);
+        }
     }
 }

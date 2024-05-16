@@ -111,6 +111,7 @@ namespace S3mToMidi.LilyPond
                         {
                             writer.WriteLine("r{0} ", time.ConvertToLilyPondDuration(rest));
                         }
+                        time.AddTime(subDuration);
                     }
                 }
                 else if (myNote is NoteWithDurationEvent noteWithDuration)
@@ -118,10 +119,15 @@ namespace S3mToMidi.LilyPond
                     clef.WriteStaffForChannelPitch(noteWithDuration.Pitch, writer);
                     writer.WriteLine("\\set fontSize = #{0}", GetFontSizeForVelocity(noteWithDuration.Velocity));
                     writer.Write(pitch.ChannelNoteToLilyPondPitch(noteWithDuration.Pitch));
-                    writer.WriteLine(string.Join("~ ", durations.SelectMany(time.GetNoteTies).Select(time.ConvertToLilyPondDuration)));
+                    var allSubdurations = new List<int>();
+                    foreach (var subDuration in durations)
+                    {
+                        allSubdurations.AddRange(time.GetNoteTies(subDuration));
+                    
+                        time.AddTime(subDuration);
+                    }
+                    writer.WriteLine(string.Join("~ ", allSubdurations.Select(time.ConvertToLilyPondDuration)));
                 }
-
-                time.AddTime(myNote.Duration);
             }
             else if (e is NoteEvent note)
             {

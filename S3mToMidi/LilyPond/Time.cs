@@ -106,6 +106,31 @@ namespace S3mToMidi.LilyPond
             return ((IEnumerable<int>)parts).Reverse().ToArray();
         }
 
+        internal static bool[] GetSubdivisionCells(int subdivision, int tickInMeasure, int duration)
+        {
+            var tempDuration = duration;
+            var numberOfSubdivisionsInMeasure = (int)Math.Pow(2, subdivision);
+            var subdivisionCells = new bool[numberOfSubdivisionsInMeasure];
+            var cellDuration = TICKS_PER_QUARTERNOTE * 4 / numberOfSubdivisionsInMeasure;
+
+            // skip leading rests
+            var cellIndex = (int)Math.Ceiling((double)tickInMeasure / (double)cellDuration);
+
+            // round up to next cell
+            //tickInMeasure = index * cellDuration;
+            tempDuration -= (cellIndex * cellDuration) - tickInMeasure;
+
+            //Debug.Assert(cellIndex < subdivisionCells[subdivision].Length);
+            while (cellIndex < subdivisionCells.Length && cellDuration <= tempDuration)
+            {
+                subdivisionCells[cellIndex] = true;
+                tempDuration -= cellDuration;
+                cellIndex++;
+            }
+
+            return subdivisionCells;
+        }
+
         public int[] GetNoteTies(int duration)
         {
             List<int> ties = new List<int>();
@@ -114,27 +139,7 @@ namespace S3mToMidi.LilyPond
 
             for (int subdivision = 0; subdivision < 8; subdivision++)
             {
-                var tempDuration = duration;
-                var numberOfSubdivisionsInMeasure = (int)Math.Pow(2, subdivision);
-                subdivisionCells.Add(new bool[numberOfSubdivisionsInMeasure]);
-                var cellDuration = TICKS_PER_QUARTERNOTE * 4 / numberOfSubdivisionsInMeasure;
-
-                var tickInMeasure = TickInMeasure;
-
-                // skip leading rests
-                var cellIndex = tickInMeasure / cellDuration;
-
-                // round up to next cell
-                //tickInMeasure = index * cellDuration;
-                tempDuration -= (cellIndex * cellDuration);
-
-                //Debug.Assert(cellIndex < subdivisionCells[subdivision].Length);
-                while (cellIndex < subdivisionCells[subdivision].Length && cellDuration <= tempDuration)
-                {
-                    subdivisionCells[subdivision][cellIndex] = true;
-                    tempDuration -= cellDuration;
-                    cellIndex++;
-                }
+                subdivisionCells.Add(GetSubdivisionCells(subdivision, TickInMeasure, duration));
             }
 
             // figure out the ties
@@ -165,6 +170,8 @@ namespace S3mToMidi.LilyPond
                 subdivisionIndex += moveSubdivionsIndexBy;
                 moveSubdivionsIndexBy = 1;
             }
+
+            Console.Out.WriteLine("Split duration {0} inside a measure starting at {1} into [{2}]", duration, TickInMeasure, string.Join(", ", ties));
 
             return ties.ToArray();
 

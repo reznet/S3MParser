@@ -4,10 +4,10 @@ using S3mToMidi.LilyPond;
 namespace S3mToMidi.Tests;
 
 [TestClass]
-public class SubdivisionUnitTests
+public class SubdivisionUnitTests_FourFour
 {
     [TestMethod]
-    public void FourFourWholeNoteOnBeatOne()
+    public void WholeNoteOnBeatOne()
     {
         Time time = new Time();
         time.SetTimeSignature(4, 4);
@@ -19,7 +19,7 @@ public class SubdivisionUnitTests
     }
 
     [TestMethod]
-    public void FourFourHalfNoteOnBeatOne()
+    public void HalfNoteOnBeatOne()
     {
         Time time = new Time();
         time.SetTimeSignature(4, 4);
@@ -31,7 +31,7 @@ public class SubdivisionUnitTests
     }
 
     [TestMethod]
-    public void FourFourQuarterNoteOnBeatOne()
+    public void QuarterNoteOnBeatOne()
     {
         Time time = new Time();
         time.SetTimeSignature(4, 4);
@@ -43,7 +43,7 @@ public class SubdivisionUnitTests
     }
 
     [TestMethod]
-    public void FourFourEighthNoteOnBeatOne()
+    public void EighthNoteOnBeatOne()
     {
         Time time = new Time();
         time.SetTimeSignature(4, 4);
@@ -55,7 +55,7 @@ public class SubdivisionUnitTests
     }
 
     [TestMethod]
-    public void FourFourSixteenthNoteOnBeatOne()
+    public void SixteenthNoteOnBeatOne()
     {
         Time time = new Time();
         time.SetTimeSignature(4, 4);
@@ -67,7 +67,7 @@ public class SubdivisionUnitTests
     }
 
     [TestMethod]
-    public void FourFourThirtysecondNoteOnBeatOne()
+    public void ThirtysecondNoteOnBeatOne()
     {
         Time time = new Time();
         time.SetTimeSignature(4, 4);
@@ -79,7 +79,7 @@ public class SubdivisionUnitTests
     }
 
     [TestMethod]
-    public void FourFourSixtyfourthNoteOnBeatOne()
+    public void SixtyfourthNoteOnBeatOne()
     {
         Time time = new Time();
         time.SetTimeSignature(4, 4);

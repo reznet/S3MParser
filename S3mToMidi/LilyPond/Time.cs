@@ -48,7 +48,7 @@ namespace S3mToMidi.LilyPond
 
         public bool SetTimeSignature(int beatsPerBar, int beatValue)
         {
-            if (this.beatsPerBar == beatsPerBar && this.beatValue == beatValue) { return false;}
+            if (this.beatsPerBar == beatsPerBar && this.beatValue == beatValue) { return false; }
             this.beatsPerBar = beatsPerBar;
             this.beatValue = beatValue;
             TicksPerMeasure = TICKS_PER_QUARTERNOTE * 4 / beatValue * beatsPerBar;
@@ -110,75 +110,91 @@ namespace S3mToMidi.LilyPond
             return ((IEnumerable<int>)parts).Reverse().ToArray();
         }
 
-        internal bool[] GetSubdivisionCells(int subdivision, int tickInMeasure, int duration)
+        internal (int subdivisionDuration, bool[] subdivisions) GetSubdivisionCells(int subdivision, int tickInMeasure, int duration)
         {
-            return DurationSubdivider.GetSubdivisionCells(subdivision, tickInMeasure, duration);
+            // x/1 => whole note beat
+            // x/2 => half note beat
+            // x/4 => quarter note beat
+            int measureDuration = this.beatsPerBar * Durations.WholeNote / this.beatValue;
+
+            // whole note subdivision = 0, subdivisions = 1;
+            // half note subdivision = 1, subdivisions = 2;
+            // quarter note subdivision = 2, subdivisions = 4;
+            int subdivisionDuration = Durations.WholeNote / (int)Math.Pow(2, subdivision);
+            int numberOfSubdivisionsInMeasure = (int)Math.Ceiling((decimal)measureDuration / subdivisionDuration);
+
+            bool[] subdivisions = DurationSubdivider.GetSubdivisionCells(numberOfSubdivisionsInMeasure, subdivisionDuration, tickInMeasure, duration);
+
+            return (subdivisionDuration, subdivisions);
         }
+
+
 
         public int[] GetNoteTies(int duration)
         {
             Debug.Assert(0 < duration, "trying to get note ties for zero duration");
             List<int> ties = new List<int>();
 
-            var subdivisionCells = new List<bool[]>();
+            var subdivisionCells = new Dictionary<int, (int subdivisionDuration, bool[] subdivisionCells)>();
 
             for (int subdivision = 0; subdivision < 8; subdivision++)
             {
-                subdivisionCells.Add(GetSubdivisionCells(subdivision, TickInMeasure, duration));
+                subdivisionCells.Add(subdivision, GetSubdivisionCells(subdivision, TickInMeasure, duration));
             }
 
-            // figure out the ties
-            var maxSubdivisions = (int)Math.Pow(2, 7);
-            var subdivisionIndex = 0;
-            var moveSubdivionsIndexBy = 1;
-            while(subdivisionIndex < maxSubdivisions)
+            int sum = 0;
+            int loopCount = 0;
+            int maxLoop = 100;
+            int minCellDuration = int.MaxValue;
+            int offset = 0;
+
+            while (offset < duration && sum < duration && loopCount++ < maxLoop)
             {
-                int powerIndex = subdivisionIndex;
-                for(int power = 0; power < 7; power++)
+                bool foundCell = false;
+                foreach (var pair in subdivisionCells)
                 {
-                    var numberOfSubdivisionsInMeasure = (int)Math.Pow(2, power);
-                    int numberOfCellsInSubdivision = (int)Math.Pow(2, 7 - power);
-                    var cellDuration = TICKS_PER_QUARTERNOTE * 4 / numberOfSubdivisionsInMeasure;
-                    // figure out the equivalent cell index of the current subdivision power
-                    powerIndex = subdivisionIndex / numberOfCellsInSubdivision;
-                    if (subdivisionCells[power][powerIndex])
+                    (int subdivisionDuration, bool[] cells) = pair.Value;
+                    minCellDuration = Math.Min(minCellDuration, subdivisionDuration);
+                    int index = (offset + sum) / subdivisionDuration;
+                    if (cells[index])
                     {
-                        // move our pointer by the number of lowest-level cells equivalent to the 
-                        // subdivision that matched
-                        ties.Add(cellDuration);
-                        moveSubdivionsIndexBy = numberOfCellsInSubdivision;
-                        Debug.Assert(0 < moveSubdivionsIndexBy);
+                        ties.Add(subdivisionDuration);
+                        sum += subdivisionDuration;
+                        foundCell = true;
                         break;
                     }
                 }
-
-                subdivisionIndex += moveSubdivionsIndexBy;
-                moveSubdivionsIndexBy = 1;
+                if (!foundCell)
+                {
+                    offset += minCellDuration;
+                }
             }
+
+            Debug.Assert(loopCount < maxLoop, "infinite loop");
 
             Console.Out.WriteLine("Split duration {0} inside a measure starting at {1} into [{2}]", duration, TickInMeasure, string.Join(", ", ties));
 
             Debug.Assert(0 < ties.Count, "GetNoteTies is not returning any durations");
             return ties.ToArray();
 
-/*
-            // minimum note is 128th note.  32 per quarter note
-            var index = 0;
-            var cells = new bool[128];
-            var cellDuration = TICKS_PER_QUARTERNOTE / 32;
-            for (int i = 0; i < tickInMeasure; i++)
-            {
-                index ++;;
-                i += cellDuration;
-            }
+            /*
+                        // minimum note is 128th note.  32 per quarter note
+                        var index = 0;
+                        var cells = new bool[128];
+                        var cellDuration = TICKS_PER_QUARTERNOTE / 32;
+                        for (int i = 0; i < tickInMeasure; i++)
+                        {
+                            index ++;;
+                            i += cellDuration;
+                        }
 
-            Debug.Assert(index < cells.Length);
-            while (index < cells.Length && 0 < duration)
-            {
-                cells[index] = true;
-                duration -= cellDuration;
-            }
-            */
+                        Debug.Assert(index < cells.Length);
+                        while (index < cells.Length && 0 < duration)
+                        {
+                            cells[index] = true;
+                            duration -= cellDuration;
+                        }
+                        */
         }
 
         public string ConvertToLilyPondDuration(int delta)

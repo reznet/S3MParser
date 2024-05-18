@@ -2,15 +2,14 @@
 
 public class DurationSubdivider
 {
-    internal static bool[] GetSubdivisionCells(int subdivision, int tickInMeasure, int duration)
+    internal static bool[] GetSubdivisionCells(int numberOfSubdivisionsInMeasure, int subdivisionDuration, int tickInMeasure, int duration)
     {
         var tempDuration = duration;
-        var numberOfSubdivisionsInMeasure = (int)Math.Pow(2, subdivision);
         var subdivisionCells = new bool[numberOfSubdivisionsInMeasure];
-        var cellDuration = Durations.QuarterNote * 4 / numberOfSubdivisionsInMeasure;
+        var cellDuration = subdivisionDuration;
 
         // skip leading rests
-        var cellIndex = (int)Math.Ceiling((double)tickInMeasure / (double)cellDuration);
+        var cellIndex = (int)Math.Ceiling((decimal)tickInMeasure / cellDuration);
 
         // round up to next cell
         //tickInMeasure = index * cellDuration;

@@ -20,20 +20,28 @@ namespace S3mToMidi.LilyPond
         {
             ( Durations.DottedWholeNote, "1." ),
             ( Durations.WholeNote, "1" ),
+            ( Durations.WholeNoteTriplet, "\\tuplet 3/2 { 1 }"),
             ( Durations.DottedHalfNote, "2." ),
             ( Durations.HalfNote, "2" ),
+            ( Durations.HalfNoteTriplet, "\\tuplet 3/2 { 2 }"),
             ( Durations.DottedQuarterNote, "4." ),
             ( Durations.QuarterNote * 1, "4" ),
+            ( Durations.QuarterNoteTriplet, "\\tuplet 3/2 { 4 }"),
             ( Durations.DottedEighthNote, "8." ),
             ( Durations.EighthNote, "8" ),
+            ( Durations.EighthNoteTriplet, "\\tuplet 3/2 { 8 }"),
             ( Durations.DottedSixteenthNote, "16." ),
             ( Durations.SixteenthNote, "16" ),
+            ( Durations.SixteenthNoteTriplet, "\\tuplet 3/2 { 16 }"),
             ( Durations.DottedThirtySecondNote, "32." ),
             ( Durations.ThirtySecondNote, "32" ),
+            ( Durations.ThirtySecondNoteTriplet, "\\tuplet 3/2 { 32 }"),
             ( Durations.DottedSixtyFourthNote, "64." ),
             ( Durations.SixtyFourthNote, "64" ),
+            ( Durations.SixtyFourthNoteTriplet, "\\tuplet 3/2 { 64 }"),
             ( Durations.DottedOneTwentyEighthNote * 3 / 2, "128." ),
             ( Durations.OneTwentyEighthNote, "128" ),
+            ( Durations.OneTwentyEighthNoteTriplet, "\\tuplet 3/2 { 128 }"),
         };
 
 
@@ -41,11 +49,11 @@ namespace S3mToMidi.LilyPond
         // HACK: make this public until the tuplet logic can be refactored
         public static List<(int, string)> TupletDurations = new List<(int, string)>
         {
-            (Durations.QuarterNote / 3, "4" ), // 64 ticks, quarter note triplets
-            (Durations.EighthNote / 3, "8" ), // 32 ticks, eighth note triplets
-            (Durations.SixteenthNote / 3, "16" ), // 16 ticks, sixteenth note triplets
-            (Durations.ThirtySecondNote / 3, "32" ), // 8 ticks, thirtysecond note triplets
-            (Durations.QuarterNote / 3, "64" ), // 4 ticks, sixtyfourth note triplets
+            (Durations.QuarterNoteTriplet, "4" ), // 64 ticks, quarter note triplets
+            (Durations.EighthNoteTriplet, "8" ), // 32 ticks, eighth note triplets
+            (Durations.SixteenthNoteTriplet, "16" ), // 16 ticks, sixteenth note triplets
+            (Durations.ThirtySecondNoteTriplet, "32" ), // 8 ticks, thirtysecond note triplets
+            (Durations.QuarterNoteTriplet, "64" ), // 4 ticks, sixtyfourth note triplets
         };
 
         public bool SetTimeSignature(int beatsPerBar, int beatValue)
@@ -113,37 +121,47 @@ namespace S3mToMidi.LilyPond
             return ((IEnumerable<int>)parts).Reverse().ToArray();
         }
 
-        internal (int subdivisionDuration, bool[] subdivisions) GetSubdivisionCells(int subdivision, int tickInMeasure, int duration)
+        internal List<(int subdivisionDuration, bool[] subdivisions)> GetSubdivisionCells(int subdivision, int tickInMeasure, int duration)
+        {
+            // whole note subdivision = 0, subdivisions = 1;
+            // half note subdivision = 1, subdivisions = 2;
+            // quarter note subdivision = 2, subdivisions = 4;
+            int subdivisionDuration = Durations.WholeNote / (int)Math.Pow(2, subdivision);
+            int tripletSubdivisionDuration = subdivisionDuration / 3;
+
+            return new []{
+                GetSubdivisionCellsForCellDuration(subdivisionDuration, tickInMeasure, duration),
+                GetSubdivisionCellsForCellDuration(tripletSubdivisionDuration, tickInMeasure, duration),
+            }.ToList();
+        }
+
+        internal (int subdivisionDuration, bool[] subdivisions) GetSubdivisionCellsForCellDuration(int subdivisionDuration, int tickInMeasure, int duration)
         {
             // x/1 => whole note beat
             // x/2 => half note beat
             // x/4 => quarter note beat
             int measureDuration = this.beatsPerBar * Durations.WholeNote / this.beatValue;
 
-            // whole note subdivision = 0, subdivisions = 1;
-            // half note subdivision = 1, subdivisions = 2;
-            // quarter note subdivision = 2, subdivisions = 4;
-            int subdivisionDuration = Durations.WholeNote / (int)Math.Pow(2, subdivision);
             int numberOfSubdivisionsInMeasure = (int)Math.Ceiling((decimal)measureDuration / subdivisionDuration);
 
             bool[] subdivisions = DurationSubdivider.GetSubdivisionCells(numberOfSubdivisionsInMeasure, subdivisionDuration, tickInMeasure, duration);
 
             return (subdivisionDuration, subdivisions);
         }
-
-
-
+        
         public int[] GetNoteTies(int duration)
         {
             Debug.Assert(0 < duration, "trying to get note ties for zero duration");
             List<int> ties = new List<int>();
 
-            var subdivisionCells = new Dictionary<int, (int subdivisionDuration, bool[] subdivisionCells)>();
+            var subdivisionCells = new List<(int subdivisionDuration, bool[] subdivisionCells)>();
 
             for (int subdivision = 0; subdivision < 8; subdivision++)
             {
-                subdivisionCells.Add(subdivision, GetSubdivisionCells(subdivision, TickInMeasure, duration));
+                subdivisionCells.AddRange(GetSubdivisionCells(subdivision, TickInMeasure, duration));
             }
+
+            subdivisionCells.Sort((l, r) => r.subdivisionDuration.CompareTo(l.subdivisionDuration));
 
             int sum = 0;
             int loopCount = 0;
@@ -151,14 +169,12 @@ namespace S3mToMidi.LilyPond
             int minCellDuration = int.MaxValue;
             int offset = 0;
             bool foundAnyCell = false;
-            bool keepLooking = true;
 
-            while (keepLooking && offset < TicksPerMeasure && sum < duration && loopCount++ < maxLoop)
+            while (offset < TicksPerMeasure && sum < duration && loopCount++ < maxLoop)
             {
                 bool foundCell = false;
-                foreach (var pair in subdivisionCells)
+                foreach ((int subdivisionDuration, bool[] cells) in subdivisionCells)
                 {
-                    (int subdivisionDuration, bool[] cells) = pair.Value;
                     minCellDuration = Math.Min(minCellDuration, subdivisionDuration);
                     int index = (offset + sum) / subdivisionDuration;
                     if (cells[index])
@@ -175,7 +191,6 @@ namespace S3mToMidi.LilyPond
                     if (foundAnyCell)
                     {
                         // no need to keep looking
-                        keepLooking = false;
                         break;
                     }
                     offset += minCellDuration;
@@ -197,10 +212,6 @@ namespace S3mToMidi.LilyPond
                 if (delta == ticks)
                 {
                     return name;
-                }
-                else if (delta == ticks * 1.5)
-                {
-                    return name + ".";
                 }
             }
             Debug.Fail(string.Format("don't know how to convert duration {0} to LilyPond duration", delta));

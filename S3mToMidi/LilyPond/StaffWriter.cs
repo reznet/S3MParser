@@ -27,9 +27,11 @@ namespace S3mToMidi.LilyPond
             WriteClef("bass");
             Clef clef = new Clef("bass");
 
-            for (int i = 0; i < events.Count; i++)
+            int i = 0;
+            while(i < events.Count)
             {
-                ProcessEvent(events, i, clef);
+                int eventsProcessedCount = ProcessEvent(events, i, clef);
+                i += eventsProcessedCount;
             }
             writer.Write("}");
             writer.WriteLine();
@@ -46,7 +48,7 @@ namespace S3mToMidi.LilyPond
         }
 
 
-        private void ProcessEvent(ImmutableList<Event> events, int eventIndex, Clef clef)
+        private int ProcessEvent(ImmutableList<Event> events, int eventIndex, Clef clef)
         {
             var e = events[eventIndex];
             if (e is DurationEvent myNote)
@@ -68,7 +70,7 @@ namespace S3mToMidi.LilyPond
                         int tupletDuration = (Time.TupletDurations[tupletDurationIndex].Item1 * 3);
                         int remainingTupletDuration = tupletDuration - durationTicks;
 
-                        for (int tupletIndex = eventIndex; tupletIndex < events.Count && tupletNotes.Sum(t => t.Tick) < tupletDuration; tupletIndex++)
+                        for (int tupletIndex = eventIndex + 1; tupletIndex < events.Count && tupletNotes.Sum(t => t.Duration) < tupletDuration; tupletIndex++)
                         {
                             if (events[tupletIndex] is DurationEvent nextNote)
                             {
@@ -96,7 +98,7 @@ namespace S3mToMidi.LilyPond
 
                         time.AddTime(myNote.Duration);
 
-                        return;
+                        return tupletNotes.Count;
                     }
                 }
 
@@ -149,6 +151,8 @@ namespace S3mToMidi.LilyPond
                 Debug.Fail("unknown event type " + e.GetType().Name);
                 // no-op
             }
+
+            return 1;
         }
 
         public static int GetFontSizeForVelocity(int velocity)

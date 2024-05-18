@@ -114,4 +114,17 @@ public class SubdivisionUnitTests_FourFour
         Assert.AreEqual(1, ties.Length, "wrong number of ties");
         Assert.AreEqual(Durations.SixtyFourthNote, ties[0]);
     }
+
+    [TestMethod]
+    public void WeirdThing()
+    {
+        Time time = new Time();
+        time.SetTimeSignature(15, 8); // 720 ticks, eighth note = 48 ticks
+        time.AddTime(608);
+
+        var ties = time.GetNoteTies(112);
+
+        Assert.AreEqual(1, ties.Length, "wrong number of ties");
+        Assert.AreEqual(Durations.SixtyFourthNote, ties[0]);
+    }
 }

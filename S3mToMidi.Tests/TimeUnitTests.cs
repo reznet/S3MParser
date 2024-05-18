@@ -157,7 +157,7 @@ public class TimeUnitTests
         time.SetTimeSignature(4, 4);
 
         // act
-        (var _, var actualCells) = time.GetSubdivisionCells(3, Durations.EighthNote, Durations.DottedHalfNote / 2);
+        (var _, var actualCells) = time.GetSubdivisionCellsForCellDuration(3, Durations.EighthNote, Durations.DottedHalfNote / 2);
 
         // assert
         CollectionAssert.AreEqual(new bool[]{ false, true, true, true, false, false, false, false}, actualCells);
@@ -171,7 +171,7 @@ public class TimeUnitTests
         time.SetTimeSignature(4, 4);
 
         // act
-        (var _, var actualCells) = time.GetSubdivisionCells(3, Durations.EighthNote, Durations.DottedHalfNote / 2);
+        (var _, var actualCells) = time.GetSubdivisionCellsForCellDuration(3, Durations.EighthNote, Durations.DottedHalfNote / 2);
 
         // assert
         CollectionAssert.AreEqual(new bool[]{ false, true, true, true, false, false, false, false}, actualCells);

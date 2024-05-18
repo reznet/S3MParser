@@ -56,7 +56,7 @@ public class SubdivisionCellUnitTests
         time.SetTimeSignature(4, 4);
 
         // act
-        (var _, var actualCells) = time.GetSubdivisionCells(subdivision, tickInMeasure, duration);
+        (var _, var actualCells) = time.GetSubdivisionCellsForCellDuration(subdivision, tickInMeasure, duration);
 
         // assert
         Assert.IsNotNull(actualCells, "null cell array returned");
@@ -119,7 +119,7 @@ public class SubdivisionCellUnitTests
         time.SetTimeSignature(6, 4);
 
         // act
-        (var _, var actualCells) = time.GetSubdivisionCells(subdivision, tickInMeasure, duration);
+        (var _, var actualCells) = time.GetSubdivisionCellsForCellDuration(subdivision, tickInMeasure, duration);
 
         // assert
         Assert.IsNotNull(actualCells, "null cell array returned");

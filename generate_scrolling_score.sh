@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+set -e
+
 path_to_me=${0:A:h}
 filename=${1}
 filename_no_extension=${filename:r}

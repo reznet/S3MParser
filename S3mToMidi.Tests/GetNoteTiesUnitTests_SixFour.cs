@@ -91,16 +91,29 @@ public class GetNoteTiesUnitTests_SixFour
     }
 
     [TestMethod]
-    [Ignore] // need support for tuplets
-    public void SixtyfourthNoteOnBeatOne72()
+    public void DottedEighthNoteOnBeatTwoAnd()
     {
         Time time = new Time();
         time.SetTimeSignature(6, 4);
-        time.AddTime(72);
+        time.AddTime(Durations.DottedEighthNote);
 
-        var ties = time.GetNoteTies(72);
+        var ties = time.GetNoteTies(Durations.DottedEighthNote);
+
+        Assert.AreEqual(2, ties.Length, "wrong number of ties");
+        Assert.AreEqual(Durations.SixteenthNote, ties[0]);
+        Assert.AreEqual(Durations.EighthNote, ties[1]);
+    }
+
+    [TestMethod]
+    public void SixteenthNoteOnBeatFourA()
+    {
+        Time time = new Time();
+        time.SetTimeSignature(6, 4);
+        time.AddTime(Durations.WholeNote - Durations.SixteenthNote);
+
+        var ties = time.GetNoteTies(Durations.SixteenthNote);
 
         Assert.AreEqual(1, ties.Length, "wrong number of ties");
-        Assert.AreEqual(72, ties[0]);
+        Assert.AreEqual(Durations.SixteenthNote, ties[0]);
     }
 }

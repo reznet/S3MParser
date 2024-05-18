@@ -57,19 +57,6 @@ public class TimeUnitTests
     }
 
     [TestMethod]
-    [Ignore] // doesn't return a dotted half note yet
-    public void DottedHalfNoteInFourFour()
-    {
-        Time time = new();
-        time.SetTimeSignature(4, 4);
-
-        var ties = time.GetNoteTies(Durations.DottedHalfNote);
-
-        Assert.AreEqual(1, ties.Length, "wrong number of ties");
-        Assert.AreEqual(Durations.DottedHalfNote, ties[0], "wrong quarter note duration");
-    }
-
-    [TestMethod]
     public void DottedQuarterStartingOnAnd()
     {
         // arrange

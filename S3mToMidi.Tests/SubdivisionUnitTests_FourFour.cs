@@ -31,6 +31,18 @@ public class SubdivisionUnitTests_FourFour
     }
 
     [TestMethod]
+    public void DottedHalfNoteOnBeatOne()
+    {
+        Time time = new Time();
+        time.SetTimeSignature(4, 4);
+
+        var ties = time.GetNoteTies(Durations.DottedHalfNote);
+
+        Assert.AreEqual(1, ties.Length, "wrong number of ties");
+        Assert.AreEqual(Durations.DottedHalfNote, ties[0]);
+    }
+
+    [TestMethod]
     public void QuarterNoteOnBeatOne()
     {
         Time time = new Time();
@@ -85,6 +97,19 @@ public class SubdivisionUnitTests_FourFour
         time.SetTimeSignature(4, 4);
 
         var ties = time.GetNoteTies(Durations.SixtyFourthNote);
+
+        Assert.AreEqual(1, ties.Length, "wrong number of ties");
+        Assert.AreEqual(Durations.SixtyFourthNote, ties[0]);
+    }
+
+    [TestMethod]
+    public void WeirdThingAfterEighthAndThirtySecondNote()
+    {
+        Time time = new Time();
+        time.SetTimeSignature(4, 4);
+        time.AddTime(Durations.EighthNote + Durations.ThirtySecondNote);
+
+        var ties = time.GetNoteTies(Durations.DottedQuarterNote + Durations.SixtyFourthNoteTriplet);
 
         Assert.AreEqual(1, ties.Length, "wrong number of ties");
         Assert.AreEqual(Durations.SixtyFourthNote, ties[0]);

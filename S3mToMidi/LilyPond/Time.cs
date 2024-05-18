@@ -9,6 +9,8 @@ namespace S3mToMidi.LilyPond
         public int TicksPerMeasure;
         private int TicksSinceLastTimeSignatureChange;
 
+        private int TotalTicks;
+
         private int beatsPerBar;
         private int beatValue;
 
@@ -16,22 +18,22 @@ namespace S3mToMidi.LilyPond
 
         private static List<(int, string)> LilyPondDurations = new List<(int, string)>
         {
-            ( TICKS_PER_QUARTERNOTE * 4 * 3 / 2, "1." ),
-            ( TICKS_PER_QUARTERNOTE * 4, "1" ),
-            ( TICKS_PER_QUARTERNOTE * 2 * 3 / 2, "2." ),
-            ( TICKS_PER_QUARTERNOTE * 2, "2" ),
-            ( TICKS_PER_QUARTERNOTE * 1 * 3 / 2, "4." ),
-            ( TICKS_PER_QUARTERNOTE * 1, "4" ),
-            ( TICKS_PER_QUARTERNOTE / 2 * 3 / 2, "8." ),
-            ( TICKS_PER_QUARTERNOTE / 2, "8" ),
-            ( TICKS_PER_QUARTERNOTE / 4 * 3 / 2, "16." ),
-            ( TICKS_PER_QUARTERNOTE / 4, "16" ),
-            ( TICKS_PER_QUARTERNOTE / 8 * 3 / 2, "32." ),
-            ( TICKS_PER_QUARTERNOTE / 8, "32" ),
-            ( TICKS_PER_QUARTERNOTE / 16 * 3 / 2, "64." ),
-            ( TICKS_PER_QUARTERNOTE / 16, "64" ),
-            ( TICKS_PER_QUARTERNOTE / 32 * 3 / 2, "128." ),
-            ( TICKS_PER_QUARTERNOTE / 32, "128" ),
+            ( Durations.DottedWholeNote, "1." ),
+            ( Durations.WholeNote, "1" ),
+            ( Durations.DottedHalfNote, "2." ),
+            ( Durations.HalfNote, "2" ),
+            ( Durations.DottedQuarterNote, "4." ),
+            ( Durations.QuarterNote * 1, "4" ),
+            ( Durations.DottedEighthNote, "8." ),
+            ( Durations.EighthNote, "8" ),
+            ( Durations.DottedSixteenthNote, "16." ),
+            ( Durations.SixteenthNote, "16" ),
+            ( Durations.DottedThirtySecondNote, "32." ),
+            ( Durations.ThirtySecondNote, "32" ),
+            ( Durations.DottedSixtyFourthNote, "64." ),
+            ( Durations.SixtyFourthNote, "64" ),
+            ( Durations.DottedOneTwentyEighthNote * 3 / 2, "128." ),
+            ( Durations.OneTwentyEighthNote, "128" ),
         };
 
 
@@ -39,11 +41,11 @@ namespace S3mToMidi.LilyPond
         // HACK: make this public until the tuplet logic can be refactored
         public static List<(int, string)> TupletDurations = new List<(int, string)>
         {
-            ((int)(TICKS_PER_QUARTERNOTE / 1.5), "4" ), // 64 ticks, quarter note triplets
-            (TICKS_PER_QUARTERNOTE / 3, "8" ), // 32 ticks, eighth note triplets
-            (TICKS_PER_QUARTERNOTE / 6, "16" ), // 16 ticks, sixteenth note triplets
-            (TICKS_PER_QUARTERNOTE / 12, "32" ), // 8 ticks, thirtysecond note triplets
-            (TICKS_PER_QUARTERNOTE / 24, "64" ), // 4 ticks, sixtyforth note triplets
+            (Durations.QuarterNote / 3, "4" ), // 64 ticks, quarter note triplets
+            (Durations.EighthNote / 3, "8" ), // 32 ticks, eighth note triplets
+            (Durations.SixteenthNote / 3, "16" ), // 16 ticks, sixteenth note triplets
+            (Durations.ThirtySecondNote / 3, "32" ), // 8 ticks, thirtysecond note triplets
+            (Durations.QuarterNote / 3, "64" ), // 4 ticks, sixtyfourth note triplets
         };
 
         public bool SetTimeSignature(int beatsPerBar, int beatValue)
@@ -51,7 +53,7 @@ namespace S3mToMidi.LilyPond
             if (this.beatsPerBar == beatsPerBar && this.beatValue == beatValue) { return false; }
             this.beatsPerBar = beatsPerBar;
             this.beatValue = beatValue;
-            TicksPerMeasure = TICKS_PER_QUARTERNOTE * 4 / beatValue * beatsPerBar;
+            TicksPerMeasure = Durations.WholeNote / beatValue * beatsPerBar;
             TicksSinceLastTimeSignatureChange = 0;
             return true;
         }
@@ -59,6 +61,7 @@ namespace S3mToMidi.LilyPond
         public void AddTime(int duration)
         {
             //Tick += duration;
+            TotalTicks += duration;
             TicksSinceLastTimeSignatureChange += duration;
             var measure = TicksSinceLastTimeSignatureChange / TicksPerMeasure;
             TickInMeasure = TicksSinceLastTimeSignatureChange % TicksPerMeasure;
@@ -74,7 +77,7 @@ namespace S3mToMidi.LilyPond
             var tickInMeasure = TicksSinceLastTimeSignatureChange % TicksPerMeasure;
             var ticksRemainingInMeasure = TicksPerMeasure - tickInMeasure;
 
-            Console.Out.WriteLine("seems we're currently {0}/{1} ticks into measure {2}.  there are {3} ticks left in the measure.", tickInMeasure, TicksPerMeasure, measure, ticksRemainingInMeasure);
+            Console.Out.WriteLine("seems we're currently {0}/{1} ticks into measure {2} since the last time signature change (global tick {3}).  there are {4} ticks left in the measure.", tickInMeasure, TicksPerMeasure, measure, TotalTicks, ticksRemainingInMeasure);
 
             Debug.Assert(0 < ticksRemainingInMeasure);
             Debug.Assert(0 < duration);
@@ -144,11 +147,13 @@ namespace S3mToMidi.LilyPond
 
             int sum = 0;
             int loopCount = 0;
-            int maxLoop = 100;
+            int maxLoop = 1024;
             int minCellDuration = int.MaxValue;
             int offset = 0;
+            bool foundAnyCell = false;
+            bool keepLooking = true;
 
-            while (offset < duration && sum < duration && loopCount++ < maxLoop)
+            while (keepLooking && offset < TicksPerMeasure && sum < duration && loopCount++ < maxLoop)
             {
                 bool foundCell = false;
                 foreach (var pair in subdivisionCells)
@@ -161,11 +166,18 @@ namespace S3mToMidi.LilyPond
                         ties.Add(subdivisionDuration);
                         sum += subdivisionDuration;
                         foundCell = true;
+                        foundAnyCell = true;
                         break;
                     }
                 }
                 if (!foundCell)
                 {
+                    if (foundAnyCell)
+                    {
+                        // no need to keep looking
+                        keepLooking = false;
+                        break;
+                    }
                     offset += minCellDuration;
                 }
             }
@@ -176,25 +188,6 @@ namespace S3mToMidi.LilyPond
 
             Debug.Assert(0 < ties.Count, "GetNoteTies is not returning any durations");
             return ties.ToArray();
-
-            /*
-                        // minimum note is 128th note.  32 per quarter note
-                        var index = 0;
-                        var cells = new bool[128];
-                        var cellDuration = TICKS_PER_QUARTERNOTE / 32;
-                        for (int i = 0; i < tickInMeasure; i++)
-                        {
-                            index ++;;
-                            i += cellDuration;
-                        }
-
-                        Debug.Assert(index < cells.Length);
-                        while (index < cells.Length && 0 < duration)
-                        {
-                            cells[index] = true;
-                            duration -= cellDuration;
-                        }
-                        */
         }
 
         public string ConvertToLilyPondDuration(int delta)

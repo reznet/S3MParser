@@ -150,12 +150,11 @@ public class TimeUnitTests
     }
 
     [TestMethod]
-    [Ignore] // we currently only support 4/4
-    public void PtimePattern14Channel3Beat5And()
+    public void PtimePattern14Channel3Beat4And()
     {
         Time time = new();
         time.SetTimeSignature(6, 4);
-        time.AddTime(432);
+        time.AddTime(Durations.WholeNote + Durations.HalfNote);
 
         var ties = time.GetNoteTies(Durations.EighthNote);
 

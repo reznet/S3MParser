@@ -110,29 +110,9 @@ namespace S3mToMidi.LilyPond
             return ((IEnumerable<int>)parts).Reverse().ToArray();
         }
 
-        internal static bool[] GetSubdivisionCells(int subdivision, int tickInMeasure, int duration)
+        internal bool[] GetSubdivisionCells(int subdivision, int tickInMeasure, int duration)
         {
-            var tempDuration = duration;
-            var numberOfSubdivisionsInMeasure = (int)Math.Pow(2, subdivision);
-            var subdivisionCells = new bool[numberOfSubdivisionsInMeasure];
-            var cellDuration = TICKS_PER_QUARTERNOTE * 4 / numberOfSubdivisionsInMeasure;
-
-            // skip leading rests
-            var cellIndex = (int)Math.Ceiling((double)tickInMeasure / (double)cellDuration);
-
-            // round up to next cell
-            //tickInMeasure = index * cellDuration;
-            tempDuration -= (cellIndex * cellDuration) - tickInMeasure;
-
-            //Debug.Assert(cellIndex < subdivisionCells[subdivision].Length);
-            while (cellIndex < subdivisionCells.Length && cellDuration <= tempDuration)
-            {
-                subdivisionCells[cellIndex] = true;
-                tempDuration -= cellDuration;
-                cellIndex++;
-            }
-
-            return subdivisionCells;
+            return DurationSubdivider.GetSubdivisionCells(subdivision, tickInMeasure, duration);
         }
 
         public int[] GetNoteTies(int duration)
@@ -178,6 +158,7 @@ namespace S3mToMidi.LilyPond
 
             Console.Out.WriteLine("Split duration {0} inside a measure starting at {1} into [{2}]", duration, TickInMeasure, string.Join(", ", ties));
 
+            Debug.Assert(0 < ties.Count, "GetNoteTies is not returning any durations");
             return ties.ToArray();
 
 /*

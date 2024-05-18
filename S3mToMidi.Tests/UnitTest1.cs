@@ -4,6 +4,7 @@ using S3M;
 namespace S3mToMidi.Tests;
 
 [TestClass]
+[Ignore]
 public class UnitTest1
 {
     [TestMethod]

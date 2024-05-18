@@ -12,7 +12,7 @@ namespace S3mToMidi.Tests.LilyPondTests
             var sut = new Time();
 
             // act
-            var result = sut.ConvertToLilyPondDuration(Time.TICKS_PER_QUARTERNOTE * 3);
+            var result = sut.ConvertToLilyPondDuration(Durations.DottedHalfNote);
 
             // assert
             Assert.AreEqual("2.", result);

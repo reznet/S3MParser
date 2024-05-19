@@ -96,7 +96,7 @@ namespace S3mToMidi.LilyPond
 
                         writer.WriteLine(" }");
 
-                        time.AddTime(myNote.Duration);
+                        time.AddTime(tupletNotes.Sum(t => t.Duration));
 
                         return tupletNotes.Count;
                     }
@@ -112,23 +112,63 @@ namespace S3mToMidi.LilyPond
                         foreach (var rest in rests)
                         {
                             writer.WriteLine("r{0} ", time.ConvertToLilyPondDuration(rest));
+                            time.AddTime(rest);
                         }
-                        time.AddTime(subDuration);
                     }
                 }
                 else if (myNote is NoteWithDurationEvent noteWithDuration)
                 {
-                    clef.WriteStaffForChannelPitch(noteWithDuration.Pitch, writer);
-                    writer.WriteLine("\\set fontSize = #{0}", GetFontSizeForVelocity(noteWithDuration.Velocity));
-                    writer.Write(pitch.ChannelNoteToLilyPondPitch(noteWithDuration.Pitch));
                     var allSubdurations = new List<int>();
-                    foreach (var subDuration in durations)
+                    for(int i = 0; i < durations.Length; i++)
                     {
-                        allSubdurations.AddRange(time.GetNoteTies(subDuration));
+                        var barDuration = durations[i];
+                        var subDurations = time.GetNoteTies(barDuration);
+                        for(int j = 0; j < subDurations.Length; j++)
+                        {
+                            var subDuration = subDurations[j];
+                            var lilypondDuration = time.ConvertToLilyPondDuration(subDuration);
+                            int leftBrace = lilypondDuration.IndexOf('{');
+                            int rightBrace = lilypondDuration.IndexOf('}');
+                            if (-1 < leftBrace)
+                            {
+                                writer.Write(lilypondDuration.Substring(0, leftBrace + 1) + " ");
+                            }
+
+                            clef.WriteStaffForChannelPitch(noteWithDuration.Pitch, writer);
+                            //writer.WriteLine("\\set fontSize = #{0}", GetFontSizeForVelocity(noteWithDuration.Velocity));
+                            writer.Write(pitch.ChannelNoteToLilyPondPitch(noteWithDuration.Pitch));                                              
+
+                            if (-1 < leftBrace)
+                            {
+                                writer.Write(lilypondDuration.Substring(leftBrace + 1, rightBrace - leftBrace - 1));
+                            }
+                            else
+                            {
+                                writer.Write(lilypondDuration);
+                            }
+
+                            if (j + 1 < subDurations.Length)
+                            {
+                                writer.Write("~");
+                            }
+
+                            writer.Write(" ");
+
+                            if (-1 < rightBrace)
+                            {
+                                writer.Write(lilypondDuration.Substring(rightBrace));
+                            }
+
+                            time.AddTime(subDuration);
+                        }
                     
-                        time.AddTime(subDuration);
+                        
                     }
-                    writer.WriteLine(string.Join("~ ", allSubdurations.Select(time.ConvertToLilyPondDuration)));
+                    
+
+
+                    
+                    //writer.WriteLine(string.Join("~ ", allSubdurations.Select(time.ConvertToLilyPondDuration)));
                 }
             }
             else if (e is NoteEvent note)

@@ -4,7 +4,7 @@ using S3mToMidi.LilyPond;
 namespace S3mToMidi.Tests;
 
 [TestClass]
-public class SubdivisionUnitTests_FourFour
+public class GetNoteTiesUnitTests_FourFour
 {
     [TestMethod]
     public void WholeNoteOnBeatOne()
@@ -126,5 +126,19 @@ public class SubdivisionUnitTests_FourFour
 
         Assert.AreEqual(1, ties.Length, "wrong number of ties");
         Assert.AreEqual(Durations.SixtyFourthNote, ties[0]);
+    }
+
+    [TestMethod]
+    public void WeirdThing2()
+    {
+        Time time = new Time();
+        time.SetTimeSignature(4, 4);
+        time.AddTime(Durations.EighthNote * 5);
+
+        var ties = time.GetNoteTies(Durations.DottedEighthNote);
+
+        Assert.AreEqual(2, ties.Length, "wrong number of ties");
+        Assert.AreEqual(Durations.EighthNote, ties[0]);
+        Assert.AreEqual(Durations.SixteenthNote, ties[1]);
     }
 }

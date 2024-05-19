@@ -129,7 +129,7 @@ namespace S3mToMidi.LilyPond
             int subdivisionDuration = Durations.WholeNote / (int)Math.Pow(2, subdivision);
             int tripletSubdivisionDuration = subdivisionDuration / 3;
 
-            return new []{
+            return new[]{
                 GetSubdivisionCellsForCellDuration(subdivisionDuration, tickInMeasure, duration),
                 GetSubdivisionCellsForCellDuration(tripletSubdivisionDuration, tickInMeasure, duration),
             }.ToList();
@@ -148,8 +148,80 @@ namespace S3mToMidi.LilyPond
 
             return (subdivisionDuration, subdivisions);
         }
-        
+
         public int[] GetNoteTies(int duration)
+        {
+            int measureDuration = this.beatsPerBar * Durations.WholeNote / this.beatValue;
+            SortedDictionary<int, List<int>> grid = new SortedDictionary<int, List<int>>();
+
+            int n = Durations.WholeNote;
+
+            for (int i = 2; i <= 192; i++)
+            {
+                //if (i == 64) Debugger.Break();
+                int d = (int)Math.Pow(2, i);
+                int time = 0;
+                decimal subdivision = (decimal)n * 2 / i;
+                if (!decimal.IsInteger(subdivision)) { continue; }
+                int intSubdivision = (int)subdivision;
+                if (intSubdivision == 30 ) Debugger.Break();
+                while (time + intSubdivision <= measureDuration)
+                {
+                    
+                    if (!grid.TryGetValue(time, out List<int>? durations))
+                    {
+                        durations = new List<int>();
+                        grid.Add(time, durations);
+                    }
+
+                    if(!durations.Contains(intSubdivision)){ durations.Add(intSubdivision); } // todo perf
+                    time += intSubdivision;
+                }
+            }
+
+            // add dotted rhythms
+            for(int j = 1; j< 8; j++)
+            {
+                int d = (int)Math.Pow(2, j);
+                int subdivision = n / d * 3 / 2;
+                int time = 0;
+                while (time + subdivision <= measureDuration)
+                {
+                    if (!grid.TryGetValue(time, out List<int>? durations))
+                    {
+                        durations = new List<int>();
+                        grid.Add(time, durations);
+                    }
+
+                    if(!durations.Contains(subdivision)){ durations.Add(subdivision); } // todo perf
+                    time += subdivision * 2;
+                }
+            }
+
+            List<int> ties = new List<int>();
+            int tick = TickInMeasure;
+            int remainingDuration = duration;
+            while (0 < remainingDuration)
+            {
+                var l = grid.Where(g => g.Key == tick).Select(g => g.Value).FirstOrDefault();
+                Debug.Assert(l != null, "don't know where to start");
+                // find a duration that can be solved
+                int subDuration = l.FirstOrDefault(d => d <= remainingDuration);
+                Debug.Assert(subDuration != default, "can't find a subduration");
+                tick += subDuration;
+                remainingDuration -= subDuration;
+                ties.Add(subDuration);
+            }
+
+            Console.Out.WriteLine("Split duration {0} inside a measure starting at {1} into [{2}]", duration, TickInMeasure, string.Join(", ", ties));
+
+            int sumOfTies = ties.Sum();
+            Debug.Assert(sumOfTies == duration, $"Ties sum up to {sumOfTies} which does not match input duration {duration}");
+            Debug.Assert(0 < ties.Count, "GetNoteTies is not returning any durations");
+            return ties.ToArray();
+        }
+
+        public int[] GetNoteTies1(int duration)
         {
             Debug.Assert(0 < duration, "trying to get note ties for zero duration");
             List<int> ties = new List<int>();
@@ -169,6 +241,7 @@ namespace S3mToMidi.LilyPond
             int minCellDuration = int.MaxValue;
             int offset = 0;
             bool foundAnyCell = false;
+
 
             while (offset < TicksPerMeasure && sum < duration && loopCount++ < maxLoop)
             {
@@ -201,6 +274,8 @@ namespace S3mToMidi.LilyPond
 
             Console.Out.WriteLine("Split duration {0} inside a measure starting at {1} into [{2}]", duration, TickInMeasure, string.Join(", ", ties));
 
+            int sumOfTies = ties.Sum();
+            Debug.Assert(sumOfTies == duration, $"Ties sum up to {sumOfTies} which does not match input duration {duration}");
             Debug.Assert(0 < ties.Count, "GetNoteTies is not returning any durations");
             return ties.ToArray();
         }

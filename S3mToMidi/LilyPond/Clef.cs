@@ -6,6 +6,8 @@ namespace S3mToMidi.LilyPond
         private readonly Ottava ottava;
         private int currentOttava;
 
+        private int velocity;
+
         public Clef(string clefName)
         {
             this.clefName = clefName;
@@ -22,6 +24,20 @@ namespace S3mToMidi.LilyPond
                 currentOttava = newOttava;
                 writer.WriteLine("\\ottava #{0}", newOttava);
             }
+        }
+
+        public void WriteVelocity(int velocity, TextWriter writer)
+        {
+            if (this.velocity != velocity)
+            {
+                writer.Write("\\set fontSize = #{0} ", GetFontSizeForVelocity(velocity));
+                this.velocity = velocity;
+            }
+        }
+
+        public static int GetFontSizeForVelocity(int velocity)
+        {
+            return -1 * (8 - Math.Min(8, (velocity + 8) / 8));
         }
 
         private static int ChannelNoteToMidiPitch(int note)

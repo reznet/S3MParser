@@ -144,7 +144,7 @@ namespace S3mToMidi.LilyPond
                         if (noteWithDuration != null)
                         {
                             clef.WriteStaffForChannelPitch(noteWithDuration.Pitch, writer);
-                            //writer.WriteLine("\\set fontSize = #{0}", GetFontSizeForVelocity(noteWithDuration.Velocity));
+                            clef.WriteVelocity(noteWithDuration.Velocity, writer);
                             writer.Write(pitch.ChannelNoteToLilyPondPitch(noteWithDuration.Pitch));
                         }
                         else
@@ -208,11 +208,6 @@ namespace S3mToMidi.LilyPond
             }
 
             return 1;
-        }
-
-        public static int GetFontSizeForVelocity(int velocity)
-        {
-            return -1 * (8 - Math.Min(8, (velocity + 8) / 8));
         }
     }
 }

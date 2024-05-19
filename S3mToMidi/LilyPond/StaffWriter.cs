@@ -28,7 +28,7 @@ namespace S3mToMidi.LilyPond
             Clef clef = new Clef("bass");
 
             int i = 0;
-            while(i < events.Count)
+            while (i < events.Count)
             {
                 int eventsProcessedCount = ProcessEvent(events, i, clef);
                 i += eventsProcessedCount;
@@ -55,6 +55,10 @@ namespace S3mToMidi.LilyPond
             {
                 var durationTicks = myNote.Duration;
                 Console.Out.WriteLine("Processing note duration {0}", durationTicks);
+
+                /*
+
+
 
                 for (int tupletDurationIndex = 0; tupletDurationIndex < Time.TupletDurations.Count; tupletDurationIndex++)
                 {
@@ -101,75 +105,86 @@ namespace S3mToMidi.LilyPond
                         return tupletNotes.Count;
                     }
                 }
+                */
 
                 var durations = time.GetBarlineTies(myNote.Duration);
-
-                if (myNote is RestEvent)
+                /*
+                                if (myNote is RestEvent)
+                                {
+                                    foreach (var subDuration in durations)
+                                    {
+                                        var rests = time.GetNoteTies(subDuration);
+                                        foreach (var rest in rests)
+                                        {
+                                            writer.WriteLine("r{0} ", time.ConvertToLilyPondDuration(rest));
+                                            time.AddTime(rest);
+                                        }
+                                    }
+                                }
+                                else if (myNote is NoteWithDurationEvent noteWithDuration)
+                                {
+                                    */
+                var noteWithDuration = myNote as NoteWithDurationEvent;
+                var allSubdurations = new List<int>();
+                for (int i = 0; i < durations.Length; i++)
                 {
-                    foreach (var subDuration in durations)
+                    var barDuration = durations[i];
+                    var subDurations = time.GetNoteTies(barDuration);
+                    for (int j = 0; j < subDurations.Length; j++)
                     {
-                        var rests = time.GetNoteTies(subDuration);
-                        foreach (var rest in rests)
+                        var subDuration = subDurations[j];
+                        var lilypondDuration = time.ConvertToLilyPondDuration(subDuration);
+                        int leftBrace = lilypondDuration.IndexOf('{');
+                        int rightBrace = lilypondDuration.IndexOf('}');
+                        if (-1 < leftBrace)
                         {
-                            writer.WriteLine("r{0} ", time.ConvertToLilyPondDuration(rest));
-                            time.AddTime(rest);
+                            writer.Write(lilypondDuration.Substring(0, leftBrace + 1) + " ");
                         }
-                    }
-                }
-                else if (myNote is NoteWithDurationEvent noteWithDuration)
-                {
-                    var allSubdurations = new List<int>();
-                    for(int i = 0; i < durations.Length; i++)
-                    {
-                        var barDuration = durations[i];
-                        var subDurations = time.GetNoteTies(barDuration);
-                        for(int j = 0; j < subDurations.Length; j++)
-                        {
-                            var subDuration = subDurations[j];
-                            var lilypondDuration = time.ConvertToLilyPondDuration(subDuration);
-                            int leftBrace = lilypondDuration.IndexOf('{');
-                            int rightBrace = lilypondDuration.IndexOf('}');
-                            if (-1 < leftBrace)
-                            {
-                                writer.Write(lilypondDuration.Substring(0, leftBrace + 1) + " ");
-                            }
 
+                        if (noteWithDuration != null)
+                        {
                             clef.WriteStaffForChannelPitch(noteWithDuration.Pitch, writer);
                             //writer.WriteLine("\\set fontSize = #{0}", GetFontSizeForVelocity(noteWithDuration.Velocity));
-                            writer.Write(pitch.ChannelNoteToLilyPondPitch(noteWithDuration.Pitch));                                              
-
-                            if (-1 < leftBrace)
-                            {
-                                writer.Write(lilypondDuration.Substring(leftBrace + 1, rightBrace - leftBrace - 1));
-                            }
-                            else
-                            {
-                                writer.Write(lilypondDuration);
-                            }
-
-                            if (j + 1 < subDurations.Length)
-                            {
-                                writer.Write("~");
-                            }
-
-                            writer.Write(" ");
-
-                            if (-1 < rightBrace)
-                            {
-                                writer.Write(lilypondDuration.Substring(rightBrace));
-                            }
-
-                            time.AddTime(subDuration);
+                            writer.Write(pitch.ChannelNoteToLilyPondPitch(noteWithDuration.Pitch));
                         }
-                    
-                        
+                        else
+                        {
+                            writer.Write("r");
+                        }
+
+
+                        if (-1 < leftBrace)
+                        {
+                            writer.Write(lilypondDuration.Substring(leftBrace + 1, rightBrace - leftBrace - 1));
+                        }
+                        else
+                        {
+                            writer.Write(lilypondDuration);
+                        }
+
+                        if (noteWithDuration != null && j + 1 < subDurations.Length)
+                        {
+                            writer.Write("~");
+                        }
+
+                        writer.Write(" ");
+
+                        if (-1 < rightBrace)
+                        {
+                            writer.Write(lilypondDuration.Substring(rightBrace));
+                        }
+
+                        time.AddTime(subDuration);
                     }
-                    
 
 
-                    
-                    //writer.WriteLine(string.Join("~ ", allSubdurations.Select(time.ConvertToLilyPondDuration)));
                 }
+
+
+
+
+                //writer.WriteLine(string.Join("~ ", allSubdurations.Select(time.ConvertToLilyPondDuration)));
+                //}
             }
             else if (e is NoteEvent note)
             {

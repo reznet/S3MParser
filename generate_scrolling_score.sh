@@ -12,8 +12,8 @@ dotnet publish
 
 # generate lilypond score
 $path_to_me/S3mToMidi/bin/Release/net8.0/publish/S3mToMidi \
-    --file "${filename}" \
-    --exporter lilypond
+    --exporter lilypond \
+    --file $@
 
 # generate scrolling score
 ly2video -i "$filename_no_extension.ly" --padding 0,0 --quality 1

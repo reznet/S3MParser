@@ -6,6 +6,8 @@ namespace S3mToMidi.LilyPond
         private readonly Ottava ottava;
         private int currentOttava;
 
+        private string currentClef;
+
         private int velocity;
 
         public Clef(string clefName)
@@ -22,7 +24,27 @@ namespace S3mToMidi.LilyPond
             if (newOttava != currentOttava)
             {
                 currentOttava = newOttava;
-                writer.WriteLine("\\ottava #{0}", newOttava);
+                //writer.WriteLine("\\ottava #{0}", newOttava);
+            }
+
+            string newClef = GetClef(midiPitch);
+            if(newClef != currentClef)
+            {
+                //writer.WriteLine("\\clef " + newClef);
+                currentClef = newClef;
+            }
+        }
+
+        public string GetClef(int midiPitch)
+        {
+            var newClef = "";
+            if (midiPitch < 60)
+            {
+                return "bass";
+            }
+            else
+            {
+                return "treble";
             }
         }
 

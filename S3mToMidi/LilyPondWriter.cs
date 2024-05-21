@@ -165,7 +165,7 @@ namespace S3mToMidi
 
                     if(duration is NoteWithDurationEvent note)
                     {
-                        yield return new NoteWithDurationEvent(subDurationTick, ties[0], duration.Pitch, duration.Velocity);
+                        yield return new NoteWithDurationEvent(subDurationTick, ties[0], duration.Pitch, duration.Velocity, duration.Instrument);
                     } 
                     else if (duration is RestEvent rest)
                     {

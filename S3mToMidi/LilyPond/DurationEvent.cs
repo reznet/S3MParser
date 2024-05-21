@@ -7,6 +7,8 @@ namespace S3mToMidi.LilyPond
         public abstract int Pitch { get; }
         
         public abstract int Velocity { get; }
+
+        public abstract int Instrument { get;}
         public DurationEvent(int tick, int duration) : base(tick)
         {
             Duration = duration;

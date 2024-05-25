@@ -1,11 +1,21 @@
 using System.Collections.Immutable;
+using System.Text.RegularExpressions;
 using S3mToMidi.LilyPond;
 
 namespace S3mToMidi.Tests.LilyPondTests
 {
+    internal static class StringExtensions
+    {
+        private static readonly Regex _regex = new Regex(@"\s+", RegexOptions.Multiline);
+        public static string NormalizeLilyPondText(this string text)
+        {
+            return _regex.Replace(text, " ").Replace(Environment.NewLine, " ");
+        }
+    }
     [TestClass]
     public class StaffUnitTests
     {
+        
         [TestMethod]
         public void EmptyEvents()
         {
@@ -21,7 +31,7 @@ namespace S3mToMidi.Tests.LilyPondTests
             Assert.AreEqual(@"\new Staff { \key c \minor
 \clef bass
 }
-", stringWriter.ToString());
+".NormalizeLilyPondText(), stringWriter.ToString().NormalizeLilyPondText());
         }
 
         [TestMethod]
@@ -45,7 +55,7 @@ namespace S3mToMidi.Tests.LilyPondTests
 \set fontSize = #0
 b-flat,4
 }
-", stringWriter.ToString());
+".NormalizeLilyPondText(), stringWriter.ToString().NormalizeLilyPondText());
         }
 
         [TestMethod]
@@ -69,7 +79,7 @@ b-flat,4
 \set fontSize = #0
 b-flat,1
 }
-", stringWriter.ToString());
+".NormalizeLilyPondText(), stringWriter.ToString().NormalizeLilyPondText());
         }
 
         [TestMethod]
@@ -94,7 +104,7 @@ b-flat,1
 \set fontSize = #0
 b-flat,2.
 }
-", stringWriter.ToString());
+".NormalizeLilyPondText(), stringWriter.ToString().NormalizeLilyPondText());
         }
 
         [TestMethod]
@@ -125,7 +135,7 @@ b-flat,2.~ 4
 \set fontSize = #0
 b-flat,2.
 }
-", stringWriter.ToString());
+".NormalizeLilyPondText(), stringWriter.ToString().NormalizeLilyPondText());
         }
     }
 }

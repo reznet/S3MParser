@@ -10,9 +10,13 @@ namespace S3mToMidi.LilyPond
         private readonly Pitch pitch = new Pitch();
         private readonly Time time = new Time();
 
+        private readonly Notehead notehead= new Notehead();
+        private string currentNotehead;
+
         public StaffWriter(TextWriter writer)
         {
             this.writer = writer;
+            this.currentNotehead = this.notehead.Default;
         }
 
         public void Write(ImmutableList<Event> events)
@@ -80,19 +84,12 @@ namespace S3mToMidi.LilyPond
                         {
                             clef.WriteStaffForChannelPitch(noteWithDuration.Pitch, writer);
                             clef.WriteVelocity(noteWithDuration.Velocity, writer);
-                            Dictionary<int, string> noteHeadStyles = new Dictionary<int, string>()
+                            string newNotehead = notehead.GetNotehead(noteWithDuration.Instrument);
+                            if(newNotehead != currentNotehead)
                             {
-                                { 1, "default"},
-                                { 2, "harmonic" },
-                                { 3, "diamond" },
-                                { 4, "cross" },
-                            };
-                            var noteHeadStyle = "default";
-                            if(noteHeadStyles.ContainsKey(noteWithDuration.Instrument))
-                            {
-                                noteHeadStyle = noteHeadStyles[noteWithDuration.Instrument];
+                                writer.WriteLine("\\override NoteHead.style = #'" + newNotehead);
+                                currentNotehead = newNotehead;
                             }
-                            writer.WriteLine("\\override NoteHead.style = #'" + noteHeadStyle);
                             writer.Write(pitch.ChannelNoteToLilyPondPitch(noteWithDuration.Pitch));
                         }
                         else

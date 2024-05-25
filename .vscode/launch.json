@@ -10,10 +10,12 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-drac.s3m",
-                "--exclude-channel",
-                "4",
-                "--exclude-channel",
-                "5"
+                "--pattern", "3",
+                "--exclude-channel", "1",
+                //"--exclude-channel", "+2",
+                "--exclude-channel", "3",
+                "--exclude-channel", "4",
+                "--exclude-channel", "5"
             ],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
@@ -28,8 +30,14 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-drac.s3m",
-                "--exclude-channel", "2",
-                "--exclude-channel", "3",
+                //"--pattern", "000",
+                //"--pattern", "001",
+                //"--pattern", "3",
+                //"--pattern", "9",
+                //"--pattern", "35", "--pattern", "36",
+                //"--exclude-channel", "1",
+                //"--exclude-channel", "2",
+                //"--exclude-channel", "3",
                 "--exclude-channel", "4",
                 "--exclude-channel", "5",
                 "--exporter", "lilypond"
@@ -57,6 +65,23 @@
             "console": "internalConsole"
         },
         {
+            "name": "vfx 1 bewm lilypond",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-bewm.s3m",
+                "--exclude-channel", "4",
+                "--exclude-channel", "5",
+                "--exporter", "lilypond"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
             "name": "vfx 1 bzam",
             "type": "coreclr",
             "request": "launch",
@@ -69,6 +94,27 @@
                 "4",
                 "--exclude-channel",
                 "5"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "vfx 1 bzam lilypond",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-bzam.s3m",
+                "--exclude-channel", "4",
+                "--exclude-channel", "5",
+                "--exporter", "lilypond",
+                "--pattern", "49",
+                "--pattern", "47",
+                "--pattern", "48",
+                "--pattern", "0"
             ],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
@@ -93,6 +139,23 @@
             "console": "internalConsole"
         },
         {
+            "name": "vfx 1 zzap lilypond",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-zzap.s3m",
+                "--exclude-channel", "4",
+                "--exclude-channel", "5",
+                "--exporter", "lilypond",
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
             "name": "vfx 2 waow",
             "type": "coreclr",
             "request": "launch",
@@ -111,6 +174,23 @@
             "console": "internalConsole"
         },
         {
+            "name": "vfx 2 waow lilypond",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-waow.s3m",
+                "--exclude-channel", "4",
+                "--exclude-channel", "5",
+                "--exporter", "lilypond",
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
             "name": "vfx 2 blast",
             "type": "coreclr",
             "request": "launch",
@@ -123,6 +203,23 @@
                 "4",
                 "--exclude-channel",
                 "5"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "vfx 2 blast lilypond",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-blast.s3m",
+                "--exclude-channel", "4",
+                "--exclude-channel", "5",
+                "--exporter", "lilypond",
             ],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
@@ -198,6 +295,32 @@
                 "--exclude-channel",
                 "5",
                 "--explode-channels-by-instrument"
+            ],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },        {
+            "name": "vfx 2 ptime lilypond",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet: build",
+            "program": "${workspaceFolder}/S3mToMidi/bin/Debug/net8.0/S3mToMidi.dll",
+            "args": [
+                "--file",
+                "${workspaceFolder}/songs/v-ptime.s3m",
+                //"--pattern", "30",
+                //"--pattern", "31",
+                //"--pattern", "32",
+                //"--pattern", "05",
+                //"--pattern", "13",
+                //"--pattern", "14",
+                //"--pattern", "15",
+                //"--exclude-channel", "1",
+                //"--exclude-channel", "2",
+                //"--exclude-channel", "3",
+                //"--exclude-channel", "4",
+                //"--exclude-channel", "5",
+                "--exporter", "lilypond",
             ],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,

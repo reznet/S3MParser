@@ -4,13 +4,18 @@ namespace S3mToMidi.LilyPond
 {
     public class RhythmGrid
     {
-
         private int minimumSubdivision = 192;
 
         private SortedDictionary<int, List<int>> durationOptionsByTime;
 
         public RhythmGrid(int duration)
         {
+            durationOptionsByTime = GetRhythmGrid(duration);
+        }
+
+        public RhythmGrid(int duration, int minimumSubdivision)
+        {
+            this.minimumSubdivision = minimumSubdivision;
             durationOptionsByTime = GetRhythmGrid(duration);
         }
 
@@ -62,6 +67,12 @@ namespace S3mToMidi.LilyPond
                     if(!durations.Contains(subdivision)){ durations.Add(subdivision); } // todo perf
                     time += subdivision * 2;
                 }
+            }
+
+            // ensure each lookup is sorted descending so we can later find longest duration that fits
+            foreach(var pair in grid)
+            {
+                grid[pair.Key].Sort((a, b) => b.CompareTo(a));
             }
 
             return grid;

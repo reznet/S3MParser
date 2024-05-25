@@ -234,5 +234,8 @@ _Pvt_Extensions
 # ignore generated mp3 from ffmpeg
 *.mp3
 
+# ignore generated wav from schism tracker
+*.wav
+
 # ignore 'None' file produced by TiMidity during creation of scrolling score
 None

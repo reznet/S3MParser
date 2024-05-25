@@ -31,10 +31,62 @@ public class GetNoteTiesUnitTests_FourFour
     }
 
     [TestMethod]
+    public void HalfNoteOnBeatThree()
+    {
+        Time time = new Time();
+        time.SetTimeSignature(4, 4);
+        time.AddTime(Durations.HalfNote);
+
+        var ties = time.GetNoteTies(Durations.HalfNote);
+
+        Assert.AreEqual(1, ties.Length, "wrong number of ties");
+        Assert.AreEqual(Durations.HalfNote, ties[0]);
+    }
+
+    [TestMethod]
     public void QuarterNoteOnBeatOne()
     {
         Time time = new Time();
         time.SetTimeSignature(4, 4);
+
+        var ties = time.GetNoteTies(Durations.QuarterNote);
+
+        Assert.AreEqual(1, ties.Length, "wrong number of ties");
+        Assert.AreEqual(Durations.QuarterNote, ties[0]);
+    }
+
+    [TestMethod]
+    public void QuarterNoteOnBeatTwo()
+    {
+        Time time = new Time();
+        time.SetTimeSignature(4, 4);
+        time.AddTime(Durations.QuarterNote);
+
+        var ties = time.GetNoteTies(Durations.QuarterNote);
+
+        Assert.AreEqual(1, ties.Length, "wrong number of ties");
+        Assert.AreEqual(Durations.QuarterNote, ties[0]);
+    }
+
+    [TestMethod]
+    public void QuarterNoteOnBeatThree()
+    {
+        Time time = new Time();
+        time.SetTimeSignature(4, 4);
+        time.AddTime(Durations.HalfNote);
+
+        var ties = time.GetNoteTies(Durations.QuarterNote);
+
+        Assert.AreEqual(1, ties.Length, "wrong number of ties");
+        Assert.AreEqual(Durations.QuarterNote, ties[0]);
+    }
+
+    [TestMethod]
+    public void QuarterNoteOnBeatFour()
+    {
+        Time time = new Time();
+        time.SetTimeSignature(4, 4);
+        time.AddTime(Durations.DottedHalfNote);
 
         var ties = time.GetNoteTies(Durations.QuarterNote);
 

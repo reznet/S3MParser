@@ -12,7 +12,7 @@ namespace S3mToMidi.LilyPond
         private int beatsPerBar;
         private int beatValue;
 
-        private SortedDictionary<int, List<int>> grid;
+        private RhythmGrid grid;
 
         public const int TICKS_PER_QUARTERNOTE = 96;
 
@@ -51,7 +51,7 @@ namespace S3mToMidi.LilyPond
             this.beatValue = beatValue;
             TicksPerMeasure = Durations.WholeNote / beatValue * beatsPerBar;
             TicksSinceLastTimeSignatureChange = 0;
-            grid = GetRhythmGrid(this.beatsPerBar * Durations.WholeNote / this.beatValue);
+            grid = new RhythmGrid(this.beatsPerBar * Durations.WholeNote / this.beatValue);
             return true;
         }
 
@@ -103,56 +103,6 @@ namespace S3mToMidi.LilyPond
             return (subdivisionDuration, subdivisions);
         }
 
-        private SortedDictionary<int, List<int>> GetRhythmGrid(int measureDuration)
-        {
-            SortedDictionary<int, List<int>> grid = new SortedDictionary<int, List<int>>();
-
-            int n = Durations.WholeNote;
-
-            for (int i = 2; i <= 192; i++)
-            {
-                int time = 0;
-                decimal subdivision = (decimal)n * 2 / i;
-                if (!decimal.IsInteger(subdivision)) { continue; }
-                int intSubdivision = (int)subdivision;
-                if (intSubdivision == 30 ) Debugger.Break();
-                while (time + intSubdivision <= measureDuration)
-                {
-                    
-                    if (!grid.TryGetValue(time, out List<int>? durations))
-                    {
-                        durations = new List<int>();
-                        grid.Add(time, durations);
-                    }
-
-                    if(!durations.Contains(intSubdivision)){ durations.Add(intSubdivision); } // todo perf
-                    time += intSubdivision;
-                }
-            }
-
-            // add dotted rhythms
-            for(int j = 1; j< 8; j++)
-            {
-                int d = (int)Math.Pow(2, j);
-                int subdivision = n / d * 3 / 2;
-                int time = 0;
-                while (time + subdivision <= measureDuration)
-                {
-                    if (!grid.TryGetValue(time, out List<int>? durations))
-                    {
-                        durations = new List<int>();
-                        grid.Add(time, durations);
-                    }
-
-                    if(!durations.Contains(subdivision)){ durations.Add(subdivision); } // todo perf
-                    time += subdivision * 2;
-                }
-            }
-
-            return grid;
-
-        }
-
         public int[] GetNoteTies(int duration)
         {
             List<int> ties = new List<int>();
@@ -160,7 +110,7 @@ namespace S3mToMidi.LilyPond
             int remainingDuration = duration;
             while (0 < remainingDuration)
             {
-                var l = grid.Where(g => g.Key == tick).Select(g => g.Value).FirstOrDefault();
+                var l = grid.GetDurationOptionsByStartTime(tick);
                 Debug.Assert(l != null, "don't know where to start");
                 // find a duration that can be solved
                 int subDuration = l.FirstOrDefault(d => d <= remainingDuration);

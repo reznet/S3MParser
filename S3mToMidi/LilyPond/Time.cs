@@ -51,7 +51,7 @@ namespace S3mToMidi.LilyPond
             this.beatValue = beatValue;
             TicksPerMeasure = Durations.WholeNote / beatValue * beatsPerBar;
             TicksSinceLastTimeSignatureChange = 0;
-            grid = new RhythmGrid(this.beatsPerBar * Durations.WholeNote / this.beatValue);
+            grid = new RhythmGrid(this.beatsPerBar, Durations.WholeNote / this.beatValue);
             return true;
         }
 

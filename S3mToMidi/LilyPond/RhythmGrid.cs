@@ -11,7 +11,7 @@ namespace S3mToMidi.LilyPond
 
         public RhythmGrid(int beatsPerBar, int beatValue) : base(beatsPerBar, beatValue)
         {
-            durationOptionsByTime = GetRhythmGrid(beatsPerBar * beatValue);
+            durationOptionsByTime = GetRhythmGrid(MeasureDuration);
         }
 
         public ReadOnlyCollection<int> GetDurationOptionsByStartTime(int startTime)

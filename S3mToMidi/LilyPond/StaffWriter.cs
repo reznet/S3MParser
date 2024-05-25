@@ -67,8 +67,8 @@ namespace S3mToMidi.LilyPond
 
                 for (int i = 0; i < durations.Length; i++)
                 {
-                    var barDuration = durations[i];
-                    var subDurations = time.GetNoteTies(barDuration);
+                    var durationInBar = durations[i];
+                    var subDurations = time.GetNoteTies(durationInBar);
                     for (int j = 0; j < subDurations.Length; j++)
                     {
                         var subDuration = subDurations[j];

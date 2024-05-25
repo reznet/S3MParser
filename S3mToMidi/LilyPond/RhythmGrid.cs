@@ -44,15 +44,39 @@ namespace S3mToMidi.LilyPond
                 int intSubdivision = (int)subdivision;
                 while (time + intSubdivision <= measureDuration)
                 {
+                    // do not let the duration cross a beat
+                    // e.g. in 4/4, only add a dotted eighth note if
+                    // it complete fits within a quarter of the measure
+                    int nextTime = time + intSubdivision;
 
-                    if (!grid.TryGetValue(time, out List<int>? durations))
+                    int timeLevel = 0;
+                    int nextTimeLevel = 0;
+
+                    for (int level = 2; level < 8; level++)
                     {
-                        durations = new List<int>();
-                        grid.Add(time, durations);
+                        var unit = (int)Math.Pow(2, level);
+                        if (timeLevel == 0 && time % unit == 0) { timeLevel = level; }
+                        if (nextTimeLevel == 0 && nextTime % unit == 0) { nextTimeLevel = level; }
                     }
 
-                    if (!durations.Contains(intSubdivision)) { durations.Add(intSubdivision); } // todo perf
-                    time += intSubdivision;
+                    if (Math.Abs(timeLevel - nextTimeLevel) <= 2)
+                    {
+                        int left = time / beatValue;
+                        int right = nextTime / beatValue;
+                        if (nextTime % beatValue == 0) { right = Math.Max(0, right - 1); }
+                        if (left == right)
+                        {
+                            if (!grid.TryGetValue(time, out List<int>? durations))
+                            {
+                                durations = new List<int>();
+                                grid.Add(time, durations);
+                            }
+
+                            if (!durations.Contains(intSubdivision)) { durations.Add(intSubdivision); } // todo perf
+                        }
+                    }
+
+                    time += intSubdivision / 2;
                 }
             }
 
@@ -73,7 +97,7 @@ namespace S3mToMidi.LilyPond
                     int nextTime = time + subdivision;
                     int left = time / beatValue;
                     int right = nextTime / beatValue;
-                    if (nextTime % beatValue == 0){ right = Math.Max(0, right - 1); }
+                    if (nextTime % beatValue == 0) { right = Math.Max(0, right - 1); }
                     if (left == right)
                     {
                         if (!grid.TryGetValue(time, out List<int>? durations))

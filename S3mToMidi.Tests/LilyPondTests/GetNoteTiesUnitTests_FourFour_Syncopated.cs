@@ -41,8 +41,9 @@ public class GetNoteTiesUnitTests_FourFour_Syncopated
 
         var ties = time.GetNoteTies(Durations.QuarterNote);
 
-        Assert.AreEqual(1, ties.Length, "wrong number of ties");
-        Assert.AreEqual(Durations.QuarterNote, ties[0]);
+        Assert.AreEqual(2, ties.Length, "wrong number of ties");
+        Assert.AreEqual(Durations.EighthNote, ties[0]);
+        Assert.AreEqual(Durations.EighthNote, ties[0]);
     }
 
     [TestMethod]

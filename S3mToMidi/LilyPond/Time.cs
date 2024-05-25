@@ -12,7 +12,7 @@ namespace S3mToMidi.LilyPond
         private int beatsPerBar;
         private int beatValue;
 
-        private RhythmGrid grid;
+        private Subdivider subdivider;
 
         public const int TICKS_PER_QUARTERNOTE = 96;
 
@@ -51,7 +51,7 @@ namespace S3mToMidi.LilyPond
             this.beatValue = beatValue;
             TicksPerMeasure = Durations.WholeNote / beatValue * beatsPerBar;
             TicksSinceLastTimeSignatureChange = 0;
-            grid = new RhythmGrid(this.beatsPerBar, Durations.WholeNote / this.beatValue);
+            subdivider = new RhythmGrid(this.beatsPerBar, Durations.WholeNote / this.beatValue);
             return true;
         }
 
@@ -96,10 +96,7 @@ namespace S3mToMidi.LilyPond
             int remainingDuration = duration;
             while (0 < remainingDuration)
             {
-                var l = grid.GetDurationOptionsByStartTime(tick);
-                Debug.Assert(l != null, "don't know where to start");
-                // find a duration that can be solved
-                int subDuration = l.FirstOrDefault(d => d <= remainingDuration);
+                int subDuration = subdivider.GetNextSubdivision(tick, tick + remainingDuration);
                 Debug.Assert(subDuration != default, "can't find a subduration");
                 tick += subDuration;
                 remainingDuration -= subDuration;

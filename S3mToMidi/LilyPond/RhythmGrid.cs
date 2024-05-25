@@ -3,19 +3,14 @@ using System.Diagnostics;
 
 namespace S3mToMidi.LilyPond
 {
-    public class RhythmGrid
+    public class RhythmGrid : Subdivider
     {
         private int minimumSubdivision = 192;
 
-        private readonly int beatsPerBar;
-        private readonly int beatValue;
-
         private readonly SortedDictionary<int, List<int>> durationOptionsByTime;
 
-        public RhythmGrid(int beatsPerBar, int beatValue)
+        public RhythmGrid(int beatsPerBar, int beatValue) : base(beatsPerBar, beatValue)
         {
-            this.beatsPerBar = beatsPerBar;
-            this.beatValue = beatValue;
             durationOptionsByTime = GetRhythmGrid(beatsPerBar * beatValue);
         }
 
@@ -71,9 +66,9 @@ namespace S3mToMidi.LilyPond
                     // e.g. in 4/4, only add a dotted eighth note if
                     // it complete fits within a quarter of the measure
                     int nextTime = time + subdivision;
-                    int left = time / beatValue;
-                    int right = nextTime / beatValue;
-                    if (nextTime % beatValue == 0){ right = Math.Max(0, right - 1); }
+                    int left = time / BeatValue;
+                    int right = nextTime / BeatValue;
+                    if (nextTime % BeatValue == 0){ right = Math.Max(0, right - 1); }
                     if (left == right)
                     {
                         if (!grid.TryGetValue(time, out List<int>? durations))
@@ -99,5 +94,10 @@ namespace S3mToMidi.LilyPond
 
         }
 
+        public override int GetNextSubdivision(int startTime, int endTime)
+        {
+            var options = GetDurationOptionsByStartTime(startTime);
+            return options.FirstOrDefault(d => d <= endTime - startTime);
+        }
     }
 }

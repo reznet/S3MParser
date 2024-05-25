@@ -121,6 +121,12 @@ namespace S3mToMidi.LilyPond
 
                         time.AddTime(subDuration);
                     }
+
+                    if ( i + 1 < durations.Length )
+                    {
+                        // add ties across bar lines
+                        writer.Write(" ~ ");
+                    }
                 }
             }
             else if (e is NoteEvent note)

@@ -89,20 +89,6 @@ namespace S3mToMidi.LilyPond
             }
         }
 
-        internal (int subdivisionDuration, bool[] subdivisions) GetSubdivisionCellsForCellDuration(int subdivisionDuration, int tickInMeasure, int duration)
-        {
-            // x/1 => whole note beat
-            // x/2 => half note beat
-            // x/4 => quarter note beat
-            int measureDuration = this.beatsPerBar * Durations.WholeNote / this.beatValue;
-
-            int numberOfSubdivisionsInMeasure = (int)Math.Ceiling((decimal)measureDuration / subdivisionDuration);
-
-            bool[] subdivisions = DurationSubdivider.GetSubdivisionCells(numberOfSubdivisionsInMeasure, subdivisionDuration, tickInMeasure, duration);
-
-            return (subdivisionDuration, subdivisions);
-        }
-
         public int[] GetNoteTies(int duration)
         {
             List<int> ties = new List<int>();

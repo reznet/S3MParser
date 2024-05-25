@@ -148,32 +148,4 @@ public class TimeUnitTests
         Assert.AreEqual(1, ties.Length, "wrong number of ties");
         Assert.AreEqual(Durations.EighthNote, ties[0]);
     }
-
-    [TestMethod]
-    public void GetSubdivisionCells_EighthNote_DottedQuarterStartingOnAnd()
-    {
-        // arrange
-        Time time = new();
-        time.SetTimeSignature(4, 4);
-
-        // act
-        (var _, var actualCells) = time.GetSubdivisionCellsForCellDuration(3, Durations.EighthNote, Durations.DottedHalfNote / 2);
-
-        // assert
-        CollectionAssert.AreEqual(new bool[]{ false, true, true, true, false, false, false, false}, actualCells);
-    }
-
-    [TestMethod]
-    public void GetSubdivisionCells_PtimePattern14Channel3Beat5And()
-    {
-        // arrange
-        Time time = new();
-        time.SetTimeSignature(4, 4);
-
-        // act
-        (var _, var actualCells) = time.GetSubdivisionCellsForCellDuration(3, Durations.EighthNote, Durations.DottedHalfNote / 2);
-
-        // assert
-        CollectionAssert.AreEqual(new bool[]{ false, true, true, true, false, false, false, false}, actualCells);
-    }
 }

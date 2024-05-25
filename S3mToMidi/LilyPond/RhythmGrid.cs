@@ -99,5 +99,20 @@ namespace S3mToMidi.LilyPond
             var options = GetDurationOptionsByStartTime(startTime);
             return options.FirstOrDefault(d => d <= endTime - startTime);
         }
+
+        public int GetNextSubdivisionPreferBeats(int startTime, int endTime)
+        {
+            var beats = Enumerable.Range(1, MeasureDuration / Durations.SixteenthNote).Select(e => Durations.SixteenthNote * e).ToArray();
+            var options = GetDurationOptionsByStartTime(startTime).Where(duration => duration <= (endTime - startTime));
+            // prefer durations that lead us to an even measure division
+            // i.e. prefer dotted eighth note to quarter note triplet + sixtyfourth triplet
+            var x = options.Select(duration => 
+            {
+                var minimumDistanceToBeats = beats.Select(beat => beat - (startTime + duration)).Where(s => 0 <= s).OrderBy(s => s);
+                var minimumDistanceToBeat = minimumDistanceToBeats.First();
+                return new KeyValuePair<int, int>(minimumDistanceToBeat, duration);
+            }).OrderBy(pair => pair.Key);
+            return x.Select(y => y.Value).FirstOrDefault();
+        }
     }
 }

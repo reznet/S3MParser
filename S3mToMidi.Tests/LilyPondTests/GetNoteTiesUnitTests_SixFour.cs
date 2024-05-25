@@ -1,16 +1,16 @@
 ﻿using System.Runtime.CompilerServices;
 using S3mToMidi.LilyPond;
 
-namespace S3mToMidi.Tests;
+namespace S3mToMidi.Tests.LilyPondTests;
 
 [TestClass]
-public class GetNoteTiesUnitTests_FourFour
+public class GetNoteTiesUnitTests_SixFour
 {
     [TestMethod]
     public void WholeNoteOnBeatOne()
     {
         Time time = new Time();
-        time.SetTimeSignature(4, 4);
+        time.SetTimeSignature(6, 4);
 
         var ties = time.GetNoteTies(Durations.WholeNote);
 
@@ -22,24 +22,12 @@ public class GetNoteTiesUnitTests_FourFour
     public void HalfNoteOnBeatOne()
     {
         Time time = new Time();
-        time.SetTimeSignature(4, 4);
+        time.SetTimeSignature(6, 4);
 
         var ties = time.GetNoteTies(Durations.HalfNote);
 
         Assert.AreEqual(1, ties.Length, "wrong number of ties");
         Assert.AreEqual(Durations.HalfNote, ties[0]);
-    }
-
-    [TestMethod]
-    public void DottedHalfNoteOnBeatOne()
-    {
-        Time time = new Time();
-        time.SetTimeSignature(4, 4);
-
-        var ties = time.GetNoteTies(Durations.DottedHalfNote);
-
-        Assert.AreEqual(1, ties.Length, "wrong number of ties");
-        Assert.AreEqual(Durations.DottedHalfNote, ties[0]);
     }
 
     [TestMethod]
@@ -58,7 +46,7 @@ public class GetNoteTiesUnitTests_FourFour
     public void EighthNoteOnBeatOne()
     {
         Time time = new Time();
-        time.SetTimeSignature(4, 4);
+        time.SetTimeSignature(6, 4);
 
         var ties = time.GetNoteTies(Durations.EighthNote);
 
@@ -70,7 +58,7 @@ public class GetNoteTiesUnitTests_FourFour
     public void SixteenthNoteOnBeatOne()
     {
         Time time = new Time();
-        time.SetTimeSignature(4, 4);
+        time.SetTimeSignature(6, 4);
 
         var ties = time.GetNoteTies(Durations.SixteenthNote);
 
@@ -82,7 +70,7 @@ public class GetNoteTiesUnitTests_FourFour
     public void ThirtysecondNoteOnBeatOne()
     {
         Time time = new Time();
-        time.SetTimeSignature(4, 4);
+        time.SetTimeSignature(6, 4);
 
         var ties = time.GetNoteTies(Durations.ThirtySecondNote);
 
@@ -94,7 +82,7 @@ public class GetNoteTiesUnitTests_FourFour
     public void SixtyfourthNoteOnBeatOne()
     {
         Time time = new Time();
-        time.SetTimeSignature(4, 4);
+        time.SetTimeSignature(6, 4);
 
         var ties = time.GetNoteTies(Durations.SixtyFourthNote);
 
@@ -103,42 +91,29 @@ public class GetNoteTiesUnitTests_FourFour
     }
 
     [TestMethod]
-    public void WeirdThingAfterEighthAndThirtySecondNote()
+    public void DottedEighthNoteOnBeatTwoAnd()
     {
         Time time = new Time();
-        time.SetTimeSignature(4, 4);
-        time.AddTime(Durations.EighthNote + Durations.ThirtySecondNote);
-
-        var ties = time.GetNoteTies(Durations.DottedQuarterNote + Durations.SixtyFourthNoteTriplet);
-
-        Assert.AreEqual(1, ties.Length, "wrong number of ties");
-        Assert.AreEqual(Durations.SixtyFourthNote, ties[0]);
-    }
-
-    [TestMethod]
-    public void WeirdThing()
-    {
-        Time time = new Time();
-        time.SetTimeSignature(15, 8); // 720 ticks, eighth note = 48 ticks
-        time.AddTime(608);
-
-        var ties = time.GetNoteTies(112);
-
-        Assert.AreEqual(1, ties.Length, "wrong number of ties");
-        Assert.AreEqual(Durations.SixtyFourthNote, ties[0]);
-    }
-
-    [TestMethod]
-    public void WeirdThing2()
-    {
-        Time time = new Time();
-        time.SetTimeSignature(4, 4);
-        time.AddTime(Durations.EighthNote * 5);
+        time.SetTimeSignature(6, 4);
+        time.AddTime(Durations.DottedEighthNote);
 
         var ties = time.GetNoteTies(Durations.DottedEighthNote);
 
         Assert.AreEqual(2, ties.Length, "wrong number of ties");
-        Assert.AreEqual(Durations.EighthNote, ties[0]);
-        Assert.AreEqual(Durations.SixteenthNote, ties[1]);
+        Assert.AreEqual(Durations.SixteenthNote, ties[0]);
+        Assert.AreEqual(Durations.EighthNote, ties[1]);
+    }
+
+    [TestMethod]
+    public void SixteenthNoteOnBeatFourA()
+    {
+        Time time = new Time();
+        time.SetTimeSignature(6, 4);
+        time.AddTime(Durations.WholeNote - Durations.SixteenthNote);
+
+        var ties = time.GetNoteTies(Durations.SixteenthNote);
+
+        Assert.AreEqual(1, ties.Length, "wrong number of ties");
+        Assert.AreEqual(Durations.SixteenthNote, ties[0]);
     }
 }

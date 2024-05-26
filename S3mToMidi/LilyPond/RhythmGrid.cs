@@ -31,7 +31,26 @@ namespace S3mToMidi.LilyPond
 
             int n = Durations.WholeNote;
 
-            for (int i = 2; i <= minimumSubdivision; i++)
+            for (int i = 2; i <= (int)Math.Sqrt(64); i++)
+            {
+                int time = 0;
+                decimal subdivision = n / (int)Math.Pow(2, i);
+                int intSubdivision = (int)subdivision;
+                while (time + intSubdivision <= measureDuration)
+                {
+                    if (!grid.TryGetValue(time, out List<int>? durations))
+                    {
+                        durations = new List<int>();
+                        grid.Add(time, durations);
+                    }
+
+                    if (!durations.Contains(intSubdivision)) { durations.Add(intSubdivision); } // todo perf
+                    time += intSubdivision;
+                }
+            }
+
+            // add tuplets
+            for (int i = 24; i <= 64; i *= 2)
             {
                 int time = 0;
                 decimal subdivision = (decimal)n * 2 / i;
@@ -39,7 +58,6 @@ namespace S3mToMidi.LilyPond
                 int intSubdivision = (int)subdivision;
                 while (time + intSubdivision <= measureDuration)
                 {
-
                     if (!grid.TryGetValue(time, out List<int>? durations))
                     {
                         durations = new List<int>();

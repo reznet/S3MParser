@@ -6,6 +6,12 @@ namespace S3mToMidi.LilyPond
         private readonly Ottava ottava;
         private int currentOttava;
 
+        // number of times the new clef needs to be seen in a row
+        // before switching to it
+        private const int clefThreshold = 5;
+
+        private Queue<ClefPlaceholder> clefPlaceholders = new Queue<ClefPlaceholder>();
+
         private string currentClef;
 
         private int velocity;
@@ -16,7 +22,18 @@ namespace S3mToMidi.LilyPond
             this.ottava = new Ottava(24, 36, 67, 79); // HACK
         }
 
-        public void WriteStaffForChannelPitch(int channelPitch, TextWriter writer)
+        private class ClefPlaceholder
+        {
+            public string Clef;
+            public Placeholder Placeholder;
+
+            public override string ToString()
+            {
+                return $"{Clef} {Placeholder}";
+            }
+        }
+
+        public void WriteStaffForChannelPitch(int channelPitch, LilyPondTextWriter writer)
         {
             var midiPitch = ChannelNoteToMidiPitch(channelPitch);
 
@@ -28,9 +45,17 @@ namespace S3mToMidi.LilyPond
             }
 
             string newClef = GetClef(midiPitch);
-            if(newClef != currentClef)
+            var clefPlaceholder = new ClefPlaceholder(){ Clef = newClef, Placeholder = writer.AppendPlaceholder() };
+            clefPlaceholders.Enqueue(clefPlaceholder);
+
+            while(clefPlaceholders.Count > clefThreshold)
             {
-                //writer.WriteLine("\\clef " + newClef);
+                clefPlaceholders.Dequeue();
+            }
+
+            if (clefPlaceholders.Count == clefThreshold && clefPlaceholders.All(p => p.Clef != currentClef))
+            {
+                clefPlaceholders.Peek().Placeholder.Text = $"\\clef {newClef} ";
                 currentClef = newClef;
             }
         }
@@ -48,11 +73,11 @@ namespace S3mToMidi.LilyPond
             }
         }
 
-        public void WriteVelocity(int velocity, TextWriter writer)
+        public void WriteVelocity(int velocity, LilyPondTextWriter writer)
         {
             if (this.velocity != velocity)
             {
-                writer.Write("\\set fontSize = #{0} ", GetFontSizeForVelocity(velocity));
+                writer.Write($"\\set fontSize = #{GetFontSizeForVelocity(velocity)} ");
                 this.velocity = velocity;
             }
         }

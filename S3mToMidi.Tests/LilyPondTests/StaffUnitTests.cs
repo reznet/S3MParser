@@ -21,11 +21,13 @@ namespace S3mToMidi.Tests.LilyPondTests
         {
             // arrange
             var stringWriter = new StringWriter();
-            var sut = new StaffWriter(stringWriter);
+            var lilypondTextWriter = new LilyPondTextWriter();
+            var sut = new StaffWriter(lilypondTextWriter);
             var events = new List<Event>();
 
             // act
             sut.Write(events.ToImmutableList());
+            lilypondTextWriter.Flush(stringWriter);
 
             // assert
             Assert.AreEqual(@"\new Staff { \key c \minor
@@ -39,7 +41,8 @@ namespace S3mToMidi.Tests.LilyPondTests
         {
             // arrange
             var stringWriter = new StringWriter();
-            var sut = new StaffWriter(stringWriter);
+            var lilypondTextWriter = new LilyPondTextWriter();
+            var sut = new StaffWriter(lilypondTextWriter);
             var events = new List<Event>(){
                 new TimeSignatureEvent(0, 4, 4),
                 new NoteWithDurationEvent(0, Durations.QuarterNote, 42, 100, 1)
@@ -47,6 +50,7 @@ namespace S3mToMidi.Tests.LilyPondTests
 
             // act
             sut.Write(events.ToImmutableList());
+            lilypondTextWriter.Flush(stringWriter);
 
             // assert
             Assert.AreEqual(@"\new Staff { \key c \minor
@@ -63,7 +67,8 @@ b-flat,4
         {
             // arrange
             var stringWriter = new StringWriter();
-            var sut = new StaffWriter(stringWriter);
+            var lilypondTextWriter = new LilyPondTextWriter();
+            var sut = new StaffWriter(lilypondTextWriter);
             var events = new List<Event>(){
                 new TimeSignatureEvent(0, 4, 4),
                 new NoteWithDurationEvent(0, Durations.WholeNote, 42, 100, 1)
@@ -71,6 +76,7 @@ b-flat,4
 
             // act
             sut.Write(events.ToImmutableList());
+            lilypondTextWriter.Flush(stringWriter);
 
             // assert
             Assert.AreEqual(@"\new Staff { \key c \minor
@@ -88,7 +94,8 @@ b-flat,1
         {
             // arrange
             var stringWriter = new StringWriter();
-            var sut = new StaffWriter(stringWriter);
+            var lilypondTextWriter = new LilyPondTextWriter();
+            var sut = new StaffWriter(lilypondTextWriter);
             var events = new List<Event>(){
                 new TimeSignatureEvent(0, 4, 4),
                 new NoteWithDurationEvent(0, Durations.DottedHalfNote, 42, 100, 1)
@@ -96,6 +103,7 @@ b-flat,1
 
             // act
             sut.Write(events.ToImmutableList());
+            lilypondTextWriter.Flush(stringWriter);
 
             // assert
             Assert.AreEqual(@"\new Staff { \key c \minor
@@ -113,7 +121,8 @@ b-flat,2.
         {
             // arrange
             var stringWriter = new StringWriter();
-            var sut = new StaffWriter(stringWriter);
+            var lilypondTextWriter = new LilyPondTextWriter();
+            var sut = new StaffWriter(lilypondTextWriter);
             var events = new List<Event>(){
                 new TimeSignatureEvent(0, 4, 4),
                 new NoteWithDurationEvent(0, Durations.QuarterNote, 42, 100, 1),
@@ -123,6 +132,7 @@ b-flat,2.
 
             // act
             sut.Write(events.ToImmutableList());
+            lilypondTextWriter.Flush(stringWriter);
 
             // assert
             Assert.AreEqual(@"\new Staff { \key c \minor

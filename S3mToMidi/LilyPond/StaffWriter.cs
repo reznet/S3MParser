@@ -6,14 +6,14 @@ namespace S3mToMidi.LilyPond
 {
     internal class StaffWriter
     {
-        private readonly TextWriter writer;
+        private readonly LilyPondTextWriter writer;
         private readonly Pitch pitch = new Pitch();
         private readonly Time time = new Time();
 
         private readonly Notehead notehead= new Notehead();
         private string currentNotehead;
 
-        public StaffWriter(TextWriter writer)
+        public StaffWriter(LilyPondTextWriter writer)
         {
             this.writer = writer;
             this.currentNotehead = this.notehead.Default;
@@ -44,13 +44,13 @@ namespace S3mToMidi.LilyPond
         private void WriteClef(string clef)
         {
             writer.WriteLine(@"");
-            writer.WriteLine("\\clef {0}", clef);
+            writer.WriteLine($"\\clef {clef}");
         }
 
         private void WriteKeySignature(string key, string mode)
         {
             writer.WriteLine(@"");
-            writer.WriteLine("\\key {0} \\{1}", key, mode);
+            writer.WriteLine($"\\key {key} \\{mode}");
         }
 
 
@@ -135,14 +135,14 @@ namespace S3mToMidi.LilyPond
             }
             else if (e is TempoEvent tempoEvent)
             {
-                writer.WriteLine(@"\tempo 4 = {0}", tempoEvent.TempoBpm);
+                writer.WriteLine($"\\tempo 4 = {tempoEvent.TempoBpm}");
             }
             else if (e is TimeSignatureEvent timeSignatureEvent)
             {
                 if (time.SetTimeSignature(timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue))
                 {
                     writer.WriteLine(@"");
-                    writer.WriteLine(@"\time {0}/{1}", timeSignatureEvent.BeatsPerBar, timeSignatureEvent.BeatValue);
+                    writer.WriteLine($"\\time {timeSignatureEvent.BeatsPerBar}/{timeSignatureEvent.BeatValue}");
                 }
             }
             else

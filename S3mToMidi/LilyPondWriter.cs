@@ -71,7 +71,9 @@ namespace S3mToMidi
                 })
                 .ToImmutableList();
 
-                new StaffWriter(writer).Write(withRests);
+                LilyPondTextWriter lilyPondWriter = new LilyPondTextWriter();
+                new StaffWriter(lilyPondWriter).Write(withRests);
+                lilyPondWriter.Flush(writer);
             }
 
             writer.WriteLine(">>");

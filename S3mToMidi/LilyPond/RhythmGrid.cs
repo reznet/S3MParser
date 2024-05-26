@@ -112,10 +112,10 @@ namespace S3mToMidi.LilyPond
 
         }
 
-        public override int GetNextSubdivision(int startTime, int endTime)
+        public override int[] GetSubdivisions(int startTime, int endTime)
         {
             var options = GetDurationOptionsByStartTime(startTime);
-            return options.FirstOrDefault(d => d <= endTime - startTime);
+            return new int[]{options.FirstOrDefault(d => d <= endTime - startTime)};
         }
 
         public int GetNextSubdivisionPreferBeats(int startTime, int endTime)

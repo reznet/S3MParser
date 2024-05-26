@@ -91,9 +91,9 @@ namespace S3mToMidi.LilyPond
 
         public int[] GetNoteTies(int duration)
         {
-            List<int> ties = new List<int>();
             int tick = TickInMeasure;
             int remainingDuration = duration;
+            /*
             while (0 < remainingDuration)
             {
                 int subDuration = subdivider.GetNextSubdivision(tick, tick + remainingDuration);
@@ -102,13 +102,15 @@ namespace S3mToMidi.LilyPond
                 remainingDuration -= subDuration;
                 ties.Add(subDuration);
             }
+*/
 
+            var ties = subdivider.GetSubdivisions(tick, tick + duration);
             Console.Out.WriteLine("Split duration {0} inside a measure starting at {1} into [{2}]", duration, TickInMeasure, string.Join(", ", ties));
 
             int sumOfTies = ties.Sum();
             Debug.Assert(sumOfTies == duration, $"Ties sum up to {sumOfTies} which does not match input duration {duration}");
-            Debug.Assert(0 < ties.Count, "GetNoteTies is not returning any durations");
-            return ties.ToArray();
+            Debug.Assert(0 < ties.Length, "GetNoteTies is not returning any durations");
+            return ties;
         }
 
         public string ConvertToLilyPondDuration(int delta)

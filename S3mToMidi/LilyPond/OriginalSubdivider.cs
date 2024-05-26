@@ -6,7 +6,7 @@ namespace S3mToMidi.LilyPond
     {
         public OriginalSubdivider(int beatsPerBar, int beatValue) : base(beatsPerBar, beatValue) { }
 
-        public override int GetNextSubdivision(int startTime, int endTime)
+        public override int[] GetSubdivisions(int startTime, int endTime)
         {
             int duration = endTime - startTime;
             int TickInMeasure = startTime;
@@ -43,7 +43,6 @@ namespace S3mToMidi.LilyPond
                     int index = (offset + sum) / subdivisionDuration;
                     if (cells[index])
                     {
-                        return subdivisionDuration;
                         Debug.Assert(ties.Sum() + subdivisionDuration <= duration, "adding " + subdivisionDuration + " would put sum of ties over target duration");
                         ties.Add(subdivisionDuration);
                         sum += subdivisionDuration;
@@ -70,7 +69,7 @@ namespace S3mToMidi.LilyPond
             int sumOfTies = ties.Sum();
             Debug.Assert(sumOfTies == duration, $"Ties sum up to {sumOfTies} which does not match input duration {duration}");
             Debug.Assert(0 < ties.Count, "GetNoteTies is not returning any durations");
-            return ties.FirstOrDefault();
+            return ties.ToArray();
         }
 
         internal (int subdivisionDuration, bool[] subdivisions) GetSubdivisionCellsForCellDuration(int subdivisionDuration, int tickInMeasure, int duration)

@@ -21,6 +21,6 @@ namespace S3mToMidi.LilyPond
 
         public int MeasureDuration { get { return beatsPerBar * BeatDuration; } }
 
-        public abstract int GetNextSubdivision(int startTime, int endTime);
+        public abstract int[] GetSubdivisions(int startTime, int endTime);
     }
 }

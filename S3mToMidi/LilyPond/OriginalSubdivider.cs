@@ -12,6 +12,8 @@ namespace S3mToMidi.LilyPond
             int TickInMeasure = startTime;
             int TicksPerMeasure = this.MeasureDuration;
 
+            bool durationIsMultipleOfDuplet = duration % Durations.SixtyFourthNote == 0;
+
             Debug.Assert(0 < duration, "trying to get note ties for zero duration");
             List<int> ties = new List<int>();
 
@@ -19,7 +21,7 @@ namespace S3mToMidi.LilyPond
 
             for (int subdivision = 0; subdivision < 8; subdivision++)
             {
-                subdivisionCells.AddRange(GetSubdivisionCells(subdivision, TickInMeasure, duration));
+                subdivisionCells.AddRange(GetSubdivisionCells(durationIsMultipleOfDuplet ? 2 : 3, subdivision, TickInMeasure, duration));
             }
 
             subdivisionCells.Sort((l, r) => r.subdivisionDuration.CompareTo(l.subdivisionDuration));
@@ -85,17 +87,15 @@ namespace S3mToMidi.LilyPond
             return (subdivisionDuration, subdivisions);
         }
 
-        internal List<(int subdivisionDuration, bool[] subdivisions)> GetSubdivisionCells(int subdivision, int tickInMeasure, int duration)
+        internal List<(int subdivisionDuration, bool[] subdivisions)> GetSubdivisionCells(int divisor, int subdivision, int tickInMeasure, int duration)
         {
             // whole note subdivision = 0, subdivisions = 1;
             // half note subdivision = 1, subdivisions = 2;
             // quarter note subdivision = 2, subdivisions = 4;
-            int subdivisionDuration = Durations.WholeNote / (int)Math.Pow(2, subdivision);
-            int tripletSubdivisionDuration = subdivisionDuration / 3;
+            int subdivisionDuration = Durations.WholeNote * 2 / (int)Math.Pow(2, subdivision) / divisor;
 
             return new[]{
                 GetSubdivisionCellsForCellDuration(subdivisionDuration, tickInMeasure, duration),
-                GetSubdivisionCellsForCellDuration(tripletSubdivisionDuration, tickInMeasure, duration),
             }.ToList();
         }
     }

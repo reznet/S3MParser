@@ -95,6 +95,7 @@ namespace S3mToMidi
                 {
                     File.Delete(outputFilename);
                 }
+                Console.Out.WriteLine("Saving LilyPond output to {0}", outputFilename);
                 File.WriteAllText(outputFilename, stringWriter.ToString());
             }
         }

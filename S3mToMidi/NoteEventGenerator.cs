@@ -79,6 +79,7 @@ namespace S3mToMidi
                     continue;
                 }
 
+                // hack because there could be a time signature change in between patterns
                 ForEachChannel((c) => 
                 {
                     if(c.IsPlayingNote)

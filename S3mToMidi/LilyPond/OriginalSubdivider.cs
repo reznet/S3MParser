@@ -12,7 +12,7 @@ namespace S3mToMidi.LilyPond
             int TickInMeasure = startTime;
             int TicksPerMeasure = this.MeasureDuration;
 
-            bool durationIsMultipleOfDuplet = duration % Durations.SixtyFourthNote == 0;
+            bool isTuplet = !(startTime % Durations.SixtyFourthNote == 0 && endTime % Durations.SixtyFourthNote == 0);
 
             Debug.Assert(0 < duration, "trying to get note ties for zero duration");
             List<int> ties = new List<int>();
@@ -21,7 +21,7 @@ namespace S3mToMidi.LilyPond
 
             for (int subdivision = 0; subdivision < 8; subdivision++)
             {
-                subdivisionCells.AddRange(GetSubdivisionCells(durationIsMultipleOfDuplet ? 2 : 3, subdivision, TickInMeasure, duration));
+                subdivisionCells.AddRange(GetSubdivisionCells(isTuplet ? 3 : 2, subdivision, TickInMeasure, duration));
             }
 
             subdivisionCells.Sort((l, r) => r.subdivisionDuration.CompareTo(l.subdivisionDuration));

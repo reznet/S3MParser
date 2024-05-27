@@ -31,6 +31,9 @@ namespace S3mToMidi
 
             [Option("exporter", Required = false, Default = "midi", HelpText = "Which export format to use.")]
             public string Exporter { get; set; } = "midi";
+
+            [Option('o', "output", Required = false, HelpText = "Path to write the output to.")]
+            public string? OutputFile { get; set; }
         }
 
         private static void Main(string[] args)
@@ -90,7 +93,11 @@ namespace S3mToMidi
                 writer.Write(noteEvents);
 
                 Console.Out.WriteLine(stringWriter.ToString());
-                var outputFilename = Path.ChangeExtension(o.InputFile, ".ly");
+                var outputFilename = o.OutputFile;
+                if(string.IsNullOrWhiteSpace(outputFilename))
+                {
+                    outputFilename = Path.ChangeExtension(o.InputFile, ".ly");
+                }
                 if (File.Exists(outputFilename))
                 {
                     File.Delete(outputFilename);
@@ -115,7 +122,18 @@ namespace S3mToMidi
 
             var midiFile = new MidiWriter().Write(noteEvents);
 
-            midiFile.Write(Path.GetFileName(Path.ChangeExtension(o.InputFile, ".mid")), overwriteFile: true);
+            var outputFilename = o.OutputFile;
+            if(string.IsNullOrWhiteSpace(outputFilename))
+            {
+                outputFilename = Path.ChangeExtension(o.InputFile, ".mid");
+            }
+            if (File.Exists(outputFilename))
+            {
+                File.Delete(outputFilename);
+            }
+            Console.Out.WriteLine("Saving midi output to {0}", outputFilename);
+
+            midiFile.Write(outputFilename, overwriteFile: true);
         }
     }
 }

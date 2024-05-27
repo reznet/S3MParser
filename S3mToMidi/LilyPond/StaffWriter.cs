@@ -60,7 +60,7 @@ namespace S3mToMidi.LilyPond
             if (e is DurationEvent myNote)
             {
                 var durationTicks = myNote.Duration;
-                Console.Out.WriteLine("Processing note duration {0}", durationTicks);
+                //Console.Out.WriteLine("Processing note duration {0}", durationTicks);
 
                 var durations = time.GetBarlineTies(myNote.Duration);
                 var noteWithDuration = myNote as NoteWithDurationEvent;

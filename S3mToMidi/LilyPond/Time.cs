@@ -61,7 +61,7 @@ namespace S3mToMidi.LilyPond
             TicksSinceLastTimeSignatureChange += duration;
             var measure = TicksSinceLastTimeSignatureChange / TicksPerMeasure;
             TickInMeasure = TicksSinceLastTimeSignatureChange % TicksPerMeasure;
-            Console.Out.WriteLine("Added {0} ticks to time.  Measure is {1}. TickInMeasure is now {2}", duration, measure, TickInMeasure);
+            //Console.Out.WriteLine("Added {0} ticks to time.  Measure is {1}. TickInMeasure is now {2}", duration, measure, TickInMeasure);
         }
 
         public int[] GetBarlineTies(int duration)
@@ -70,7 +70,7 @@ namespace S3mToMidi.LilyPond
             var tickInMeasure = TicksSinceLastTimeSignatureChange % TicksPerMeasure;
             var ticksRemainingInMeasure = TicksPerMeasure - tickInMeasure;
 
-            Console.Out.WriteLine("seems we're currently {0}/{1} ticks into measure {2} since the last time signature change (global tick {3}).  there are {4} ticks left in the measure.", tickInMeasure, TicksPerMeasure, measure, TotalTicks, ticksRemainingInMeasure);
+            Console.Out.WriteLine("Tick {0}/{1} ticks into measure {2} since the last time signature change (global tick {3}).  there are {4} ticks left in the measure.", tickInMeasure, TicksPerMeasure, measure, TotalTicks, ticksRemainingInMeasure);
 
             Debug.Assert(0 < ticksRemainingInMeasure);
             Debug.Assert(0 < duration);

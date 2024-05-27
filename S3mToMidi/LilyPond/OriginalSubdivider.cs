@@ -41,7 +41,7 @@ namespace S3mToMidi.LilyPond
                 {
                     minCellDuration = Math.Min(minCellDuration, subdivisionDuration);
                     int index = (offset + sum) / subdivisionDuration;
-                    if (cells[index])
+                    if (index < cells.Length && cells[index])
                     {
                         Debug.Assert(ties.Sum() + subdivisionDuration <= duration, "adding " + subdivisionDuration + " would put sum of ties over target duration");
                         ties.Add(subdivisionDuration);
@@ -64,10 +64,8 @@ namespace S3mToMidi.LilyPond
 
             Debug.Assert(loopCount < maxLoop, "infinite loop");
 
-            Console.Out.WriteLine("Split duration {0} inside a measure starting at {1} into [{2}]", duration, TickInMeasure, string.Join(", ", ties));
-
             int sumOfTies = ties.Sum();
-            Debug.Assert(sumOfTies == duration, $"Ties sum up to {sumOfTies} which does not match input duration {duration}");
+            Debug.Assert(sumOfTies == duration, $"Ties [{string.Join(" ", ties)}] sum up to {sumOfTies} which does not match input duration {duration}");
             Debug.Assert(0 < ties.Count, "GetNoteTies is not returning any durations");
             return ties.ToArray();
         }

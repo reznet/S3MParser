@@ -73,12 +73,12 @@
             "args": [
                 "--file",
                 "${workspaceFolder}/songs/v-bewm.s3m",
-                "--exclude-channel", "1",
-                "--exclude-channel", "2",
-                "--exclude-channel", "3",
+                //"--exclude-channel", "1",
+                //"--exclude-channel", "2",
+                //"--exclude-channel", "3",
                 //"--exclude-channel", "4",
-                "--exclude-channel", "5",
-                "--pattern", "9",
+                //"--exclude-channel", "5",
+                //"--pattern", "9",
                 "--exporter", "lilypond"
             ],
             "cwd": "${workspaceFolder}",
